@@ -1,9 +1,19 @@
+# Lancia lo stesso target in ogni tool (ogni sottocartella con un Makefile).
+# Uso: make [install|uninstall]            -> tutti i tool
+#      make install TOOLS="commit"         -> solo i tool indicati
+
+TOOLS ?= $(patsubst %/Makefile,%,$(wildcard */Makefile))
+TARGETS := install uninstall
+
 all: install
 
-install:
-	@bash install.sh install
+$(TARGETS):
+	@for tool in $(TOOLS); do \
+		echo "==> $$tool: $@"; \
+		$(MAKE) --no-print-directory -C $$tool $@ || exit 1; \
+	done
 
-uninstall:
-	@bash install.sh uninstall
+list:
+	@echo $(TOOLS)
 
-.PHONY: all install uninstall
+.PHONY: all list $(TARGETS)
