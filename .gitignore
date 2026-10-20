@@ -1,0 +1,53 @@
+# --- Personale ---
+docs/percorso-db.md
+
+# --- Segreti e configurazione locale ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- PostgreSQL / Docker ---
+# Cartelle dati del server (volume Docker montato in locale)
+pgdata/
+postgres-data/
+data/db/
+# Dump e backup (i file .sql di schema/migrations restano tracciati)
+*.dump
+*.backup
+*.bak
+dumps/
+backups/
+# Storico di psql e file di password
+.psql_history
+.pgpass
+docker-compose.override.yml
+
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+*.db
+*.db-shm
+*.db-wal
+TestResults/
+appsettings.Development.json
+appsettings.Local.json
+
+# --- Angular / Node ---
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+
+# --- Editor e OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
