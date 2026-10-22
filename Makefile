@@ -16,10 +16,10 @@ enter_db:
 down:
 	docker compose down
 
-clean:
+fclean:
 	docker compose down -v
 
 re: clean
 	$(MAKE) all
 
-.PHONY: all visible down clean re
+.PHONY: all visible ps enter_db down clean re
