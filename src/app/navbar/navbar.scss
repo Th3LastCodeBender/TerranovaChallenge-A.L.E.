@@ -1,0 +1,72 @@
+
+.offcanvas {
+	transition: transform 0.3s ease-out, visibility 0s linear 0.3s;
+
+	&.show {
+		transition: transform 0.3s ease-out, visibility 0s;
+	}
+    background-color: rgba(20, 20, 30, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+.bi-search {
+	padding: 1vh;
+}
+
+.custom-font-title {
+	font-size: 2rem;
+	font-weight: 800;
+	letter-spacing: 0.15em;
+
+	background: linear-gradient(
+		90deg,
+		#ffffff,
+		#a970ff,
+		#ff3cac
+	);
+
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+
+.navbar .container-fluid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+}
+
+.custom-font-title {
+    justify-self: start;
+}
+
+.custom-search-bar {
+    justify-self: center;
+    width: 50vh;
+
+	@media (max-width: 768px) {
+        width: 60%;
+    }
+}
+
+.custom-search-bar form {
+    width: 100%;
+}
+
+.custom-menu {
+    justify-self: end;
+	display: flex;
+	align-items: center;
+	gap: 1.5em;
+}
+
+.custom-search-bar form {
+    width: 100%;
+}
+
+.custom-theme-button {
+	display: flex;
+    align-items: center;
+    justify-content: center;
+}

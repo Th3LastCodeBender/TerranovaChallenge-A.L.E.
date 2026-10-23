@@ -1,0 +1,96 @@
+/* You can add global styles to this file, and also import other style files */
+
+// $gradient-light: linear-gradient(160deg, #f4f7fb 0%, #dbe4f0 100%);
+// $gradient-dark:  linear-gradient( 145deg, rgb(76, 105, 172) 11.3%, rgba(24,40,72,1) 99.3% );
+
+$gradient-light:
+  // ciano
+  radial-gradient(
+    ellipse at 90% 0%,
+    rgba(0, 180, 255, 0.28) 0%,
+    rgba(0, 180, 255, 0.10) 28%,
+    transparent 55%
+  ),
+
+  // Viola
+  radial-gradient(
+    ellipse at 0% 45%,
+    rgba(123, 97, 255, 0.20) 0%,
+    rgba(123, 97, 255, 0.07) 32%,
+    transparent 55%
+  ),
+
+  // Fucsia
+  radial-gradient(
+    circle at 72% 38%,
+    rgba(255, 0, 140, 0.11) 0%,
+    transparent 28%
+  ),
+
+  // Giallo
+  radial-gradient(
+    ellipse at 90% 95%,
+    rgba(255, 220, 0, 0.20) 0%,
+    rgba(255, 220, 0, 0.07) 25%,
+    transparent 48%
+  ),
+
+  // Base
+  linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f5f8ff 25%,
+    #eaf2ff 52%,
+    #f3efff 78%,
+    #fffdf5 100%
+  );
+
+$gradient-dark:
+  radial-gradient(
+    circle at 85% 10%,
+    rgba(255, 0, 153, 0.22) 0%,
+    transparent 40%
+  ),
+  radial-gradient(
+    circle at 10% 45%,
+    rgba(124, 58, 237, 0.25) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 90% 65%,
+    rgba(255, 230, 0, 0.16) 0%,
+    rgba(255, 230, 0, 0.06) 20%,
+    transparent 42%
+  ),
+  radial-gradient(
+    circle at 65% 95%,
+    rgba(0, 102, 255, 0.20) 0%,
+    transparent 50%
+  ),
+  linear-gradient(
+    145deg,
+    #02040d 0%,
+    #070b1d 30%,
+    #0b1026 55%,
+    #110824 80%,
+    #03050c 100%
+  );
+
+@import 'bootstrap/scss/bootstrap';
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+:root, [data-bs-theme="light"] {
+    --bg-gradient: #{$gradient-light};
+}
+[data-bs-theme="dark"] {
+    --bg-gradient: #{$gradient-dark};
+}
+
+.custom-bg-gradient {
+    min-height: 100vh;
+    background: var(--bg-gradient);
+}
+
+[data-bs-theme="light"] .custom-search-bar .form-control {
+    border: 1px solid rgba(83, 65, 120, 0.45);
+}
