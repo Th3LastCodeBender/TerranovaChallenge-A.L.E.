@@ -7,5 +7,6 @@ import { Game } from '../models/game.model';
   templateUrl: './game-card.html',
 })
 export class GameCard {
-  
+  @Input({ required: true })
+  games!: Game[];
 }

@@ -1,7 +1,7 @@
 
 import { Game } from '../models/game.model';
 
-export const MOCK_GAMES: Game[] = [
+export const GAMES_MOCKUP: Game[] = [
   {
     id: 1,
     slug: 'cyber-city-2077',
