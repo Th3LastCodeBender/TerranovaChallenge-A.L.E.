@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Terranova.Api/Terranova.Api.csproj" />
+    <Project Path="src/Terranova.Application/Terranova.Application.csproj" />
+    <Project Path="src/Terranova.Domain/Terranova.Domain.csproj" />
+    <Project Path="src/Terranova.Infrastructure/Terranova.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Terranova.IntegrationTests/Terranova.IntegrationTests.csproj" />
+    <Project Path="tests/Terranova.UnitTests/Terranova.UnitTests.csproj" />
+  </Folder>
+</Solution>
