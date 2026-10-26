@@ -1,13 +1,11 @@
-import { Component } from '@angular/core';
-
-interface Game {
-  id: number
-}
+import { Component, Input } from '@angular/core';
+import { Game } from '../models/game.model';
 
 @Component({
-  imports: [],
   selector: 'app-game-card',
   styleUrl: './game-card.scss',
   templateUrl: './game-card.html',
 })
-export class GameCard {}
+export class GameCard {
+  
+}
