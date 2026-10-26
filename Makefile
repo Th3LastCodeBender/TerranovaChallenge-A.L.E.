@@ -19,7 +19,7 @@ down:
 fclean:
 	docker compose down -v
 
-re: clean
+re: fclean
 	$(MAKE) all
 
 .PHONY: all visible ps enter_db down clean re

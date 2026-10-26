@@ -133,3 +133,46 @@ Esempi sul dominio giocattolo: **biblioteca**.
    |---|---|---|
    | id, utente_id, copia_id, data_prestito | no → NOT NULL | un prestito senza questi dati non esiste |
    | data_restituzione | sì | finché il libro non torna, la data non esiste |
+
+---
+
+## Tappa 3 — Normalizzazione
+
+### Definizioni
+
+| Termine | Cosa vuol dire |
+|---|---|
+| **Anomalia di inserimento** | Non puoi registrare un fatto senza inventarne un altro (un libro nuovo non entra se nessuno l'ha preso in prestito). |
+| **Anomalia di aggiornamento** | Lo stesso fatto è scritto in più righe: un aggiornamento a metà lascia il DB in contraddizione (Mario con due email). |
+| **Anomalia di cancellazione** | Cancellando un fatto ne perdi un altro (cancelli l'unico prestito di *Coraline* e sparisce il libro, e con lui Gaiman). |
+| **Dipendenza funzionale** `X → Y` | "Se conosco X, conosco Y". Es. `email → nome`, `titolo → autore`. |
+| **Normalizzazione** | Spezzare le tabelle seguendo le dipendenze, finché ogni fatto ha un posto suo. |
+| **Denormalizzazione** | Rimettere apposta un dato ridondante (es. un contatore) per leggere più in fretta. |
+
+### Le forme normali
+
+| Forma | Regola | Esempio di violazione |
+|---|---|---|
+| **1NF** | Ogni cella contiene **un solo valore**. | `libri`: `Good Omens | 1, 2` |
+| **2NF** | Con una chiave di più colonne, ogni altra colonna dipende dalla chiave **intera**. | `titolo` nella ponte `(id_libro, id_autore)`: dipende solo da `id_libro` |
+| **3NF** | Nessuna colonna dipende da **un'altra colonna che non è la chiave**. | `utente_nome` nei prestiti: dipende da `utente_email`, non dal prestito |
+
+### Regole
+
+1. **Causa delle anomalie:** dentro una tabella stanno fatti che non la riguardano
+   (`email → nome` è un fatto sull'utente, ma era salvato in ogni prestito).
+
+2. **Rimedio:** ogni dipendenza va nella tabella dell'entità a cui appartiene.
+   Partendo dalla tabella unica dei prestiti si ritrova lo schema delle Tappe 1–2:
+   `libri`, `copie`, `autori`, `autore_libri`, `utenti`, `prestiti`.
+
+3. **Prima normalizza, poi denormalizza solo se hai misurato che è lento.**
+   Un contatore (`numero_prestiti` in `utenti`) rende la lettura veloce, ma salva lo stesso fatto in due posti:
+   se un aggiornamento salta o va in crash, i due posti si contraddicono.
+   Meglio che a garantirlo sia il DB: transazioni (Tappa 6), indici (Tappa 7), trigger (Tappa 8).
+
+4. **Una fotografia nel tempo non è una duplicazione.**
+   "Giorgio ha pagato 2 €" è un **fatto nuovo** del prestito: non si ricava dalla tariffa attuale,
+   che può cambiare, né dallo storico delle tariffe (c'è stato uno sconto). Va salvato nel prestito.
+   - *Duplicazione* = lo stesso fatto in due posti, che **devono** restare uguali.
+   - *Fotografia* = il valore in un certo momento, che **può** essere diverso da quello attuale.
