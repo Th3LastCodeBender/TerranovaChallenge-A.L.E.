@@ -1,4 +1,4 @@
 
-@for (game of games; track $index) {
-	<app-game-card [games]="games"/>
+@for (game of games; track game.id) {
+	<app-game-card [game]="game"/>
 }

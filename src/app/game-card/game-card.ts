@@ -8,5 +8,7 @@ import { Game } from '../models/game.model';
 })
 export class GameCard {
   @Input({ required: true })
-  games!: Game[];
+  game!: Game;
+
+  
 }

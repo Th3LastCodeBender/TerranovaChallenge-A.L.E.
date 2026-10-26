@@ -1,28 +1,29 @@
-
-<div class="card my-3 mx-5" >
+<div class="card my-3 mx-5 ">
 	<div class="row g-0">
-		<div class="col-md-4">
-			<img
-				src="https://placehold.co/800x450/17152c/ffffff?text=Cyber+City+2077"
-				class="img-fluid rounded-start"
-				alt="Card title"
-			/>
+		<div class="col-md-4 custom-game-image-div">
+			@if (game.background_image) {
+				<img [src]="game.background_image" class="img-fluid rounded-start custom-game-image" [alt]="game.name" />
+			} @else {
+				<div class="custom-game-image-placeholder">
+					<i class="bi bi-image fs-1"></i>
+				</div>
+			}
 		</div>
 		<div class="col-md-8">
 			<div class="card-body">
-				<h5 class="card-title">Card title</h5>
-				<p class="card-text">
-					This is a wider card with supporting text below as a
-					natural lead-in to additional content. This content is a
-					little bit longer.
+				<h5 class="card-title">{{game.name}}</h5>
+				<p class="card-text text-capitalize">
+					@for (genre of game.genres; track genre.id) {
+						<span class="text-capitalize">
+							
+							{{ genre.slug }}
+						</span>
+					}
 				</p>
 				<p class="card-text">
-					<small class="text-body-secondary"
-						>Last updated 3 mins ago</small
-					>
+					<small class="text-body-secondary">Last updated 3 mins ago</small>
 				</p>
 			</div>
 		</div>
 	</div>
 </div>
-
