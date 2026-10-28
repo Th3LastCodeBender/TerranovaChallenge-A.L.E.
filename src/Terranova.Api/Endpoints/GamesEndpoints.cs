@@ -1,0 +1,239 @@
+using System.Net;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
+using Terranova.Application.Games;
+using Terranova.Application.Interfaces;
+
+namespace Terranova.Api.Endpoints;
+
+public static partial class GamesEndpoints
+{
+	private const int DefaultPageSize = 20;
+	private const int MaxPageSize = 40;
+
+	[GeneratedRegex(@"^-?(name|released|added|created|updated|rating|metacritic)$")]
+	private static partial Regex GamesOrderingRegex();
+
+	[GeneratedRegex(@"^-?[a-z_]{1,32}$")]
+	private static partial Regex GenericOrderingRegex();
+
+	[GeneratedRegex(@"^\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}$")]
+	private static partial Regex DatesRegex();
+
+	[GeneratedRegex(@"^\d+,\d+$")]
+	private static partial Regex MetacriticRegex();
+
+	[GeneratedRegex(@"^[a-z0-9][a-z0-9\-]{0,127}$", RegexOptions.IgnoreCase)]
+	private static partial Regex IdOrSlugRegex();
+
+	public sealed record ListRequest(
+		[FromQuery(Name = "page")] int? Page,
+		[FromQuery(Name = "page_size")] int? PageSize,
+		[FromQuery(Name = "ordering")] string? Ordering);
+
+	public sealed record GamesRequest(
+		[FromQuery(Name = "page")] int? Page,
+		[FromQuery(Name = "page_size")] int? PageSize,
+		[FromQuery(Name = "search")] string? Search,
+		[FromQuery(Name = "search_precise")] bool? SearchPrecise,
+		[FromQuery(Name = "search_exact")] bool? SearchExact,
+		[FromQuery(Name = "platforms")] string? Platforms,
+		[FromQuery(Name = "parent_platforms")] string? ParentPlatforms,
+		[FromQuery(Name = "stores")] string? Stores,
+		[FromQuery(Name = "developers")] string? Developers,
+		[FromQuery(Name = "publishers")] string? Publishers,
+		[FromQuery(Name = "genres")] string? Genres,
+		[FromQuery(Name = "tags")] string? Tags,
+		[FromQuery(Name = "creators")] string? Creators,
+		[FromQuery(Name = "dates")] string? Dates,
+		[FromQuery(Name = "updated")] string? Updated,
+		[FromQuery(Name = "metacritic")] string? Metacritic,
+		[FromQuery(Name = "ordering")] string? Ordering);
+
+	public sealed record PagedResponse<T>(
+		int Count, string? Next, string? Previous, IReadOnlyList<T> Results);
+
+	public static IEndpointRouteBuilder MapGamesEndpoints(this IEndpointRouteBuilder app)
+	{
+		var group = app.MapGroup("/api/v1");
+
+		group.MapGet("/games", (
+				[AsParameters] GamesRequest r,
+				HttpContext http,
+				IGamesService games,
+				CancellationToken ct) =>
+			{
+				var page = r.Page ?? 1;
+				var pageSize = r.PageSize ?? DefaultPageSize;
+
+				var errors = ValidatePaging(page, pageSize);
+				if (r.Ordering is not null && !GamesOrderingRegex().IsMatch(r.Ordering))
+					errors["ordering"] = ["Valori: name, released, added, created, updated, rating, metacritic (prefisso '-' per ordine inverso)."];
+				if (r.Dates is not null && !DatesRegex().IsMatch(r.Dates))
+					errors["dates"] = ["Formato: YYYY-MM-DD,YYYY-MM-DD."];
+				if (r.Updated is not null && !DatesRegex().IsMatch(r.Updated))
+					errors["updated"] = ["Formato: YYYY-MM-DD,YYYY-MM-DD."];
+				if (r.Metacritic is not null && !MetacriticRegex().IsMatch(r.Metacritic))
+					errors["metacritic"] = ["Formato: min,max (es. 80,100)."];
+				if (errors.Count > 0) return Task.FromResult(Results.ValidationProblem(errors));
+
+				var query = new GamesQuery(
+					page, pageSize, r.Search?.Trim(),
+					r.SearchPrecise, r.SearchExact,
+					r.Platforms, r.ParentPlatforms, r.Stores,
+					r.Developers, r.Publishers, r.Genres,
+					r.Tags, r.Creators, r.Dates,
+					r.Updated, r.Metacritic, r.Ordering);
+
+				return Guard(async () =>
+					ToPaged(http.Request, await games.GetGamesAsync(query, ct), page, pageSize), ct);
+			})
+			.WithTags("Games").WithName("GetGames");
+
+		group.MapGet("/games/{idOrSlug}", (
+				string idOrSlug,
+				IGamesService games,
+				CancellationToken ct) =>
+			{
+				if (!IdOrSlugRegex().IsMatch(idOrSlug))
+					return Task.FromResult(InvalidId());
+
+				return Guard(async () =>
+				{
+					var game = await games.GetGameAsync(idOrSlug, ct);
+					return game is null ? Results.NotFound() : Results.Ok(game);
+				}, ct);
+			})
+			.WithTags("Games").WithName("GetGame");
+
+		group.MapGet("/games/{idOrSlug}/screenshots", (
+				string idOrSlug,
+				[AsParameters] ListRequest r,
+				HttpContext http,
+				IGamesService games,
+				CancellationToken ct) =>
+			{
+				if (!IdOrSlugRegex().IsMatch(idOrSlug))
+					return Task.FromResult(InvalidId());
+				if (!TryBuildList(r, out var query, out var error))
+					return Task.FromResult(error!);
+
+				return Guard(async () =>
+					ToPaged(http.Request,
+						await games.GetScreenshotsAsync(idOrSlug, query, ct),
+						query.Page, query.PageSize), ct);
+			})
+			.WithTags("Games").WithName("GetGameScreenshots");
+
+		group.MapGet("/genres", (
+				[AsParameters] ListRequest r,
+				HttpContext http,
+				IGamesService games,
+				CancellationToken ct) =>
+			{
+				if (!TryBuildList(r, out var query, out var error))
+					return Task.FromResult(error!);
+
+				return Guard(async () =>
+					ToPaged(http.Request, await games.GetGenresAsync(query, ct),
+						query.Page, query.PageSize), ct);
+			})
+			.WithTags("Catalog").WithName("GetGenres");
+
+		group.MapGet("/platforms", (
+				[AsParameters] ListRequest r,
+				HttpContext http,
+				IGamesService games,
+				CancellationToken ct) =>
+			{
+				if (!TryBuildList(r, out var query, out var error))
+					return Task.FromResult(error!);
+
+				return Guard(async () =>
+					ToPaged(http.Request, await games.GetPlatformsAsync(query, ct),
+						query.Page, query.PageSize), ct);
+			})
+			.WithTags("Catalog").WithName("GetPlatforms");
+
+		return app;
+	}
+
+	private static Dictionary<string, string[]> ValidatePaging(int page, int pageSize)
+	{
+		var errors = new Dictionary<string, string[]>();
+		if (page < 1) errors["page"] = ["Deve essere >= 1."];
+		if (pageSize is < 1 or > MaxPageSize)
+			errors["page_size"] = [$"Deve essere tra 1 e {MaxPageSize}."];
+		return errors;
+	}
+
+	private static bool TryBuildList(ListRequest r, out ListQuery query, out IResult? error)
+	{
+		var page = r.Page ?? 1;
+		var pageSize = r.PageSize ?? DefaultPageSize;
+
+		var errors = ValidatePaging(page, pageSize);
+		if (r.Ordering is not null && !GenericOrderingRegex().IsMatch(r.Ordering))
+			errors["ordering"] = ["Formato non valido (es. name, -name)."];
+
+		query = new ListQuery(page, pageSize, r.Ordering);
+		error = errors.Count > 0 ? Results.ValidationProblem(errors) : null;
+		return error is null;
+	}
+
+	private static IResult InvalidId() =>
+		Results.ValidationProblem(new Dictionary<string, string[]>
+		{
+			["idOrSlug"] = ["Deve essere un ID numerico o uno slug (lettere, cifre, '-')."]
+		});
+
+	private static IResult ToPaged<T>(
+		HttpRequest request, ResultPage<T> result, int page, int pageSize)
+	{
+		var hasNext = (long)page * pageSize < result.Count;
+		var hasPrevious = page > 1;
+
+		return Results.Ok(new PagedResponse<T>(
+			result.Count,
+			hasNext ? PageUrl(request, page + 1) : null,
+			hasPrevious ? PageUrl(request, page - 1) : null,
+			result.Results));
+	}
+
+	private static string PageUrl(HttpRequest request, int page)
+	{
+		var query = request.Query.ToDictionary(kv => kv.Key, kv => kv.Value);
+		query["page"] = page.ToString();
+		return $"{request.Scheme}://{request.Host}{request.Path}{QueryString.Create(query)}";
+	}
+
+	private static async Task<IResult> Guard(Func<Task<IResult>> action, CancellationToken ct)
+	{
+		try
+		{
+			return await action();
+		}
+		catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+		{
+			return Results.NotFound();
+		}
+		catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+		{
+			return Results.Problem(
+				statusCode: StatusCodes.Status503ServiceUnavailable,
+				title: "Quota del servizio esterno esaurita.");
+		}
+		catch (HttpRequestException)
+		{
+			return Results.Problem(
+				statusCode: StatusCodes.Status502BadGateway,
+				title: "Errore nella chiamata al servizio esterno.");
+		}
+		catch (TaskCanceledException) when (!ct.IsCancellationRequested)
+		{
+			return Results.Problem(
+				statusCode: StatusCodes.Status504GatewayTimeout,
+				title: "Timeout del servizio esterno.");
+		}
+	}
+}
