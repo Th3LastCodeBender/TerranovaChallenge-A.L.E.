@@ -80,17 +80,25 @@ $gradient-dark:
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 :root, [data-bs-theme="light"] {
-    --bg-gradient: #{$gradient-light};
+  --bg-gradient: #{$gradient-light};
+  --star-color: #e6a700;
+  --border-color: #283852;
 }
 [data-bs-theme="dark"] {
-    --bg-gradient: #{$gradient-dark};
+  --bg-gradient: #{$gradient-dark};
+  --star-color: #ffd166;
+  --border-color: #bfd7ff;
 }
 
 .custom-bg-gradient {
-    min-height: 100vh;
-    background: var(--bg-gradient);
+  min-height: 100vh;
+  background: var(--bg-gradient);
 }
 
 [data-bs-theme="light"] .custom-search-bar .form-control {
-    border: 1px solid rgba(83, 65, 120, 0.45);
+  border: 1px solid rgba(83, 65, 120, 0.45);
+}
+
+.custom-rating-star {
+  color: var(--star-color);
 }

@@ -1,8 +1,12 @@
-<div class="card my-3 mx-5 ">
+<div class="card my-3 mx-5 custom-card">
 	<div class="row g-0">
 		<div class="col-md-4 custom-game-image-div">
 			@if (game.background_image) {
-				<img [src]="game.background_image" class="img-fluid rounded-start custom-game-image" [alt]="game.name" />
+				<img
+					[src]="game.background_image"
+					class="img-fluid rounded-start custom-game-image"
+					[alt]="game.name"
+				/>
 			} @else {
 				<div class="custom-game-image-placeholder">
 					<i class="bi bi-image fs-1"></i>
@@ -12,13 +16,18 @@
 		<div class="col-md-8">
 			<div class="card-body">
 				<h5 class="card-title">{{game.name}}</h5>
-				<p class="card-text text-capitalize">
+				<p class="card-text">
 					@for (genre of game.genres; track genre.id) {
-						<span class="text-capitalize">
-							
-							{{ genre.slug }}
+						<span class="text-uppercase">
+							#<i>{{ genre.name }}</i>
 						</span>
 					}
+				</p>
+				<p>
+					<i class="bi bi-star-fill custom-rating-star"></i> {{game.rating}}
+				</p>
+				<p>
+					Release on: <b>{{game.released | date:'dd MMMM yyyy'}}</b>
 				</p>
 				<p class="card-text">
 					<small class="text-body-secondary">Last updated 3 mins ago</small>
