@@ -1,3 +1,5 @@
+
+using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +12,35 @@ public static partial class GamesEndpoints
 {
 	private const int DefaultPageSize = 20;
 	private const int MaxPageSize = 40;
+	private const int MaxPage = 10_000;
+	private const int MaxSearchLength = 200;
+	private const int MaxFilterLength = 500;
 
-	[GeneratedRegex(@"^-?(name|released|added|created|updated|rating|metacritic)$")]
-	private static partial Regex GamesOrderingRegex();
+	private static readonly HashSet<string> GamesOrderingFields =
+		new(StringComparer.OrdinalIgnoreCase)
+		{
+			"name",
+			"released",
+			"added",
+			"created",
+			"updated",
+			"rating",
+			"metacritic"
+		};
 
-	[GeneratedRegex(@"^-?[a-z_]{1,32}$")]
-	private static partial Regex GenericOrderingRegex();
+	private static readonly HashSet<string> GenericOrderingFields =
+		new(StringComparer.OrdinalIgnoreCase)
+		{
+			"name",
+			"id",
+			"slug",
+			"created",
+			"updated",
+			"released",
+			"rating",
+			"metacritic",
+			"count"
+		};
 
 	[GeneratedRegex(@"^\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}$")]
 	private static partial Regex DatesRegex();
@@ -51,173 +76,452 @@ public static partial class GamesEndpoints
 		[FromQuery(Name = "ordering")] string? Ordering);
 
 	public sealed record PagedResponse<T>(
-		int Count, string? Next, string? Previous, IReadOnlyList<T> Results);
+		int Count,
+		string? Next,
+		string? Previous,
+		IReadOnlyList<T> Results);
 
-	public static IEndpointRouteBuilder MapGamesEndpoints(this IEndpointRouteBuilder app)
+	public static IEndpointRouteBuilder MapGamesEndpoints(
+		this IEndpointRouteBuilder app)
 	{
-		var group = app.MapGroup("/api/v1");
+		var standardGroup = app.MapGroup("/api/v1").RequireRateLimiting("standard");
+		var expensiveGroup = app.MapGroup("/api/v1").RequireRateLimiting("expensive");
 
-		group.MapGet("/games", (
-				[AsParameters] GamesRequest r,
-				HttpContext http,
-				IGamesService games,
-				CancellationToken ct) =>
-			{
-				var page = r.Page ?? 1;
-				var pageSize = r.PageSize ?? DefaultPageSize;
+		expensiveGroup.MapGet("/games", (
+			[AsParameters] GamesRequest r,
+			HttpContext http,
+			IGamesService games,
+			CancellationToken ct) =>
+		{
+			var page = r.Page ?? 1;
+			var pageSize = r.PageSize ?? DefaultPageSize;
 
-				var errors = ValidatePaging(page, pageSize);
-				if (r.Ordering is not null && !GamesOrderingRegex().IsMatch(r.Ordering))
-					errors["ordering"] = ["Valori: name, released, added, created, updated, rating, metacritic (prefisso '-' per ordine inverso)."];
-				if (r.Dates is not null && !DatesRegex().IsMatch(r.Dates))
-					errors["dates"] = ["Formato: YYYY-MM-DD,YYYY-MM-DD."];
-				if (r.Updated is not null && !DatesRegex().IsMatch(r.Updated))
-					errors["updated"] = ["Formato: YYYY-MM-DD,YYYY-MM-DD."];
-				if (r.Metacritic is not null && !MetacriticRegex().IsMatch(r.Metacritic))
-					errors["metacritic"] = ["Formato: min,max (es. 80,100)."];
-				if (errors.Count > 0) return Task.FromResult(Results.ValidationProblem(errors));
+			var errors = ValidatePaging(page, pageSize);
 
-				var query = new GamesQuery(
-					page, pageSize, r.Search?.Trim(),
-					r.SearchPrecise, r.SearchExact,
-					r.Platforms, r.ParentPlatforms, r.Stores,
-					r.Developers, r.Publishers, r.Genres,
-					r.Tags, r.Creators, r.Dates,
-					r.Updated, r.Metacritic, r.Ordering);
+			ValidateOrdering(
+				r.Ordering,
+				GamesOrderingFields,
+				errors);
 
-				return Guard(async () =>
-					ToPaged(http.Request, await games.GetGamesAsync(query, ct), page, pageSize), ct);
-			})
-			.WithTags("Games").WithName("GetGames");
+			ValidateSearch(r.Search, errors);
 
-		group.MapGet("/games/{idOrSlug}", (
-				string idOrSlug,
-				IGamesService games,
-				CancellationToken ct) =>
-			{
-				if (!IdOrSlugRegex().IsMatch(idOrSlug))
-					return Task.FromResult(InvalidId());
+			ValidateFilter(r.Platforms, "platforms", errors);
+			ValidateFilter(r.ParentPlatforms, "parent_platforms", errors);
+			ValidateFilter(r.Stores, "stores", errors);
+			ValidateFilter(r.Developers, "developers", errors);
+			ValidateFilter(r.Publishers, "publishers", errors);
+			ValidateFilter(r.Genres, "genres", errors);
+			ValidateFilter(r.Tags, "tags", errors);
+			ValidateFilter(r.Creators, "creators", errors);
 
-				return Guard(async () =>
+			ValidateDateRange(r.Dates, "dates", errors);
+			ValidateDateRange(r.Updated, "updated", errors);
+			ValidateMetacritic(r.Metacritic, errors);
+
+			if (errors.Count > 0)
+				return Task.FromResult(
+					Results.ValidationProblem(errors));
+
+			var query = new GamesQuery(
+				page,
+				pageSize,
+				r.Search?.Trim(),
+				r.SearchPrecise,
+				r.SearchExact,
+				r.Platforms,
+				r.ParentPlatforms,
+				r.Stores,
+				r.Developers,
+				r.Publishers,
+				r.Genres,
+				r.Tags,
+				r.Creators,
+				r.Dates,
+				r.Updated,
+				r.Metacritic,
+				r.Ordering);
+
+			return Guard(
+				async () =>
 				{
-					var game = await games.GetGameAsync(idOrSlug, ct);
-					return game is null ? Results.NotFound() : Results.Ok(game);
-				}, ct);
-			})
-			.WithTags("Games").WithName("GetGame");
+					var result = await games.GetGamesAsync(query, ct);
 
-		group.MapGet("/games/{idOrSlug}/screenshots", (
-				string idOrSlug,
-				[AsParameters] ListRequest r,
-				HttpContext http,
-				IGamesService games,
-				CancellationToken ct) =>
-			{
-				if (!IdOrSlugRegex().IsMatch(idOrSlug))
-					return Task.FromResult(InvalidId());
-				if (!TryBuildList(r, out var query, out var error))
-					return Task.FromResult(error!);
+					return ToPaged(
+						http.Request,
+						result,
+						page,
+						pageSize);
+				},
+				ct);
+		})
+		.WithTags("Games")
+		.WithName("GetGames");
 
-				return Guard(async () =>
-					ToPaged(http.Request,
-						await games.GetScreenshotsAsync(idOrSlug, query, ct),
-						query.Page, query.PageSize), ct);
-			})
-			.WithTags("Games").WithName("GetGameScreenshots");
+		standardGroup.MapGet("/games/{idOrSlug}", (
+			string idOrSlug,
+			IGamesService games,
+			CancellationToken ct) =>
+		{
+			if (!IsValidId(idOrSlug))
+				return Task.FromResult(InvalidId());
 
-		group.MapGet("/genres", (
-				[AsParameters] ListRequest r,
-				HttpContext http,
-				IGamesService games,
-				CancellationToken ct) =>
-			{
-				if (!TryBuildList(r, out var query, out var error))
-					return Task.FromResult(error!);
+			return Guard(
+				async () =>
+				{
+					var game = await games.GetGameAsync(
+						idOrSlug,
+						ct);
 
-				return Guard(async () =>
-					ToPaged(http.Request, await games.GetGenresAsync(query, ct),
-						query.Page, query.PageSize), ct);
-			})
-			.WithTags("Catalog").WithName("GetGenres");
+					return game is null
+						? Results.NotFound()
+						: Results.Ok(game);
+				},
+				ct);
+		})
+		.WithTags("Games")
+		.WithName("GetGame");
 
-		group.MapGet("/platforms", (
-				[AsParameters] ListRequest r,
-				HttpContext http,
-				IGamesService games,
-				CancellationToken ct) =>
-			{
-				if (!TryBuildList(r, out var query, out var error))
-					return Task.FromResult(error!);
+		expensiveGroup.MapGet("/games/{idOrSlug}/screenshots", (
+			string idOrSlug,
+			[AsParameters] ListRequest r,
+			HttpContext http,
+			IGamesService games,
+			CancellationToken ct) =>
+		{
+			if (!IsValidId(idOrSlug))
+				return Task.FromResult(InvalidId());
 
-				return Guard(async () =>
-					ToPaged(http.Request, await games.GetPlatformsAsync(query, ct),
-						query.Page, query.PageSize), ct);
-			})
-			.WithTags("Catalog").WithName("GetPlatforms");
+			if (!TryBuildList(r, out var query, out var error))
+				return Task.FromResult(error!);
+
+			return Guard(
+				async () =>
+				{
+					var result = await games.GetScreenshotsAsync(
+						idOrSlug,
+						query,
+						ct);
+
+					return ToPaged(
+						http.Request,
+						result,
+						query.Page,
+						query.PageSize);
+				},
+				ct);
+		})
+		.WithTags("Games")
+		.WithName("GetGameScreenshots");
+
+		standardGroup.MapGet("/genres", (
+			[AsParameters] ListRequest r,
+			HttpContext http,
+			IGamesService games,
+			CancellationToken ct) =>
+		{
+			if (!TryBuildList(r, out var query, out var error))
+				return Task.FromResult(error!);
+
+			return Guard(
+				async () =>
+				{
+					var result = await games.GetGenresAsync(
+						query,
+						ct);
+
+					return ToPaged(
+						http.Request,
+						result,
+						query.Page,
+						query.PageSize);
+				},
+				ct);
+		})
+		.WithTags("Catalog")
+		.WithName("GetGenres");
+
+		standardGroup.MapGet("/platforms", (
+			[AsParameters] ListRequest r,
+			HttpContext http,
+			IGamesService games,
+			CancellationToken ct) =>
+		{
+			if (!TryBuildList(r, out var query, out var error))
+				return Task.FromResult(error!);
+
+			return Guard(
+				async () =>
+				{
+					var result = await games.GetPlatformsAsync(
+						query,
+						ct);
+
+					return ToPaged(
+						http.Request,
+						result,
+						query.Page,
+						query.PageSize);
+				},
+				ct);
+		})
+		.WithTags("Catalog")
+		.WithName("GetPlatforms");
 
 		return app;
 	}
 
-	private static Dictionary<string, string[]> ValidatePaging(int page, int pageSize)
+	private static Dictionary<string, string[]> ValidatePaging(
+		int page,
+		int pageSize)
 	{
 		var errors = new Dictionary<string, string[]>();
-		if (page < 1) errors["page"] = ["Deve essere >= 1."];
+
+		if (page is < 1 or > MaxPage)
+		{
+			errors["page"] =
+			[
+				$"Deve essere tra 1 e {MaxPage}."
+			];
+		}
+
 		if (pageSize is < 1 or > MaxPageSize)
-			errors["page_size"] = [$"Deve essere tra 1 e {MaxPageSize}."];
+		{
+			errors["page_size"] =
+			[
+				$"Deve essere tra 1 e {MaxPageSize}."
+			];
+		}
+
 		return errors;
 	}
 
-	private static bool TryBuildList(ListRequest r, out ListQuery query, out IResult? error)
+	private static void ValidateSearch(
+		string? search,
+		Dictionary<string, string[]> errors)
+	{
+		if (search is { Length: > MaxSearchLength })
+		{
+			errors["search"] =
+			[
+				$"Massimo {MaxSearchLength} caratteri."
+			];
+		}
+	}
+
+	private static void ValidateFilter(
+		string? value,
+		string name,
+		Dictionary<string, string[]> errors)
+	{
+		if (value is { Length: > MaxFilterLength })
+		{
+			errors[name] =
+			[
+				$"Massimo {MaxFilterLength} caratteri."
+			];
+		}
+	}
+
+	private static void ValidateOrdering(
+		string? ordering,
+		HashSet<string> allowedFields,
+		Dictionary<string, string[]> errors)
+	{
+		if (ordering is null)
+			return;
+
+		var field = ordering.StartsWith('-')
+			? ordering[1..]
+			: ordering;
+
+		if (string.IsNullOrWhiteSpace(field) ||
+			!allowedFields.Contains(field))
+		{
+			errors["ordering"] =
+			[
+				$"Ordinamento non valido. Valori consentiti: {string.Join(", ", allowedFields)}."
+			];
+		}
+	}
+
+	private static void ValidateDateRange(
+		string? value,
+		string name,
+		Dictionary<string, string[]> errors)
+	{
+		if (value is null)
+			return;
+
+		if (!DatesRegex().IsMatch(value))
+		{
+			errors[name] =
+			[
+				"Formato: YYYY-MM-DD,YYYY-MM-DD."
+			];
+
+			return;
+		}
+
+		var parts = value.Split(',');
+
+		var validStart = DateOnly.TryParseExact(
+			parts[0],
+			"yyyy-MM-dd",
+			CultureInfo.InvariantCulture,
+			DateTimeStyles.None,
+			out var start);
+
+		var validEnd = DateOnly.TryParseExact(
+			parts[1],
+			"yyyy-MM-dd",
+			CultureInfo.InvariantCulture,
+			DateTimeStyles.None,
+			out var end);
+
+		if (!validStart || !validEnd || start > end)
+		{
+			errors[name] =
+			[
+				"Intervallo date non valido."
+			];
+		}
+	}
+
+	private static void ValidateMetacritic(
+		string? value,
+		Dictionary<string, string[]> errors)
+	{
+		if (value is null)
+			return;
+
+		if (!MetacriticRegex().IsMatch(value))
+		{
+			errors["metacritic"] =
+			[
+				"Formato: min,max (es. 80,100)."
+			];
+
+			return;
+		}
+
+		var parts = value.Split(',');
+
+		if (!int.TryParse(
+				parts[0],
+				NumberStyles.None,
+				CultureInfo.InvariantCulture,
+				out var min) ||
+			!int.TryParse(
+				parts[1],
+				NumberStyles.None,
+				CultureInfo.InvariantCulture,
+				out var max) ||
+			min > max ||
+			min < 0 ||
+			max > 100)
+		{
+			errors["metacritic"] =
+			[
+				"I valori devono essere compresi tra 0 e 100 e min deve essere <= max."
+			];
+		}
+	}
+
+	private static bool IsValidId(string idOrSlug)
+	{
+		return !string.IsNullOrWhiteSpace(idOrSlug)
+			&& IdOrSlugRegex().IsMatch(idOrSlug);
+	}
+
+	private static bool TryBuildList(
+		ListRequest r,
+		out ListQuery query,
+		out IResult? error)
 	{
 		var page = r.Page ?? 1;
 		var pageSize = r.PageSize ?? DefaultPageSize;
 
 		var errors = ValidatePaging(page, pageSize);
-		if (r.Ordering is not null && !GenericOrderingRegex().IsMatch(r.Ordering))
-			errors["ordering"] = ["Formato non valido (es. name, -name)."];
+
+		ValidateOrdering(
+			r.Ordering,
+			GenericOrderingFields,
+			errors);
 
 		query = new ListQuery(page, pageSize, r.Ordering);
-		error = errors.Count > 0 ? Results.ValidationProblem(errors) : null;
+
+		error = errors.Count > 0
+			? Results.ValidationProblem(errors)
+			: null;
+
 		return error is null;
 	}
 
-	private static IResult InvalidId() =>
-		Results.ValidationProblem(new Dictionary<string, string[]>
-		{
-			["idOrSlug"] = ["Deve essere un ID numerico o uno slug (lettere, cifre, '-')."]
-		});
+	private static IResult InvalidId()
+	{
+		return Results.ValidationProblem(
+			new Dictionary<string, string[]>
+			{
+				["idOrSlug"] =
+				[
+					"Deve essere un ID numerico o uno slug valido."
+				]
+			});
+	}
 
 	private static IResult ToPaged<T>(
-		HttpRequest request, ResultPage<T> result, int page, int pageSize)
+		HttpRequest request,
+		ResultPage<T> result,
+		int page,
+		int pageSize)
 	{
-		var hasNext = (long)page * pageSize < result.Count;
+		var hasNext =
+			(long)page * pageSize < result.Count
+			&& page < MaxPage;
+
 		var hasPrevious = page > 1;
 
-		return Results.Ok(new PagedResponse<T>(
-			result.Count,
-			hasNext ? PageUrl(request, page + 1) : null,
-			hasPrevious ? PageUrl(request, page - 1) : null,
-			result.Results));
+		return Results.Ok(
+			new PagedResponse<T>(
+				result.Count,
+				hasNext
+					? PageUrl(request, page + 1)
+					: null,
+				hasPrevious
+					? PageUrl(request, page - 1)
+					: null,
+				result.Results));
 	}
 
-	private static string PageUrl(HttpRequest request, int page)
+	private static string PageUrl(
+		HttpRequest request,
+		int page)
 	{
-		var query = request.Query.ToDictionary(kv => kv.Key, kv => kv.Value);
-		query["page"] = page.ToString();
-		return $"{request.Scheme}://{request.Host}{request.Path}{QueryString.Create(query)}";
+		var query = request.Query.ToDictionary(
+			kv => kv.Key,
+			kv => kv.Value);
+
+		query["page"] = page.ToString(
+			CultureInfo.InvariantCulture);
+
+		return $"{request.Path}{QueryString.Create(query)}";
 	}
 
-	private static async Task<IResult> Guard(Func<Task<IResult>> action, CancellationToken ct)
+	private static async Task<IResult> Guard(
+		Func<Task<IResult>> action,
+		CancellationToken ct)
 	{
 		try
 		{
 			return await action();
 		}
-		catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+		catch (HttpRequestException ex)
+			when (ex.StatusCode == HttpStatusCode.NotFound)
 		{
 			return Results.NotFound();
 		}
-		catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+		catch (HttpRequestException ex)
+			when (ex.StatusCode == HttpStatusCode.TooManyRequests)
 		{
 			return Results.Problem(
 				statusCode: StatusCodes.Status503ServiceUnavailable,
@@ -229,7 +533,8 @@ public static partial class GamesEndpoints
 				statusCode: StatusCodes.Status502BadGateway,
 				title: "Errore nella chiamata al servizio esterno.");
 		}
-		catch (TaskCanceledException) when (!ct.IsCancellationRequested)
+		catch (OperationCanceledException)
+			when (!ct.IsCancellationRequested)
 		{
 			return Results.Problem(
 				statusCode: StatusCodes.Status504GatewayTimeout,
