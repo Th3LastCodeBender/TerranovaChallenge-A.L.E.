@@ -1,15 +1,16 @@
 libri
-id | titolo
-1  | Good Omens
-2  | Mort
-3  | Coraline
+id | titolo		|	edizione	|	editore		| anno
+1  | Good Omens	|	prima		|	giorgio&co	| 2026	
+2  | Good Omens	|	prima		|	giorgio&co	| 2026	
+3  | Mort
+4  | Coraline
 
 autori
 id | nome      | altre info che non ho voglia di invetarmi
 1  | Pratchett
 2  | Gaiman
 
-non so come chiamarla
+libri_autori
 id | id_libro | id autore | altre informazioni utili
 1  | 1 | 1
 2  | 1 | 2
@@ -32,10 +33,10 @@ id | titolo | AINVI (altre info che non ho voglia di invetarmi)
 
 copie
 id	|	libro	|	scaffale
-1	|	1		|	2A		
-2	|	4		|	2B		
-3	|	3		|	4H		
-4	|	2		|	Golden	
+1	|	1		|	2A
+2	|	4		|	2B
+3	|	3		|	4H
+4	|	2		|	Golden
 
 autori
 id	|	nome		|	AINVI	
