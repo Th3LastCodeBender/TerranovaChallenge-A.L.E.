@@ -176,3 +176,69 @@ Esempi sul dominio giocattolo: **biblioteca**.
    che può cambiare, né dallo storico delle tariffe (c'è stato uno sconto). Va salvato nel prestito.
    - *Duplicazione* = lo stesso fatto in due posti, che **devono** restare uguali.
    - *Fotografia* = il valore in un certo momento, che **può** essere diverso da quello attuale.
+
+---
+
+## Tappa 4 — DDL, tipi di dato, Enum
+
+### Definizioni
+
+| Termine | Cosa vuol dire |
+|---|---|
+| **DDL** | I comandi che cambiano la **struttura**: `CREATE`, `ALTER`, `DROP`. |
+| `text` / `varchar(n)` | Testo senza limite / con limite. Il limite è una **regola sui dati**, non una difesa: usalo solo se è vero (`isbn_13` = 13 cifre). |
+| `date` / `timestamptz` | Solo il giorno / l'istante preciso con fuso. Due prestiti nello stesso giorno si ordinano solo col secondo. |
+| `numeric(p,s)` | Decimale esatto, per gli importi. `p` = cifre totali, `s` = decimali. `float` è approssimato. |
+| **Sequenza** (`*_seq`) | Il contatore dietro `IDENTITY`. Il numero si consuma anche se l'INSERT fallisce: i buchi negli id sono normali. |
+| **CHECK** | Vincolo con una **condizione** sulla riga. Può usare più colonne, ma **solo della propria riga**. |
+| **Enum** | Tipo con una lista fissa di etichette. |
+| **Tabella di lookup** | Tabella con i valori ammessi, a cui si punta con una FK (`formati`). |
+| **Regex** | Descrive com'è fatto un testo: `[0-9]` un carattere, `{n}` n volte, `+` 1 o più volte, `^` inizio testo, `$` fine testo. In SQL sta tra `'...'` e si usa con `~`. |
+| **Anonimizzazione** | I dati personali vanno a NULL, la riga resta: i prestiti continuano a puntarci. |
+| **Indice unico parziale** | UNIQUE solo sulle righe scelte con un `WHERE` (solo i prestiti aperti). |
+
+### Regole
+
+1. **Ordine di creazione: prima la tabella puntata.** Una FK richiede che la tabella di destinazione esista già.
+   `formati` → `libri` → `copie` → `autori` → `utenti` → `autore_libri` → `prestiti`.
+
+2. **Ordine in una colonna:** nome, tipo, proprietà. `ON DELETE` sta subito dopo il suo `REFERENCES`.
+
+3. **Un confronto con NULL dà NULL, e il CHECK rifiuta solo ciò che è falso.**
+   - `CHECK (titolo != NULL)` non blocca niente → si usa `NOT NULL`, oppure `IS NULL` / `IS NOT NULL`.
+   - Il formato dello scaffale non blocca uno scaffale NULL.
+   - Se la colonna del CHECK può essere NULL, il CHECK può passare per sbaglio.
+
+4. **"Se A allora B" in un CHECK si scrive "non A OR B".** `AND` viene valutato prima di `OR`.
+   Così una colonna è obbligatoria solo in certi casi (`scaffale` in `copie`, i dati personali in `utenti`).
+
+5. **UNIQUE confronta le righe, CHECK guarda una riga sola.**
+   UNIQUE vale solo sulle colonne della propria tabella e non considera uguali i NULL.
+   Se il NULL è legittimo nella guardia: `NULLS NOT DISTINCT` (vale per tutto il vincolo).
+
+6. **`ON DELETE`: cosa succede a chi punta alla riga cancellata.**
+
+   | Regola | Quando |
+   |---|---|
+   | `RESTRICT` | le righe che puntano hanno valore proprio (`copie → libri`, `prestiti → utenti`) |
+   | `CASCADE` | la cancellazione le rende inutili (`autore_libri`) |
+   | `SET NULL` | il legame è facoltativo. Si contraddice con `NOT NULL` |
+
+7. **CHECK, enum o lookup.**
+
+   | Scelta | Quando |
+   |---|---|
+   | Enum | solo un'etichetta, valori stabili, gestiti dagli sviluppatori (un valore non si può togliere) |
+   | Lookup | servono altre informazioni o i valori li gestisce la biblioteca: aggiungerne uno è un INSERT |
+   | CHECK con lista | lista corta e stabile, modificarla è un cambio di struttura |
+
+8. **NULL non dice perché manca un valore.** Se il motivo conta, serve una colonna apposta (`stato`).
+
+9. **Non salvare come stato ciò che si ricava.** "In prestito" non è in `copie.stato`: lo dice `prestiti` con `data_fine` NULL.
+
+10. **Gli stati si escludono a vicenda e ognuno cambia qualcosa.** Se due valori possono valere insieme, non stanno nella stessa colonna.
+
+11. **Un fatto che non conosci non si salva.** Autore sconosciuto = nessuna riga in `autore_libri`, non una riga "Anonimo".
+
+12. **Un DEFAULT deve essere vero.** `'accettazione'` lo è, `'self published'` era un dato inventato.
+    Attenzione: aggiungere una colonna con DEFAULT lo scrive anche in tutte le righe vecchie.

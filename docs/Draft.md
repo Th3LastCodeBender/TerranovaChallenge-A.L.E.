@@ -65,3 +65,42 @@ id	|	utente_id	|	copia	|	data_inizio	| data_fine
 2	|	4			|	2		|	09-09-2026	|	10-10-2026
 3	|				|			|				|
 4	|				|			|				|
+
+formati
+id	|	formato
+1	|	flessibile
+2	|	audiolibro
+3	|	rigido
+4	|	rilegato
+
+libri
+id	|	titolo				|	edizione	|	editore			|	anno_di_pubblicazione	|	isbn_13			|	lingua	|	formato
+3	|	Polveri esplosive	|	prima		|	self published	|	2026					|	9788804123456	|	it		|	1
+
+stato_enum
+accettazione, smistamento, disponibile, riparazione, smarrito
+
+copie
+id	|	libro	|	scaffale	|	stato
+3	|	3		|	2A			|	accettazione
+6	|	3		|	1D			|	accettazione
+7	|	3		|	NULL		|	smarrito
+8	|	3		|	2A			|	smarrito
+12	|	3		|	3C			|	riparazione
+
+autori
+alias	|	nome	|	cognome	|	nazionalità	|	lingua	|	data_nascita	|	id
+
+stato_utenti_enum
+in_attesa, attivo, bloccato, anonimizzato
+
+utenti
+id	|	nome	|	cognome	|	email	|	telefono	|	data_nascita	|	numero_tessera	|	data_iscrizione	|	stato
+1	|	NULL	|	NULL	|	NULL	|	NULL		|	NULL			|	NULL			|	2026-11-01		|	anonimizzato
+
+autore_libri
+id	|	id_libro	|	id_autore
+
+prestiti
+id	|	utente_id	|	copia_id	|	data_inizio			|	data_fine	|	multa
+1	|	1			|	3			|	2026-11-01 17:45	|	NULL		|	NULL
