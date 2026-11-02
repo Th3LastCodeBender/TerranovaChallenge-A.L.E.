@@ -2,14 +2,16 @@
 # Uso: install.sh [install|uninstall]
 # Installa/rimuove il comando `commit` in ~/.local/bin.
 # Il comando cerca commit.sh nella repo in cui ti trovi e lo lancia.
-# Il ~/.bashrc viene toccato solo se ~/.local/bin non è nel PATH e
-# l'utente accetta: in quel caso si lavora su una copia, la si verifica,
-# si fa un backup e solo dopo si sovrascrive.
+# ~/.bashrc e ~/.zshrc vengono toccati solo se ~/.local/bin manca dalla
+# configurazione di quella shell e l'utente accetta: in quel caso si lavora
+# su una copia, la si verifica, si fa un backup e solo dopo si sovrascrive.
 
 set -euo pipefail
 
 BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
 BASHRC="${BASHRC:-$HOME/.bashrc}"
+ZDOTDIR="${ZDOTDIR:-$HOME}"
+ZSHRC="${ZSHRC:-$ZDOTDIR/.zshrc}"
 TARGET="$BIN_DIR/commit"
 TAG='# installato da commit script'
 BEGIN='# >>> commit script >>>'
@@ -22,22 +24,24 @@ die() {
     exit 1
 }
 
-# --- Modifica sicura del bashrc: $1 = contenuto del blocco ("" = rimuovi) ---
-update_bashrc() {
-    local block="$1" n_begin n_end l_begin l_end tmp backup i
+# --- Modifica sicura di un file di configurazione: $1 = file, $2 = contenuto del blocco ("" = rimuovi) ---
+update_rc() {
+    local rc="$1" block="$2" sh=bash n_begin n_end l_begin l_end tmp backup i
 
-    [[ -e "$BASHRC" ]] || touch "$BASHRC"
-    [[ -f "$BASHRC" && -r "$BASHRC" && -w "$BASHRC" ]] || die "$BASHRC non è un file leggibile/scrivibile"
+    [[ "$rc" == "$ZSHRC" ]] && sh=zsh
 
-    n_begin=$(grep -cxF "$BEGIN" "$BASHRC" || true)
-    n_end=$(grep -cxF "$END" "$BASHRC" || true)
+    [[ -e "$rc" ]] || touch "$rc"
+    [[ -f "$rc" && -r "$rc" && -w "$rc" ]] || die "$rc non è un file leggibile/scrivibile"
+
+    n_begin=$(grep -cxF "$BEGIN" "$rc" || true)
+    n_end=$(grep -cxF "$END" "$rc" || true)
     if [[ "$n_begin" != "$n_end" || "$n_begin" -gt 1 ]]; then
-        die "marker 'commit script' incompleti o duplicati in $BASHRC, sistemali a mano (file non modificato)"
+        die "marker 'commit script' incompleti o duplicati in $rc, sistemali a mano (file non modificato)"
     fi
     if [[ "$n_begin" == 1 ]]; then
-        l_begin=$(grep -nxF "$BEGIN" "$BASHRC" | cut -d: -f1)
-        l_end=$(grep -nxF "$END" "$BASHRC" | cut -d: -f1)
-        ((l_begin < l_end)) || die "marker 'commit script' in ordine sbagliato in $BASHRC (file non modificato)"
+        l_begin=$(grep -nxF "$BEGIN" "$rc" | cut -d: -f1)
+        l_end=$(grep -nxF "$END" "$rc" | cut -d: -f1)
+        ((l_begin < l_end)) || die "marker 'commit script' in ordine sbagliato in $rc (file non modificato)"
     fi
 
     tmp=$(mktemp)
@@ -45,30 +49,55 @@ update_bashrc() {
         $0 == b { skip = 1; next }
         $0 == e { skip = 0; next }
         !skip
-    ' "$BASHRC" > "$tmp"
+    ' "$rc" > "$tmp"
     [[ -n "$block" ]] && printf '%s\n%s\n%s\n' "$BEGIN" "$block" "$END" >> "$tmp"
 
-    if bash -n "$BASHRC" 2>/dev/null && ! bash -n "$tmp"; then
+    if "$sh" -n "$rc" 2>/dev/null && ! "$sh" -n "$tmp"; then
         rm -f "$tmp"
-        die "il nuovo bashrc avrebbe errori di sintassi (file non modificato)"
+        die "il nuovo $rc avrebbe errori di sintassi (file non modificato)"
     fi
-    if cmp -s "$tmp" "$BASHRC"; then
+    if cmp -s "$tmp" "$rc"; then
         rm -f "$tmp"
         return
     fi
 
-    backup="$BASHRC.bak.$(date +%Y%m%d-%H%M%S)"
+    backup="$rc.bak.$(date +%Y%m%d-%H%M%S)"
     i=1
     while [[ -e "$backup" ]]; do
-        backup="$BASHRC.bak.$(date +%Y%m%d-%H%M%S).$i"
+        backup="$rc.bak.$(date +%Y%m%d-%H%M%S).$i"
         i=$((i + 1))
     done
-    cp -p "$BASHRC" "$backup" && cmp -s "$BASHRC" "$backup" \
+    cp -p "$rc" "$backup" && cmp -s "$rc" "$backup" \
         || { rm -f "$tmp"; die "impossibile creare il backup (file non modificato)"; }
     # cat > preserva symlink e permessi
-    cat "$tmp" > "$BASHRC"
+    cat "$tmp" > "$rc"
     rm -f "$tmp"
-    echo "$BASHRC aggiornato, backup in $backup"
+    echo "$rc aggiornato, backup in $backup"
+}
+
+# Uno dei file $@ aggiunge già $BIN_DIR al PATH?
+rc_has_path() {
+    local file
+    for file in "$@"; do
+        [[ -f "$file" ]] || continue
+        awk -v a="$BIN_DIR" -v b="\$HOME${BIN_DIR#"$HOME"}" '
+            !/^[[:space:]]*#/ && (index($0, a) || index($0, b)) { found = 1 }
+            END { exit !found }
+        ' "$file" && return 0
+    done
+    return 1
+}
+
+# Propone di aggiungere $BIN_DIR al PATH nel file $1.
+offer_path() {
+    local rc="$1" answer
+    read -rp "$BIN_DIR non è nella configurazione di $(basename "$rc"). Lo aggiungo a $rc (con backup)? (y/n): " answer
+    if [[ "$answer" == [yY] ]]; then
+        update_rc "$rc" "export PATH=\"$BIN_DIR:\$PATH\""
+        echo "Apri un nuovo terminale (o lancia 'source $rc') per usare 'commit'."
+    else
+        echo "Aggiungi $BIN_DIR al PATH in $rc a mano per usare 'commit' da quella shell."
+    fi
 }
 
 # Il file in $TARGET è stato installato da noi?
@@ -77,7 +106,7 @@ is_ours() {
 }
 
 install() {
-    local script_path tmp answer
+    local script_path tmp
 
     script_path="$(git -C "$DIR" rev-parse --show-prefix 2>/dev/null)" \
         || die "$DIR non è dentro una repo git"
@@ -104,7 +133,9 @@ EOF
     mv -f "$tmp" "$TARGET"
     echo "Comando 'commit' installato in $TARGET."
 
+    local in_path=0
     if [[ ":$PATH:" == *":$BIN_DIR:"* ]]; then
+        in_path=1
         # Un altro eseguibile 'commit' che viene prima nel PATH?
         local found
         found=$(type -P commit || true)
@@ -112,16 +143,14 @@ EOF
             echo "Attenzione: $found viene prima nel PATH e avrà la precedenza."
         fi
         echo "Pronto: puoi usare 'commit' da subito."
-        return
     fi
 
-    echo "$BIN_DIR non è nel tuo PATH."
-    read -rp "Lo aggiungo al $BASHRC (con backup)? (y/n): " answer
-    if [[ "$answer" == [yY] ]]; then
-        update_bashrc "export PATH=\"$BIN_DIR:\$PATH\""
-        echo "Apri un nuovo terminale (o lancia 'source $BASHRC') per usare 'commit'."
-    else
-        echo "Aggiungi $BIN_DIR al PATH a mano per usare 'commit'."
+    # Il PATH attuale può essere ereditato: zsh non legge i file di bash, quindi va controllata a parte.
+    if ((in_path == 0)) && ! rc_has_path "$BASHRC" "$HOME/.profile" "$HOME/.bash_profile"; then
+        offer_path "$BASHRC"
+    fi
+    if command -v zsh >/dev/null && ! rc_has_path "$ZSHRC" "$ZDOTDIR/.zshenv" "$ZDOTDIR/.zprofile"; then
+        offer_path "$ZSHRC"
     fi
 }
 
@@ -134,9 +163,12 @@ uninstall() {
     else
         echo "Comando 'commit' non installato."
     fi
-    if grep -qxF "$BEGIN" "$BASHRC" 2>/dev/null; then
-        update_bashrc ""
-    fi
+    local rc
+    for rc in "$BASHRC" "$ZSHRC"; do
+        if grep -qxF "$BEGIN" "$rc" 2>/dev/null; then
+            update_rc "$rc" ""
+        fi
+    done
 }
 
 case "$ACTION" in
