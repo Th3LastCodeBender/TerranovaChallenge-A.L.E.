@@ -5,9 +5,9 @@
 		@if (game.background_image) {
 			<img [src]="game.background_image" class="card-img-top custom-game-image" [alt]="game.name" />
 		} @else {
-		<div class="custom-game-image-placeholder">
-			<i class="bi bi-image fs-1"></i>
-		</div>
+			<div class="custom-game-image-placeholder">
+				<i class="bi bi-image fs-1"></i>
+			</div>
 		}
 
 	</div>
@@ -17,7 +17,6 @@
 		<h5 class="card-title">
 			{{ game.name }}
 		</h5>
-
 		<p class="card-text">
 			@for (genre of game.genres; track genre.id) {
 			<span class="text-uppercase me-2">
@@ -25,39 +24,36 @@
 			</span>
 			}
 		</p>
-
-		<p>
-			<i class="bi bi-star-fill custom-rating-star"></i>
-			{{ game.rating }}
-		</p>
-
-		<p>
-			Release on:
-			@if (game.released) {
-				<b>{{ game.released | date:'dd MMMM yyyy' }}</b>
-			} @else if(game.tba) {
-				<b>Announced</b>
-			} @else {
-				<b>Not announced</b>
-			}
-		</p>
-
-			<p class="custom-platform-container">
-				@if (game.parent_platforms) {
-					@for (plat of game.parent_platforms; track plat.platform.id) {
-						<span class="custom-platform-card">
-							@if (plat.platform.name == "PlayStation") {
-								<i class="bi bi-playstation"></i>
-							} @else if(plat.platform.name == "Xbox") {
-								<i class="bi bi-xbox"></i>
-							} @else if(plat.platform.name == "PC"){
-								<i class="bi bi-laptop"></i>
-							}
-						</span>
-					}
+		<div>
+			<p>
+				@if (game.released) {
+					<p>
+						<i class="bi bi-star-fill custom-rating-star"></i>
+						{{ game.rating }}
+					</p>
+					Release on: <b>{{ game.released | date:'dd MMMM yyyy' }}</b>
+				} @else if(game.tba) {
+					<b>Announced</b>
+				} @else {
+					<b>Not announced</b>
 				}
 			</p>
-
+		</div>
+		<p class="custom-platform-container">
+			@if (game.parent_platforms) {
+				@for (plat of game.parent_platforms; track plat.platform.id) {
+					<span class="custom-platform-card">
+						@if (plat.platform.name == "PlayStation") {
+							<i class="bi bi-playstation"></i>
+						} @else if(plat.platform.name == "Xbox") {
+							<i class="bi bi-xbox"></i>
+						} @else if(plat.platform.name == "PC"){
+							<i class="bi bi-laptop"></i>
+						}
+					</span>
+				}
+			}
+		</p>
 	</div>
 
 </div>
