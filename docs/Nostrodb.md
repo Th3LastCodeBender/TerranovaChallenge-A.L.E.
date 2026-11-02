@@ -8,4 +8,4 @@ Wishlist
 
 Statistiche personali
 
-Spec del proprio computer
+Spec del proprio computer json come colonna nella tabella dell'utente

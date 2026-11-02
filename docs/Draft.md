@@ -79,7 +79,7 @@ id	|	titolo				|	edizione	|	editore			|	anno_di_pubblicazione	|	isbn_13			|	ling
 
 stato_enum
 accettazione, smistamento, disponibile, riparazione, smarrito
-
+bri	
 copie
 id	|	libro	|	scaffale	|	stato
 3	|	3		|	2A			|	accettazione
