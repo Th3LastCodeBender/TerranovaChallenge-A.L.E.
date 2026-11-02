@@ -1,59 +1,112 @@
-<div class="card custom-card h-100">
+<div class="card custom-card text-white">
 
-	<div class="custom-game-image-div">
-
-		@if (game.background_image) {
-			<img [src]="game.background_image" class="card-img-top custom-game-image" [alt]="game.name" />
-		} @else {
-			<div class="custom-game-image-placeholder">
-				<i class="bi bi-image fs-1"></i>
-			</div>
-		}
-
+	@if (game.background_image) {
+	<img [src]="game.background_image" class="custom-game-image" [alt]="game.name" />
+	} @else {
+	<div class="custom-game-image-placeholder">
+		<i class="bi bi-image fs-1"></i>
 	</div>
-
-	<div class="card-body d-flex flex-column">
+	}
+	<div class="custom-overlay">
 
 		<h5 class="card-title">
 			{{ game.name }}
 		</h5>
-		<p class="card-text">
+
+		<div class="custom-genres">
 			@for (genre of game.genres; track genre.id) {
-			<span class="text-uppercase me-2">
-				#<i>{{ genre.name }}</i>
-			</span>
+				<span class="custom-genre-card text-lowercase">
+					#{{ genre.name }}
+				</span>
 			}
-		</p>
-		<div>
-			<p>
-				@if (game.released) {
-					<p>
-						<i class="bi bi-star-fill custom-rating-star"></i>
-						{{ game.rating }}
-					</p>
-					Release on: <b>{{ game.released | date:'dd MMMM yyyy' }}</b>
-				} @else if(game.tba) {
-					<b>Announced</b>
-				} @else {
-					<b>Not announced</b>
-				}
-			</p>
 		</div>
-		<p class="custom-platform-container">
-			@if (game.parent_platforms) {
-				@for (plat of game.parent_platforms; track plat.platform.id) {
-					<span class="custom-platform-card">
-						@if (plat.platform.name == "PlayStation") {
-							<i class="bi bi-playstation"></i>
-						} @else if(plat.platform.name == "Xbox") {
-							<i class="bi bi-xbox"></i>
-						} @else if(plat.platform.name == "PC"){
-							<i class="bi bi-laptop"></i>
-						}
-					</span>
+
+		<div class="custom-rating-container">
+
+			<div class="custom-rating">
+				<i class="bi bi-star-fill custom-rating-star"></i>
+
+				<span>
+					{{ game.rating }}
+				</span>
+			</div>
+
+
+			<span class="custom-separator"></span>
+
+
+			<div class="custom-metacritic">
+
+				@if (game.metacritic !== null) {
+				<span class="custom-metacritic-score">
+					{{ game.metacritic }}
+				</span>
+
+				<span class="custom-metacritic-text">
+					Metacritic
+				</span>
+				} @else {
+				<span class="custom-metacritic-score custom-metacritic-empty">
+					-
+				</span>
+
+				<span class="custom-metacritic-text">
+					Metacritic
+				</span>
 				}
+
+			</div>
+
+		</div>
+
+		<p class="custom-release">
+
+			Release on:
+
+			@if (game.released) {
+
+			<b>
+				{{ game.released | date:'dd MMMM yyyy' }}
+			</b>
+
+			} @else if (game.tba) {
+
+			<b>Announced</b>
+
+			} @else {
+
+			<b>Not announced</b>
+
 			}
+
 		</p>
+
+		<div class="custom-platform-container">
+
+			@for (plat of game.parent_platforms; track plat.platform.id) {
+
+			<span class="custom-platform-card" [title]="plat.platform.name">
+
+				@if (plat.platform.name === "PlayStation") {
+
+				<i class="bi bi-playstation"></i>
+
+				} @else if (plat.platform.name === "Xbox") {
+
+				<i class="bi bi-xbox"></i>
+
+				} @else if (plat.platform.name === "PC") {
+
+				<i class="bi bi-laptop"></i>
+
+				}
+
+			</span>
+
+			}
+
+		</div>
+
 	</div>
 
 </div>

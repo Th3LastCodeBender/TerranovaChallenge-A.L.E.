@@ -1,51 +1,330 @@
-
-
-.custom-game-image-div {
-	height: 27vh;
-}
-
-.custom-game-image {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.custom-game-image-placeholder {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+@property --border-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
 }
 
 .custom-card {
-	background-color: rgba(20, 20, 30, 0);
-	border-width: 2px;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+
+    background-color: #101020;
+
+    border: 1px solid rgba(169, 112, 255, 0.4);
+    border-radius: 0.5rem;
+
+    transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.custom-card::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    padding: 2px;
+
+    border-radius: inherit;
+
+    background: conic-gradient(
+        from var(--border-angle),
+        transparent 0deg,
+        transparent 220deg,
+        rgba(169, 112, 255, 0.15) 250deg,
+        #a970ff 285deg,
+        #ff3cac 315deg,
+        #ffffff 335deg,
+        #ff3cac 350deg,
+        transparent 360deg
+    );
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    z-index: 10;
+}
+
+.custom-card:hover {
+    transform: translateY(-4px);
+
+    border-color: rgba(169, 112, 255, 0.8);
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.25),
+        0 0 20px rgba(169, 112, 255, 0.10);
+}
+
+.custom-card:hover::before {
+    animation: border-run 0.8s ease-in-out 1 forwards;
+}
+
+.custom-game-image {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition: transform 0.5s ease;
+}
+
+.custom-card:hover .custom-game-image {
+    transform: scale(1.10);
+}
+
+.custom-game-image-placeholder {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+        145deg,
+        #101020,
+        #17172c
+    );
+
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.custom-overlay {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    padding: 1.25rem;
+
+    background: linear-gradient(
+        to top,
+        rgba(7, 7, 18, 0.98) 0%,
+        rgba(7, 7, 18, 0.92) 20%,
+        rgba(7, 7, 18, 0.75) 38%,
+        rgba(7, 7, 18, 0.30) 60%,
+        rgba(7, 7, 18, 0) 78%
+    );
+}
+
+.card-title {
+    margin: 0 0 0.4rem 0;
+
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+
+    min-height: calc(1.35rem * 1.3 * 2);
+
+    display: flex;
+    align-items: flex-end;
+
+    color: white;
+}
+
+.custom-genres {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    gap: 0.4rem;
+
+    min-height: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.custom-genre-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0.25rem 0.55rem;
+
+    background-color: rgba(169, 112, 255, 0.15);
+
+    border: 1px solid rgba(169, 112, 255, 0.45);
+    border-radius: 0.4rem;
+
+    color: #d8c8ff;
+
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04rem;
+
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.custom-rating-container {
+    display: flex;
+    align-items: center;
+
+    gap: 0.8rem;
+
+    min-height: 2rem;
+
+    margin-bottom: 0.8rem;
+}
+
+.custom-rating {
+    display: flex;
+    align-items: center;
+
+    gap: 0.35rem;
+
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.custom-rating-star {
+    color: #ffd166;
+}
+
+.custom-separator {
+    display: block;
+
+    width: 1px;
+    height: 1.4rem;
+
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+.custom-metacritic {
+    display: flex;
+    align-items: center;
+
+    gap: 0.5rem;
+}
+
+.custom-metacritic-score {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 2rem;
+    height: 2rem;
+
+    padding: 0 0.35rem;
+
+    border-radius: 0.35rem;
+
+    background-color: #198754;
+
+    color: white;
+
+    font-weight: 700;
+}
+
+.custom-metacritic-empty {
+    background-color: rgba(255, 255, 255, 0.12);
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.custom-metacritic-text {
+    color: rgba(255, 255, 255, 0.75);
+
+    font-size: 0.85rem;
+}
+
+.custom-release {
+    display: flex;
+    align-items: center;
+
+    gap: 0.25rem;
+
+    min-height: 1.5rem;
+
+    margin: 0 0 1rem 0;
+
+    font-size: 0.9rem;
+
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .custom-platform-container {
     display: flex;
+    align-items: center;
+
     gap: 0.5rem;
-    margin-top: auto;
-    margin-bottom: 0;
+
+    min-height: 2.2rem;
 }
 
 .custom-platform-card {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0.35rem 0.6rem;
-	border-right: 1px solid rgba(128, 128, 128, 0.4);
-	border-bottom: 1px solid rgba(128, 128, 128, 0.4);
-	border-radius: 0.4rem;
-	font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2.2rem;
+    height: 2.2rem;
+
+    flex-shrink: 0;
+
+    background-color: rgba(10, 10, 20, 0.30);
+
+    border-right: 1px solid rgba(255, 255, 255, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 0.4rem;
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.custom-platform-card:hover {
+    background-color: rgba(169, 112, 255, 0.20);
+
+    border-color: #a970ff;
 }
 
 .custom-platform-card i {
-	font-size: 1rem;
-	line-height: 1;
+    font-size: 1rem;
+    line-height: 1;
+
+    color: white;
 }
 
-.card-body {
-    min-height: 26vh;
+@keyframes border-run {
+    0% {
+        --border-angle: -80deg;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        --border-angle: 280deg;
+        opacity: 0;
+    }
 }
