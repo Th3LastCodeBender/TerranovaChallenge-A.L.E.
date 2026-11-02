@@ -11,5 +11,10 @@ import { DatePipe } from '@angular/common';
 export class GameCard {
   @Input({ required: true })
   game!: Game;
-  
+  ngOnInit() {
+    console.log('Game:', this.game);
+    console.log('Nome:', this.game.name);
+    console.log('Rating:', this.game.rating);
+    console.log('Platforms:', this.game.parent_platforms);
+  }
 }

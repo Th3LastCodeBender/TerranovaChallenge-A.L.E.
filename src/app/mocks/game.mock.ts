@@ -10,7 +10,7 @@ export const GAMES_MOCKUP: Game[] = [
     released: '2020-12-10',
     tba: false,
 
-    background_image: 'https://placehold.co/800x450/17152c/ffffff?text=Cyber+City+2077',
+    background_image: 'https://media.rawg.io/media/games/20a/20aa03a10cda45239fe22d035c0ebe64.jpg',
 
     rating: 4.42,
     rating_top: 5,
@@ -251,7 +251,7 @@ export const GAMES_MOCKUP: Game[] = [
     released: '2025-08-21',
     tba: false,
 
-    background_image: 'https://placehold.co/800x450/0b2447/00ffff?text=Galactic+Racing',
+    background_image: 'https://media.rawg.io/media/screenshots/f95/f9518b1d99210c0cae21fc09e95b4e31.jpg',
 
     rating: 4.85,
     rating_top: 5,
@@ -387,7 +387,7 @@ export const GAMES_MOCKUP: Game[] = [
     released: null,
     tba: true,
 
-    background_image: 'https://placehold.co/800x450/13001f/ff3cac?text=Project+Neon',
+    background_image: 'https://media.rawg.io/media/screenshots/a5c/a5c95ea539c87d5f538763e16e18fb99.jpg',
 
     rating: 0,
     rating_top: 5,
