@@ -80,14 +80,42 @@ $gradient-dark:
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 :root, [data-bs-theme="light"] {
+
   --bg-gradient: #{$gradient-light};
   --star-color: #e6a700;
-  --border-color: #283852;
+  --title-game-start: #6d28d9;
+  --title-game-end: #db2777;
+
+  --card-border-color: rgba(255, 255, 255, 0.95);
+  --card-border-hover: #ffffff;
+  --card-shadow:
+      0 0 0 1px rgba(88, 28, 135, 0.65),
+      0 4px 12px rgba(76, 29, 149, 0.30);
+  --card-shadow-hover:
+      0 0 0 2px #7c3aed,
+      0 0 10px rgba(124, 58, 237, 0.75),
+      0 8px 24px rgba(76, 29, 149, 0.40);
+  --card-glow-first: #7c3aed;
+  --card-glow-second: #d946ef;
+  --card-glow-third: #ffffff;
 }
 [data-bs-theme="dark"] {
+
   --bg-gradient: #{$gradient-dark};
   --star-color: #ffd166;
-  --border-color: #bfd7ff;
+  --title-game-start: #a970ff;
+  --title-game-end: #ff3cac;
+
+  --card-border-color: rgba(169, 112, 255, 0.45);
+  --card-border-hover: #a970ff;
+  --card-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.25);
+  --card-shadow-hover:
+      0 10px 30px rgba(0, 0, 0, 0.30),
+      0 0 15px rgba(169, 112, 255, 0.25);
+  --card-glow-first: #a970ff;
+  --card-glow-second: #ff3cac;
+  --card-glow-third: #ffffff;
 }
 
 .custom-bg-gradient {

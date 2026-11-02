@@ -41,6 +41,24 @@
     justify-self: start;
 }
 
+.custom-title {
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.custom-title-game {
+    background: linear-gradient(
+        90deg,
+        var(--title-game-start),
+        var(--title-game-end)
+    );
+
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .custom-search-bar {
     justify-self: center;
     width: 50vh;

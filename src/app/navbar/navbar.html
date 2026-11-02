@@ -1,9 +1,9 @@
 <div>
 	<nav class="navbar">
 		<div class="container-fluid">
-			<div class="custom-font-title">
-				<a class="navbar-brand" href="#">Wikigame</a>
-			</div>
+			<a class="navbar-brand custom-title" href="#">
+				Wiki<span class="custom-title-game">game</span>
+			</a>
 			<div class="custom-search-bar d-flex align-items-md-center gap-2">
 				<form role="search">
 					<div class="position-relative">
@@ -19,9 +19,9 @@
 			<div class="custom-menu custom-theme-button">
 				<button class="btn theme-button" (click)="changeTheme()">
 					@if (isDarkMode()) {
-						<i class="bi bi-moon fs-4 custom-thene-icon" ></i>
+					<i class="bi bi-moon fs-4 custom-thene-icon"></i>
 					} @else {
-						<i class="bi bi-sun fs-4 custom-thene-icon" ></i>
+					<i class="bi bi-sun fs-4 custom-thene-icon"></i>
 					}
 				</button>
 				<button class="navbar-toggler" type="button" aria-label="Toggle navigation"
