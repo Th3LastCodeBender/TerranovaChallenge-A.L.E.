@@ -69,7 +69,7 @@ PostgreSQL in locale (meglio via Docker), saper entrare con `psql`, comandi `\l`
 - `EXPLAIN ANALYZE`.
 - Esercizio: 100.000 righe con `generate_series`, misurare con e senza indice.
 
-### Tappa 8 — Funzioni e trigger
+### Tappa 8 — Funzioni e trigger	
 - Funzioni SQL vs PL/pgSQL, trigger.
 - Domanda per il team: quanta logica nel DB e quanta in C#?
 
@@ -89,9 +89,9 @@ Entity Framework Core: code-first vs database-first, migrations. Saper leggere e
 
 ## Stato attuale
 
-**Tappa corrente:** 5 — DML e DQL (in corso). Fatti: SELECT/WHERE/ORDER BY, JOIN e LEFT JOIN. Tappa 4 chiusa il 2026-11-01.
+**Tappa corrente:** 6 — Transazioni e ACID (in corso). Fatti: A, C, D; I iniziata. Tappa 5 chiusa il 2026-11-03.
 
-**Prossima azione:** GROUP BY e aggregazioni, poi HAVING, poi subquery; infine gli esercizi della tappa (libri mai prestati, utente con più prestiti, autori con più di 2 libri). L'utente ha fretta di finire: dosare le domande.
+**Prossima azione:** esperimento con due terminali: due INSERT in prestiti sulla stessa copia libera (BEGIN in entrambi, A inserisce, B inserisce, A COMMIT, B COMMIT). Chiedere la previsione sul passo 4 (B resta in attesa, poi errore su `una_copia_un_prestito_aperto`), poi cancellare la riga di prova di A. Poi SAVEPOINT, anomalie di concorrenza e livelli di isolamento. L'utente ha fretta di finire: dosare le domande.
 
 Aperto/da rivedere in `libri`: manca il limite inferiore dell'anno; lingua con CHECK a lista (eventualmente lookup come formati). Il CHECK `data_checker` usa CURRENT_DATE (non immutabile: valutato solo all'inserimento) — dettaglio da far notare se capita. In `prestiti` manca una tabella tariffe (valida_dal/valida_al), non creata. In `utenti`: tessera obbligatoria anche per in_attesa ed email non unica, lasciate così per scelta.
 
@@ -205,3 +205,10 @@ Aperto/da rivedere in `libri`: manca il limite inferiore dell'anno; lingua con C
 - 2026-11-02 — HAVING: errore "aggregate functions are not allowed in WHERE" visto da lui; query con HAVING count(id) > 2 corretta al primo colpo ✅. Prossimo: esercizio autori con più di 2 libri (JOIN + GROUP BY + HAVING), poi utente con più prestiti, subquery e libri mai prestati.
 - 2026-11-02 — Esercizio autori con più di 2 libri risolto ✅ con autori + autore_libri, GROUP BY autori.id, HAVING (risultato Pratchett 3, Calvino 3). Dopo tre errori di sintassi (virgola, tabella nel JOIN, autori.name) trovati da solo con indizi. All inizio voleva anche libri per il titolo: capito che serve solo ciò che si usa. Da chiarire: perché nome e cognome sono ammessi nel SELECT raggruppando per PK.
 - 2026-11-02 — Capito perché raggruppando per PK nome e cognome sono ammessi ✅ (stesso autore in tutto il gruppo). Esercizio utente con più prestiti: prima senza DESC (ottiene il minimo), poi corretto con ORDER BY count DESC LIMIT 1 → Mario 3 ✅. Non ha ancora risposto su pari merito: LIMIT 1 nasconde gli altri a pari merito; da lì si passa alle subquery. Poi libri mai prestati.
+- 2026-11-02 — Ripresa sessione: il registro era rimasto indietro; l'utente conferma che la domanda sul pari merito era già stata fatta e che l'ultima domanda aperta è l'esercizio "libri mai prestati" (tabelle, JOIN o LEFT JOIN, libro senza copie). In attesa di risposte, query e risultato.
+- 2026-11-02 — Libri mai prestati: query con due LEFT JOIN, GROUP BY libri.id e HAVING count(copia_id) = 0 ✅ (4 righe, Pinocchio compreso). Errori corretti: JOIN prestiti su id del libro invece di copie.id; HAVING prima di GROUP BY. ORDER BY rimasto inutile. Non ha ancora deciso di proposito se includere Pinocchio (nessuna copia).
+- 2026-11-02 — Pinocchio escluso di proposito ✅, prima con count(copie.libro) > 0, poi con JOIN sul primo collegamento e LEFT JOIN sul secondo: stesso risultato (3 righe) ✅. Resta da spiegare perché il secondo deve restare LEFT JOIN.
+- 2026-11-03 — Libri mai prestati chiuso ✅: capisce che con due JOIN normali restano 0 righe (solo copie con prestiti, count mai 0). Correzione del registro: pari merito e subquery erano già stati fatti nella sessione del 2026-11-02 (LIMIT 1 nasconde i pari merito; HAVING count(...) = (subquery) ✅), ma la voce non era stata salvata.
+- 2026-11-03 — UPDATE senza WHERE: tutte le righe prendono la mail ✅ (dice "colonne", sono righe). BEGIN non ancora visto. **Tappa 5 chiusa.** Aggiornato `docs/appunti.md`. Non verificato che sappia riscrivere l'indice parziale di Tappa 4. Prossimo: Tappa 6, esperimento con BEGIN e ROLLBACK.
+- 2026-11-03 — Tappa 6 iniziata. BEGIN/ROLLBACK: prima li vede come "prova prima di toccare il db", poi capisce che dopo un crash senza COMMIT è come un ROLLBACK ✅ (Atomicità: tutto o niente, non "garantisce il completamento"). Prossimo: D (crash subito dopo COMMIT), poi C e I.
+- 2026-11-03 — D: capisce che dopo COMMIT i dati restano; il perché spiegato (registro su disco). C: previsione "multa 1" smentita dall'esperimento (COMMIT risponde ROLLBACK, prompt =!#) ✅; il rischio del lavoro a metà spiegato da me. I: propone istruzioni "una dietro l'altra" (= SERIALIZABLE, intuizione giusta), non ha detto cosa succede senza protezioni. Default READ COMMITTED spiegato. Esperimento con due terminali proposto, non eseguito. Fine sessione.

@@ -242,3 +242,42 @@ Esempi sul dominio giocattolo: **biblioteca**.
 
 12. **Un DEFAULT deve essere vero.** `'accettazione'` lo è, `'self published'` era un dato inventato.
     Attenzione: aggiungere una colonna con DEFAULT lo scrive anche in tutte le righe vecchie.
+
+---
+
+## Tappa 5 — DML e DQL
+
+### Definizioni
+
+| Termine | Cosa vuol dire |
+|---|---|
+| **DML** | I comandi che cambiano i **dati**: `INSERT`, `UPDATE`, `DELETE`. |
+| **DQL** | La lettura dei dati: `SELECT`. |
+| `JOIN` | Tiene solo le righe che trovano corrispondenza. |
+| `LEFT JOIN` | Tiene tutte le righe della tabella a sinistra. Dove manca la corrispondenza, le colonne dell'altra tabella sono NULL. |
+| `GROUP BY` | Riunisce le righe in gruppi: una riga di risultato per gruppo. |
+| `count(*)` / `count(colonna)` | Conta le righe / conta solo i valori non NULL di quella colonna. |
+| `WHERE` / `HAVING` | Filtra le righe prima dei gruppi / filtra i gruppi dopo il conteggio. |
+| **Subquery** | Una `SELECT` tra parentesi dentro un'altra query, il cui risultato viene usato come valore. |
+
+### Regole
+
+1. **`FROM` e `JOIN` costruiscono una tabella temporanea, `SELECT` sceglie le colonne.** Metti nel JOIN solo le tabelle che usi.
+
+2. **Il JOIN segue le FK, colonna per colonna.** `prestiti.copia_id` si collega a `copie.id`, non a `libri.id` né a `copie.libro`.
+   Due interi si confrontano senza errori anche se significano cose diverse: il risultato sbagliato non dà alcun avviso.
+
+3. **Per trovare ciò che manca serve `LEFT JOIN`.** Con il `JOIN` normale le righe senza corrispondenza spariscono, quindi `HAVING count(...) = 0` non trova mai nulla.
+
+4. **Ogni collegamento ha il suo JOIN.** Libri mai prestati, esclusi quelli senza copie: `JOIN` su `copie`, `LEFT JOIN` su `prestiti`.
+
+5. **Nel `SELECT` con `GROUP BY` non può stare una colonna con più valori nel gruppo.** PostgreSQL non saprebbe quale mostrare.
+   Raggruppando per PK, le altre colonne di quella tabella sono ammesse: il gruppo riguarda sempre la stessa riga.
+
+6. **Una PK può risultare NULL in un `LEFT JOIN`.** I vincoli valgono sulle righe salvate, non sui risultati di una query. `DEFAULT` agisce solo all'`INSERT`.
+
+7. **`LIMIT 1` nasconde i pari merito senza avvisare.** Per trovarli: trova il massimo con una subquery e confrontalo con `HAVING count(...) = (subquery)`.
+
+8. **Ordine delle clausole:** `SELECT`, `FROM`, `JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`.
+
+9. **`UPDATE` senza `WHERE` modifica tutte le righe.** Lo stesso vale per `DELETE`.
