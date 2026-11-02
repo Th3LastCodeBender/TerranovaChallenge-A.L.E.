@@ -1,4 +1,13 @@
 
-@for (game of games; track game.id) {
-	<app-game-card [game]="game"/>
-}
+<div class="container-fluid px-5">
+    <div class="row g-4">
+
+        @for (game of games; track game.id) {
+            <div class="col-12 col-md-6 col-lg-4">
+                <app-game-card [game]="game" />
+            </div>
+        }
+
+    </div>
+</div>
+
