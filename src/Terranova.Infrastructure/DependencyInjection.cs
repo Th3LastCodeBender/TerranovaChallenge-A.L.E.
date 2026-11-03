@@ -4,6 +4,8 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Terranova.Application.Interfaces;
 using Terranova.Infrastructure.ExternalServices;
+using Terranova.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Terranova.Infrastructure;
 
@@ -31,6 +33,10 @@ public static class DependencyInjection
 				client.Timeout = TimeSpan.FromSeconds(10);
 			})
 			.RemoveAllLoggers();
+
+		var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+		services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 		return services;
 	}
