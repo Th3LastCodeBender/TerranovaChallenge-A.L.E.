@@ -1,6 +1,6 @@
 WORKTREES := 01_frontend:frontend 02_backend:backend 03_db:DataBase
 
-all : setup
+all : setup up
 
 setup:
 	@git fetch --quiet origin || echo "Fetch fallito, qualcosa non va?"
@@ -24,4 +24,24 @@ status:
 clean_trees:
 	git worktree prune && git worktree list
 
-.PHONY: all setup status
+up:
+	docker compose up -d --wait
+
+down:
+	docker compose down
+
+fclean:
+	@echo "Chiusura container e cancellazione volumi..." && sleep 5 &&	docker compose down -v
+
+re: down all
+
+ps:
+	docker compose ps
+
+logs:
+	docker compose logs -f
+
+db:
+	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
+
+.PHONY: all setup status clean_trees up down re ps logs db fclean
