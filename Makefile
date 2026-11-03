@@ -25,7 +25,7 @@ clean_trees:
 	git worktree prune && git worktree list
 
 up:
-	docker compose up -d --wait
+	docker compose up -d --build --wait
 
 down:
 	docker compose down

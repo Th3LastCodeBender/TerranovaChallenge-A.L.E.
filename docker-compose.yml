@@ -4,13 +4,13 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:?manca in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?manca in .env}
-      POSTGRES_DB: ${POSTGRES_DB:?manca in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?manca nel .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?manca nel .env}
+      POSTGRES_DB: ${POSTGRES_DB:?manca nel .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - back
+      - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -19,8 +19,22 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  backend:
+    build:
+      context: ./02_backend
+      dockerfile: ../04_Docker/backend/backend.Dockerfile
+    environment:
+      Rawg__ApiKey: ${Rawg__ApiKey:?manca nel .env}
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
 volumes:
   pgdata:
 
 networks:
-  back:
+  backend:
