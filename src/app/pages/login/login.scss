@@ -1,0 +1,27 @@
+
+.custom-login-card {
+	border: 2px solid white;
+}
+
+.custom-title {
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    line-height: 1;
+}
+
+.custom-title-game {
+    display: inline-block;
+
+    background: linear-gradient(
+        90deg,
+        #a970ff 0%,
+        #ff3cac 100%
+    );
+
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+}
