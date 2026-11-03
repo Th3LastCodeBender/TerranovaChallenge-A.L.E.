@@ -21,8 +21,8 @@ services:
 
   backend:
     build:
-      context: ./02_backend
-      dockerfile: ../04_Docker/backend/backend.Dockerfile
+      context: ./app/02_backend
+      dockerfile: ../../Docker/backend/backend.Dockerfile
     environment:
       Rawg__ApiKey: ${Rawg__ApiKey:?manca nel .env}
       ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
@@ -31,10 +31,25 @@ services:
         condition: service_healthy
     networks:
       - backend
+      - frontend
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./app/01_frontend
+      dockerfile: ../../Docker/frontend/frontend.Dockerfile
+    volumes:
+      - ./Docker/frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - frontend
+    restart: unless-stopped
 volumes:
   pgdata:
 
 networks:
   backend:
+  frontend:

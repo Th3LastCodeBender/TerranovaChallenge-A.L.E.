@@ -8,10 +8,20 @@ Il backend RAWG e la grafica di base esistono già, ma i pezzi non sono collegat
 
 | Area | Responsabile | Branch | Cosa c'è già | Cosa manca di più importante |
 | --- | --- | --- | --- | --- |
-| Docker e DB | Th3LastCodeBender | `DataBase_Study`, `DataBase` | Compose con il servizio `db`, Makefile, studio di PostgreSQL | Schema reale, migrations, container di frontend e backend |
+| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | `.env.example`, Makefile con i worktree, studio di PostgreSQL | Compose dei tre livelli, schema reale, migrations |
 | Backend | AidenDogs / andre42 | `backend` | .NET 10, endpoint `/api/v1` per giochi, dettaglio, screenshot, generi e piattaforme, rate limit | Collegamento al DB, Identity, endpoint preferiti, Postman |
 | Frontend | odoacr3e | `frontend` | Angular 22, Bootstrap, navbar, card, griglia, pagine Home e Login, cambio tema | Chiamate HTTP (la griglia usa dati finti), ricerca, filtri, dettaglio, preferiti |
-| Integrazione | Tutti | `main` | Solo il commit iniziale | Unire i branch in una struttura comune |
+| Integrazione | Tutti | `main` | Orchestrazione con i worktree `01_frontend`, `02_backend` e `03_db` | Far comunicare i tre livelli, importare i branch in `main` prima della consegna |
+
+## Decisioni già prese
+
+| Decisione | Scelta |
+| --- | --- |
+| Struttura della repo | `main` contiene Makefile, compose e `docker/`; ogni livello resta sul suo branch, collegato come worktree |
+| Avvio | `make dev` per lavorare (`localhost:4200`, volumi, nessun riavvio manuale); `make all` per la versione da consegnare (`localhost:8080`, immagini e nginx) |
+| Branch del DB | `03_db` usa il branch `DataBase`; `DataBase_Study` resta come materiale di studio |
+| Porta del DB | Non pubblicata: si entra con `make db` |
+| Consegna | Prima della consegna i branch vengono importati in `main`, nelle stesse cartelle |
 
 ## Decisioni da prendere insieme
 
@@ -19,7 +29,6 @@ Queste scelte bloccano il lavoro di più persone, quindi vanno chiuse per prime.
 
 | Decisione | Perché blocca | Proposta |
 | --- | --- | --- |
-| Struttura della repo | `frontend` e `backend` hanno entrambi `src/` e `README.md` nella radice: l'unione si scontra | Cartelle `frontend/` e `backend/`, compose e Makefile nella radice |
 | Chi scrive il codice EF Core | Sta a metà tra DB e backend | Th3LastCodeBender scrive entità, `DbContext` e migrations; il backend scrive servizi ed endpoint |
 | Preferiti e login | I preferiti sono obbligatori, l'autenticazione è un bonus: se Identity tarda, i preferiti restano fermi | Identity minima (registrazione e login) subito, prima dei preferiti |
 | Preferiti senza account | Il frontend deve sapere cosa mostrare a chi non ha fatto l'accesso | Il cuore porta alla pagina di login |
@@ -31,37 +40,64 @@ Queste scelte bloccano il lavoro di più persone, quindi vanno chiuse per prime.
 
 ## Docker e architettura — Th3LastCodeBender
 
-L'obiettivo è che un solo comando avvii tutta l'app da un clone pulito. Il primo passo è unire la repo, perché tutti gli altri ci lavorano sopra.
+L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1 e 2 completati; il prossimo è il DB nel compose.
 
-**Repo e integrazione**
+**Passi 1-2: repo e worktree**
 
-- [ ] Portare il codice in `frontend/` e `backend/` e unire tutto in `main`
-- [ ] Unificare `Docs/` e `docs/`: su Linux sono due cartelle diverse
-- [ ] Unire i `.gitignore` e i README dei branch
-- [ ] Creare `.env.example` con le variabili necessarie, senza valori segreti
-- [ ] Concordare con il gruppo come si uniscono i branch in `main`
+- [x] `.gitignore` che protegge `.env` e i worktree
+- [x] `.env.example` senza segreti e chiave RAWG nel `.env` locale
+- [x] `make setup`: worktree `01_frontend`, `02_backend` e `03_db`
+- [x] `make status`: stato di tutti i worktree
+- [ ] Spiegare ai boyz come usare `main` e i worktree
 
-**Container**
+**Passo 3: DB**
 
-- [ ] Dockerfile del backend: compilazione .NET 10 e immagine finale separate
-- [ ] Dockerfile del frontend: build di Angular, poi nginx che serve i file
+- [ ] `docker-compose.yml` con il DB, un volume nuovo separato da quello di studio e il controllo di salute
+- [ ] Nessuna porta pubblicata e accesso con `make db`
+- [ ] Comandi `up`, `down`, `re`, `ps`, `logs` e `fclean` nel Makefile
+- [ ] Verificare che i dati restino dopo `make down` e un nuovo avvio
+
+**Passo 4: backend**
+
+- [ ] Dockerfile in `docker/`: compilazione .NET 10 e immagine finale separate
+- [ ] Passare al backend la chiave RAWG e i dati di connessione al DB
+- [ ] Far partire il backend solo quando il DB è pronto
+- [ ] Verificare `/health` dalla rete interna
+
+**Passo 5: frontend e `make all`**
+
+- [ ] Dockerfile in `docker/`: build di Angular, poi nginx che serve i file
 - [ ] Configurare nginx: inoltro di `/api` al backend e ritorno a `index.html` per le rotte Angular
-- [ ] Scrivere il `docker-compose.yml` completo con frontend, backend e DB
-- [ ] Aggiungere il controllo di salute del DB e far partire il backend solo quando il DB è pronto
-- [ ] Passare `RAWG` key e credenziali del DB ai container tramite `.env`
-- [ ] Nella versione da consegnare, togliere la pubblicazione della porta 7171 del DB
-- [ ] Portare nel Makefile principale i comandi per avviare, spegnere e ricostruire tutto
+- [ ] Reti separate, così il frontend non raggiunge il DB
+- [ ] Verificare da `localhost:8080` la pagina, `/api/v1/genres` e il refresh su `/login`
+
+**Passo 6: `make dev`**
+
+- [ ] `docker-compose.dev.yml` con i volumi di `01_frontend` e `02_backend`, `ng serve` e `dotnet watch`
+- [ ] Proxy di `ng serve` verso il backend, con la configurazione in `docker/`
+- [ ] `node_modules`, `bin` e `obj` in volumi separati dai sorgenti
+- [ ] Comando per riavviare i container quando cambiano le dipendenze
+- [ ] Verificare che le modifiche appaiano senza riavvii e che si possano committare dal worktree
+
+**Passo 7: backend e DB** (da concordare con chi lavora sul backend)
+
+- [ ] Endpoint di prova che esegue `SELECT 1` sul DB
+
+**Passo 8: verifica finale**
+
+- [ ] Scrivere il README con i passi per avviare il progetto
+- [ ] Provare l'avvio da un clone pulito seguendo solo il README
+- [ ] Provare il percorso completo: ricerca, dettaglio, login, aggiunta e rimozione di un preferito
+
+**Prima della consegna**
+
+- [ ] Importare i branch in `main`, nelle stesse cartelle dei worktree
+- [ ] Verificare `make all` dopo l'importazione
 
 **Punti da risolvere con il backend**
 
 - [ ] Rate limit: dietro nginx tutti gli utenti risultano con lo stesso IP e dividono lo stesso limite. Serve `UseForwardedHeaders` in `Program.cs` e `X-Forwarded-For` in nginx
 - [ ] `UseHttpsRedirection`: decidere come gestirlo, dato che dietro nginx il backend riceve HTTP
-
-**Verifica finale**
-
-- [ ] Provare l'avvio da un clone pulito seguendo solo il README
-- [ ] Verificare che i dati restino dopo `docker compose down` e un nuovo avvio
-- [ ] Provare il percorso completo: ricerca, dettaglio, login, aggiunta e rimozione di un preferito
 
 ## Database — Th3LastCodeBender
 
@@ -86,12 +122,12 @@ Il primo risultato da consegnare al gruppo è la tabella dei preferiti, già col
 
 - [ ] Provare con `psql` i casi limite: gioco duplicato, utente inesistente, cancellazione dell'account
 - [ ] Verificare che una migration già applicata non venga rieseguita al riavvio
-- [ ] Scrivere lo schema in `Docs/Database.md`, oggi vuoto, con la motivazione di PostgreSQL già pronta nel draft
+- [ ] Scrivere lo schema in `00_Docs/Database.md`, con la motivazione di PostgreSQL già pronta nel draft
 
 **Pulizia dello studio**
 
-- [ ] Sul DB di prova `terranova`, eliminare la tabella `prova` se c'è ancora e salvare il dump
-- [ ] Tenere le tabelle della biblioteca separate da quelle vere del progetto
+- [x] Sul DB di prova `terranova`, eliminare la tabella `prova`
+- [ ] Controllare che il dump `biblioteca-studio.sql` sia aggiornato
 
 ## Backend — AidenDogs / andre42
 
@@ -133,7 +169,6 @@ La base grafica c'è: il passo decisivo è sostituire i dati finti con le chiama
 **Collegamento al backend**
 
 - [ ] Attivare `provideHttpClient` e creare un servizio per le chiamate a `/api/v1`
-- [ ] Configurare un proxy di `ng serve` verso il backend per lo sviluppo fuori da Docker
 - [ ] Allineare i modelli TypeScript al JSON del backend
 - [ ] Sostituire `GAMES_MOCKUP` in `game-list` con i dati reali
 

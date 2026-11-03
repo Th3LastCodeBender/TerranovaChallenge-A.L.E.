@@ -1,4 +1,4 @@
-WORKTREES := 01_frontend:frontend 02_backend:backend 03_db:DataBase
+WORKTREES := app/01_frontend:frontend app/02_backend:backend app/03_db:DataBase
 
 all : setup up
 
