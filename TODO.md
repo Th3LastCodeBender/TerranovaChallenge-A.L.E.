@@ -8,18 +8,18 @@ Il backend RAWG e la grafica di base esistono già, ma i pezzi non sono collegat
 
 | Area | Responsabile | Branch | Cosa c'è già | Cosa manca di più importante |
 | --- | --- | --- | --- | --- |
-| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | `.env.example`, Makefile con i worktree, studio di PostgreSQL | Compose dei tre livelli, schema reale, migrations |
+| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | Compose dei tre livelli, Dockerfile, nginx, Makefile con i worktree, studio di PostgreSQL | `make dev`, schema reale, migrations |
 | Backend | AidenDogs / andre42 | `backend` | .NET 10, endpoint `/api/v1` per giochi, dettaglio, screenshot, generi e piattaforme, rate limit | Collegamento al DB, Identity, endpoint preferiti, Postman |
 | Frontend | odoacr3e | `frontend` | Angular 22, Bootstrap, navbar, card, griglia, pagine Home e Login, cambio tema | Chiamate HTTP (la griglia usa dati finti), ricerca, filtri, dettaglio, preferiti |
-| Integrazione | Tutti | `main` | Orchestrazione con i worktree `01_frontend`, `02_backend` e `03_db` | Far comunicare i tre livelli, importare i branch in `main` prima della consegna |
+| Integrazione | Tutti | `main` | `make all` avvia i tre container; browser, nginx e backend comunicano | Collegare il backend al DB, importare i branch in `main` prima della consegna |
 
 ## Decisioni già prese
 
 | Decisione | Scelta |
 | --- | --- |
-| Struttura della repo | `main` contiene Makefile, compose e `docker/`; ogni livello resta sul suo branch, collegato come worktree |
+| Struttura della repo | `main` contiene Makefile, compose, `Docker/` e `Docs/`; ogni livello resta sul suo branch, collegato come worktree in `app/` |
 | Avvio | `make dev` per lavorare (`localhost:4200`, volumi, nessun riavvio manuale); `make all` per la versione da consegnare (`localhost:8080`, immagini e nginx) |
-| Branch del DB | `03_db` usa il branch `DataBase`; `DataBase_Study` resta come materiale di studio |
+| Branch del DB | `app/03_db` usa il branch `DataBase`; `DataBase_Study` resta come materiale di studio |
 | Porta del DB | Non pubblicata: si entra con `make db` |
 | Consegna | Prima della consegna i branch vengono importati in `main`, nelle stesse cartelle |
 
@@ -40,41 +40,44 @@ Queste scelte bloccano il lavoro di più persone, quindi vanno chiuse per prime.
 
 ## Docker e architettura — Th3LastCodeBender
 
-L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1 e 2 completati; il prossimo è il DB nel compose.
+L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1-5 quasi completati: restano la correzione del lock da committare e la prova con RAWG. Il prossimo è `make dev`.
 
 **Passi 1-2: repo e worktree**
 
 - [x] `.gitignore` che protegge `.env` e i worktree
 - [x] `.env.example` senza segreti e chiave RAWG nel `.env` locale
-- [x] `make setup`: worktree `01_frontend`, `02_backend` e `03_db`
+- [x] `make setup`: worktree `app/01_frontend`, `app/02_backend` e `app/03_db`
 - [x] `make status`: stato di tutti i worktree
 - [ ] Spiegare ai boyz come usare `main` e i worktree
 
 **Passo 3: DB**
 
-- [ ] `docker-compose.yml` con il DB, un volume nuovo separato da quello di studio e il controllo di salute
-- [ ] Nessuna porta pubblicata e accesso con `make db`
-- [ ] Comandi `up`, `down`, `re`, `ps`, `logs` e `fclean` nel Makefile
-- [ ] Verificare che i dati restino dopo `make down` e un nuovo avvio
+- [x] `docker-compose.yml` con il DB, un volume nuovo separato da quello di studio e il controllo di salute
+- [x] Nessuna porta pubblicata e accesso con `make db`
+- [x] Comandi `up`, `down`, `re`, `ps`, `logs` e `fclean` nel Makefile
+- [x] Verificare che i dati restino dopo `make down` e un nuovo avvio
 
 **Passo 4: backend**
 
-- [ ] Dockerfile in `docker/`: compilazione .NET 10 e immagine finale separate
-- [ ] Passare al backend la chiave RAWG e i dati di connessione al DB
-- [ ] Far partire il backend solo quando il DB è pronto
-- [ ] Verificare `/health` dalla rete interna
+- [x] Dockerfile in `Docker/backend/`: compilazione .NET 10 e immagine finale separate
+- [x] Passare al backend la chiave RAWG e i dati di connessione al DB
+- [x] Far partire il backend solo quando il DB è pronto
+- [x] Verificare `/health` dalla rete interna
 
 **Passo 5: frontend e `make all`**
 
-- [ ] Dockerfile in `docker/`: build di Angular, poi nginx che serve i file
-- [ ] Configurare nginx: inoltro di `/api` al backend e ritorno a `index.html` per le rotte Angular
-- [ ] Reti separate, così il frontend non raggiunge il DB
-- [ ] Verificare da `localhost:8080` la pagina, `/api/v1/genres` e il refresh su `/login`
+- [x] Dockerfile in `Docker/frontend/`: build di Angular, poi nginx che serve i file
+- [x] Configurare nginx: inoltro di `/api` al backend e ritorno a `index.html` per le rotte Angular
+- [x] Reti separate, così il frontend non raggiunge il DB
+- [x] Verificare da `localhost:8080` la pagina e il refresh su `/login`
+- [x] Verificare che `/api` arrivi dal browser al backend (con RAWG giù risponde `504`, gestito dal backend)
+- [ ] Committare sul branch `frontend` il `package-lock.json` rigenerato: senza, `npm ci` fallisce da un clone pulito
+- [ ] Quando RAWG torna, verificare che `/api/v1/genres` restituisca dati veri, chiave compresa
 
 **Passo 6: `make dev`**
 
-- [ ] `docker-compose.dev.yml` con i volumi di `01_frontend` e `02_backend`, `ng serve` e `dotnet watch`
-- [ ] Proxy di `ng serve` verso il backend, con la configurazione in `docker/`
+- [ ] `docker-compose.dev.yml` con i volumi di `app/01_frontend` e `app/02_backend`, `ng serve` e `dotnet watch`
+- [ ] Proxy di `ng serve` verso il backend, con la configurazione in `Docker/`
 - [ ] `node_modules`, `bin` e `obj` in volumi separati dai sorgenti
 - [ ] Comando per riavviare i container quando cambiano le dipendenze
 - [ ] Verificare che le modifiche appaiano senza riavvii e che si possano committare dal worktree
@@ -122,7 +125,7 @@ Il primo risultato da consegnare al gruppo è la tabella dei preferiti, già col
 
 - [ ] Provare con `psql` i casi limite: gioco duplicato, utente inesistente, cancellazione dell'account
 - [ ] Verificare che una migration già applicata non venga rieseguita al riavvio
-- [ ] Scrivere lo schema in `00_Docs/Database.md`, con la motivazione di PostgreSQL già pronta nel draft
+- [ ] Scrivere lo schema in `Docs/Database.md`, con la motivazione di PostgreSQL già pronta nel draft
 
 **Pulizia dello studio**
 
@@ -135,7 +138,7 @@ Gli endpoint RAWG richiesti ci sono già: mancano autenticazione, preferiti e pr
 
 **Correzioni su ciò che esiste**
 
-- [ ] `Program.cs` usa `RequireRateLimiting("global")` su `/`, ma sono definite solo `standard` ed `expensive`: verificare `GET /` e correggere
+- [ ] `GET /` risponde `500`: `Program.cs` usa `RequireRateLimiting("global")`, ma sono definite solo `standard` ed `expensive`. Da correggere
 - [ ] Verificare che il limite di 30 richieste al minuto su `/games` regga la ricerca dinamica
 - [ ] Scrivere i test: i progetti contengono solo `UnitTest1.cs`
 

@@ -30,8 +30,11 @@ up:
 down:
 	docker compose down
 
-fclean:
+clean:
 	@echo "Chiusura container e cancellazione volumi..." && sleep 5 &&	docker compose down -v
+
+fclean:
+	docker system prune -af
 
 re: down all
 
