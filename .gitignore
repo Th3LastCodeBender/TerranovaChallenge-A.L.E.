@@ -4,9 +4,9 @@
 !.env.example
 
 # Protezione dei worktree
-/frontend/
-/backend/
-/db/
+/01_frontend/
+/02_backend/
+/03_db/
 
 # Docker personale
 docker-compose.override.yml

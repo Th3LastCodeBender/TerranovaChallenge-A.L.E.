@@ -21,4 +21,7 @@ status:
 		git -C "$$dir" status --branch; \
 	done
 
+clean_trees:
+	git worktree prune && git worktree list
+
 .PHONY: all setup status
