@@ -11,6 +11,7 @@
 - Per gli esercizi usa un **dominio giocattolo (biblioteca)**, non il dominio del progetto.
 - Si avanza di tappa solo quando l'utente sa rispondere alle domande della tappa con parole sue.
 - Per l'installazione/ambiente (Tappa 0) va bene dare comandi concreti: è setup, non la soluzione del progetto. Spiega però cosa fa ogni comando.
+- **Dal 2026-11-03, sul progetto reale:** l'utente scrive la prima bozza, Claude segnala i problemi e propone correzioni direttamente (scelta dell'utente, sostituisce il metodo solo a domande).
 - Lingua: italiano.
 - A fine tappa aggiorna `docs/appunti.md` con le regole e le definizioni ricavate dall'utente (non anticipare tappe future).
 
@@ -91,7 +92,7 @@ Entity Framework Core: code-first vs database-first, migrations. Saper leggere e
 
 **Tappa corrente:** 6 — Transazioni e ACID (in corso). Fatti: A, C, D; I iniziata. Tappa 5 chiusa il 2026-11-03.
 
-**Prossima azione:** esperimento con due terminali: due INSERT in prestiti sulla stessa copia libera (BEGIN in entrambi, A inserisce, B inserisce, A COMMIT, B COMMIT). Chiedere la previsione sul passo 4 (B resta in attesa, poi errore su `una_copia_un_prestito_aperto`), poi cancellare la riga di prova di A. Poi SAVEPOINT, anomalie di concorrenza e livelli di isolamento. L'utente ha fretta di finire: dosare le domande.
+**Prossima azione:** l'utente scrive la bozza del caso obbligatorio dei preferiti (aggiungere e togliere un gioco), poi wishlist e statistiche. Da decidere con la bozza: come trattare la lista preferiti se RAWG non risponde. Poi ponte con .NET: EF Core, migrations, lettura del DDL generato.
 
 Aperto/da rivedere in `libri`: manca il limite inferiore dell'anno; lingua con CHECK a lista (eventualmente lookup come formati). Il CHECK `data_checker` usa CURRENT_DATE (non immutabile: valutato solo all'inserimento) — dettaglio da far notare se capita. In `prestiti` manca una tabella tariffe (valida_dal/valida_al), non creata. In `utenti`: tessera obbligatoria anche per in_attesa ed email non unica, lasciate così per scelta.
 
@@ -212,3 +213,9 @@ Aperto/da rivedere in `libri`: manca il limite inferiore dell'anno; lingua con C
 - 2026-11-03 — UPDATE senza WHERE: tutte le righe prendono la mail ✅ (dice "colonne", sono righe). BEGIN non ancora visto. **Tappa 5 chiusa.** Aggiornato `docs/appunti.md`. Non verificato che sappia riscrivere l'indice parziale di Tappa 4. Prossimo: Tappa 6, esperimento con BEGIN e ROLLBACK.
 - 2026-11-03 — Tappa 6 iniziata. BEGIN/ROLLBACK: prima li vede come "prova prima di toccare il db", poi capisce che dopo un crash senza COMMIT è come un ROLLBACK ✅ (Atomicità: tutto o niente, non "garantisce il completamento"). Prossimo: D (crash subito dopo COMMIT), poi C e I.
 - 2026-11-03 — D: capisce che dopo COMMIT i dati restano; il perché spiegato (registro su disco). C: previsione "multa 1" smentita dall'esperimento (COMMIT risponde ROLLBACK, prompt =!#) ✅; il rischio del lavoro a metà spiegato da me. I: propone istruzioni "una dietro l'altra" (= SERIALIZABLE, intuizione giusta), non ha detto cosa succede senza protezioni. Default READ COMMITTED spiegato. Esperimento con due terminali proposto, non eseguito. Fine sessione.
+- 2026-11-03 — Esperimento due terminali: B resta in attesa finché A non fa COMMIT o ROLLBACK ✅ (osservato, previsioni non fatte). Caso COMMIT eseguito: B riceve duplicate key, prompt =!#. Inserimenti simultanei: spiegato che uno arriva comunque primo sull'indice e l'altro aspetta. Caso ROLLBACK: previsione corretta (l'INSERT di B riesce), esecuzione non confermata.
+- 2026-11-03 — Attesa di B: capisce che PostgreSQL non conosce ancora l'esito di A ✅ (rifiutare o accettare subito spiegato da me con la tabella dei due casi). Esperimento SELECT poi INSERT su tabella `prova` senza vincoli: previsione sbagliata (pensava B rifiutato), risultato osservato: nessuna attesa, 2 righe ✅. Ancora da consolidare: dice che BEGIN garantisce l'esecuzione delle guardie; corretto: i vincoli valgono anche senza BEGIN, BEGIN non impedisce decisioni su letture superate.
+- 2026-11-03 — Non-repeatable read: previsione sbagliata (pensava valore vecchio), osservato il valore nuovo ✅. Lo attribuisce al BEGIN mancante in B; chiarito che conta il fatto che B abbia confermato prima del secondo SELECT. In corso: previsione con REPEATABLE READ. Non confermato il ripristino dell'email dell'utente 1.
+- 2026-11-03 — L'utente interrompe lo studio e passa al progetto reale. Gruppo di 3, l'utente si occupa del DB. Idea di rilascio: 3 container Docker (frontend, backend, DB). Subject e grafo dell'architettura in arrivo.
+- 2026-11-03 — Ricevuto il subject (Gaming Explorer, dati da API RAWG). Unico dato persistente obbligatorio: preferiti (consentito anche Local Storage). Bonus legati al DB: autenticazione, wishlist, statistiche. PostgreSQL ammesso, va motivato nella documentazione.
+- 2026-11-03 — Decisioni: stack .NET + Angular + PostgreSQL con 3 container (nginx nel container frontend), niente Vault, ModSecurity, Socket.IO, OAuth/OTP; Redis rimandato. Autenticazione sì, con Identity. Tabelle tramite migrations di EF Core. Dei giochi RAWG si salva solo l'id (proposta dell'utente), dati letti da RAWG con eventuale cache nel backend. Il blueprint `ft_trasci` vale solo come riferimento di organizzazione.
