@@ -4,45 +4,60 @@
 // $gradient-dark:  linear-gradient( 145deg, rgb(76, 105, 172) 11.3%, rgba(24,40,72,1) 99.3% );
 
 $gradient-light:
-  // ciano
+  // Vignettatura leggera ai bordi
   radial-gradient(
-    ellipse at 90% 0%,
-    rgba(0, 180, 255, 0.28) 0%,
-    rgba(0, 180, 255, 0.10) 28%,
-    transparent 55%
+    ellipse at 50% 40%,
+    transparent 50%,
+    rgba(150, 70, 40, 0.08) 100%
   ),
-
-  // Viola
+  // Porpora (in alto a destra)
   radial-gradient(
-    ellipse at 0% 45%,
-    rgba(123, 97, 255, 0.20) 0%,
-    rgba(123, 97, 255, 0.07) 32%,
-    transparent 55%
+    circle at 88% 8%,
+    rgba(170, 60, 220, 0.26) 0%,
+    rgba(170, 60, 220, 0.08) 22%,
+    transparent 40%
   ),
-
-  // Fucsia
+  // Arancione acceso (in alto a sinistra)
   radial-gradient(
-    circle at 72% 38%,
-    rgba(255, 0, 140, 0.11) 0%,
-    transparent 28%
+    circle at 8% 12%,
+    rgba(255, 110, 20, 0.30) 0%,
+    rgba(255, 110, 20, 0.10) 20%,
+    transparent 38%
   ),
-
-  // Giallo
+  // Giallo vivo (a destra, al centro)
   radial-gradient(
-    ellipse at 90% 95%,
-    rgba(255, 220, 0, 0.20) 0%,
-    rgba(255, 220, 0, 0.07) 25%,
-    transparent 48%
+    circle at 95% 55%,
+    rgba(255, 205, 0, 0.34) 0%,
+    rgba(255, 205, 0, 0.10) 20%,
+    transparent 38%
   ),
-
-  // Base
+  // Porpora tenue (a sinistra, in basso)
+  radial-gradient(
+    circle at 5% 80%,
+    rgba(150, 50, 200, 0.20) 0%,
+    transparent 38%
+  ),
+  // Arancione (in basso al centro)
+  radial-gradient(
+    circle at 55% 100%,
+    rgba(255, 130, 40, 0.26) 0%,
+    rgba(255, 130, 40, 0.08) 22%,
+    transparent 42%
+  ),
+  // Flash giallo piccolo (in alto, al centro)
+  radial-gradient(
+    circle at 45% 0%,
+    rgba(255, 220, 60, 0.22) 0%,
+    transparent 25%
+  ),
+  // Base crema
   linear-gradient(
-    135deg,
-    #ffffff 0%,
-    #f5f8ff 25%,
-    #eaf2ff 52%,
-    #f3efff 78%,
-    #fffdf5 100%
+    145deg,
+    #fff4e8 0%,
+    #ffeedd 30%,
+    #ffe8d4 55%,
+    #fff1e2 80%,
+    #fffaf0 100%
   );
 
 $gradient-dark:
