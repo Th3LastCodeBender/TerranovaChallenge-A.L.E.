@@ -1,6 +1,6 @@
 namespace Terranova.Domain.Entities;
 
-public class Favourites
+public class Favourite	
 {
 	public required string UserId { get; set; }
 	// In potsgre questa diventa text NOT NULL
