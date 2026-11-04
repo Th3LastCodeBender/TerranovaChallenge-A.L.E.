@@ -19,9 +19,9 @@
 			<div class="custom-menu custom-theme-button">
 				<button class="btn theme-button" (click)="changeTheme()">
 					@if (isDarkMode()) {
-					<i class="bi bi-moon fs-4 custom-thene-icon"></i>
+						<i class="bi bi-moon fs-4 custom-theme-icon"></i>
 					} @else {
-					<i class="bi bi-sun fs-4 custom-thene-icon"></i>
+						<i class="bi bi-sun fs-4 custom-theme-icon"></i>
 					}
 				</button>
 				<button class="navbar-toggler" type="button" aria-label="Toggle navigation"
@@ -36,10 +36,10 @@
 					<button type="button" class="btn-close" aria-label="Close" (click)="changeVisibility()"></button>
 				</div>
 
-				<div class="offcanvas-body">
+				<div class="offcanvas-body custom-text-offcancavs">
 					<ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
 						<li class="nav-item">
-							<a class="nav-link active" aria-current="page" href="#">Home</a>
+							<a class="nav-link active" aria-current="page" routerLink="/">Home</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="#">Link</a>

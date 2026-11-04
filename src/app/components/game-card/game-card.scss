@@ -167,12 +167,12 @@
 
     padding: 0.25rem 0.55rem;
 
-    background-color: rgba(169, 112, 255, 0.15);
+    background-color: var(--tag-bg);
 
-    border: 1px solid rgba(169, 112, 255, 0.45);
+    border: 1px solid var(--tag-border);
     border-radius: 0.4rem;
 
-    color: #d8c8ff;
+    color: var(--tag-color);
 
     font-size: 0.7rem;
     font-weight: 600;

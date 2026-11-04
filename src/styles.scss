@@ -98,11 +98,15 @@ $gradient-dark:
 
   --bg-gradient: #{$gradient-light};
   --star-color: #e6a700;
+
+  --tag-bg: rgba(255, 140, 0, 0.15);
+  --tag-color: #ffcf99;
+  --tag-border: rgba(255, 140, 0, 0.803);
+
   --title-game-start: #6d28d9;
   --title-game-end: #db2777;
-
-  --card-border-color: rgba(255, 255, 255, 0.95);
-  --card-border-hover: #ffffff;
+  --card-border-color: rgba(219, 161, 26, 0.966);
+  --card-border-hover: rgba(238, 255, 7, 0.966);
   --card-shadow:
       0 0 0 1px rgba(88, 28, 135, 0.65),
       0 4px 12px rgba(76, 29, 149, 0.30);
@@ -110,17 +114,20 @@ $gradient-dark:
       0 0 0 2px #7c3aed,
       0 0 10px rgba(124, 58, 237, 0.75),
       0 8px 24px rgba(76, 29, 149, 0.40);
-  --card-glow-first: #7c3aed;
-  --card-glow-second: #d946ef;
+  --card-glow-first: #ff5e00;
+  --card-glow-second: #ffea00;
   --card-glow-third: #ffffff;
 }
 [data-bs-theme="dark"] {
 
   --bg-gradient: #{$gradient-dark};
   --star-color: #ffd166;
+  --tag-bg: rgba(169, 112, 255, 0.15);
+  --tag-color: #d8c8ff;
+  --tag-border: rgba(169, 112, 255, 0.45);
+
   --title-game-start: #a970ff;
   --title-game-end: #ff3cac;
-
   --card-border-color: rgba(169, 112, 255, 0.45);
   --card-border-hover: #a970ff;
   --card-shadow:

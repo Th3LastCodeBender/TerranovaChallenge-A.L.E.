@@ -8,6 +8,7 @@
     background-color: rgba(20, 20, 30, 0.4);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
+    color: white;
 }
 
 .bi-search {
@@ -87,4 +88,12 @@
 	display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.navbar,
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .offcanvas-title,
+.navbar .custom-text-offcancavs {
+    color: white;
 }
