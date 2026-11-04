@@ -22,6 +22,11 @@ status:
 		git -C "$$dir" status --branch; \
 	done
 
+pull:
+	git -C app/01_frontend pull
+	git -C app/02_backend pull
+	git -C app/03_db pull
+
 dev: setup
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
@@ -35,12 +40,19 @@ up:
 	docker compose up -d --build --wait
 
 down:
-	docker compose down
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 clean:
-	@echo "Chiusura container e cancellazione volumi..." && sleep 5 &&	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+	@echo "Stai per cancellare i volumi, questo significa dati db."
+	@echo "Premi Invio per continuare o Ctrl+C per annullare."
+	@read confirm
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
 
 fclean:
+	@echo "Stai per cancellare TUTTO, volumi e container"
+	@echo "Premi Invio per continuare o Ctrl+C per annullare."
+	@read confirm
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
 	docker system prune -af
 
 re: down all
@@ -54,4 +66,4 @@ logs:
 db:
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
 
-.PHONY: all dev dev_restart setup status clean_trees up down clean re ps logs db fclean
+.PHONY: all dev dev_restart setup status pull clean_trees up down clean re ps logs db fclean
