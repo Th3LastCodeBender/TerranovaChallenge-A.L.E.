@@ -6,6 +6,10 @@ using Terranova.Application.Interfaces;
 using Terranova.Infrastructure.ExternalServices;
 using Terranova.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using Terranova.Application.Auth;
+using Terranova.Infrastructure.Identity;
 
 namespace Terranova.Infrastructure;
 
@@ -37,6 +41,38 @@ public static class DependencyInjection
 		var connectionString = configuration.GetConnectionString("DefaultConnection");
 
 		services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+ 		
+		services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+			{
+				options.Password.RequiredLength = 8;
+				options.Password.RequireDigit = true;
+				options.Password.RequireUppercase = true;
+				options.Password.RequireLowercase = true;
+				options.Password.RequireNonAlphanumeric = false;
+
+				options.Lockout.MaxFailedAccessAttempts = 5;
+				options.Lockout.DefaultLockoutTimeSpan =
+					TimeSpan.FromMinutes(5);
+
+				options.User.RequireUniqueEmail = true;
+			})
+			.AddEntityFrameworkStores<AppDbContext>()
+			.AddDefaultTokenProviders();
+
+		services.ConfigureApplicationCookie(options =>
+		{
+			options.Cookie.Name = "Terranova.Auth";
+			options.Cookie.HttpOnly = true;
+			options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+			options.Cookie.SameSite = SameSiteMode.Lax;
+
+			options.ExpireTimeSpan = TimeSpan.FromHours(12);
+			options.SlidingExpiration = true;
+
+			options.LoginPath = "/api/auth/login";
+		});
+
+		services.AddScoped<IAuthService, AuthService>();
 
 		return services;
 	}

@@ -1,4 +1,3 @@
-
 using Terranova.Api.Endpoints;
 
 namespace Terranova.Api.Extensions;
@@ -10,6 +9,7 @@ public static class EndpointExtensions
 	{
 		app.MapHealthEndpoints();
 		app.MapGamesEndpoints();
+		app.MapAuthEndpoints();
 
 		return app;
 	}

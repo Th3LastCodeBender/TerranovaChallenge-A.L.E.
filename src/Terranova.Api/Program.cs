@@ -24,8 +24,9 @@ if (File.Exists(envPath))
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddEnvironmentVariables();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -67,6 +68,12 @@ builder.Services.AddRateLimiter(options =>
 			}));
 });
 
+builder.Services.AddAuthorization();
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -74,6 +81,12 @@ app.UseExceptionHandler();
 if (!app.Environment.IsDevelopment())
 {
 	app.UseHsts();
+
+}
+else
+{
+	app.UseSwagger();
+	app.UseSwaggerUI();	
 }
 
 app.UseHttpsRedirection();
@@ -116,5 +129,8 @@ app.Map("/error", () =>
 		statusCode: StatusCodes.Status500InternalServerError,
 		title: "An unexpected error occurred.");
 });
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
