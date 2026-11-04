@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: !reset null
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    working_dir: /app
+    command: dotnet watch --no-hot-reload run --project src/Terranova.Api --no-launch-profile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ArtifactsPath: /artifacts
+    volumes:
+      - ./app/02_backend:/app
+
+  frontend:
+    build: !reset null
+    image: node:24-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npx ng serve --host 0.0.0.0 --proxy-config /proxy.json"
+    volumes: !override
+      - ./app/01_frontend:/app
+      - ./Docker/frontend/proxy.dev.json:/proxy.json:ro
+      - frontend_node_modules:/app/node_modules
+      - frontend_angular:/app/.angular
+    ports: !override
+      - "127.0.0.1:4200:4200"
+
+volumes:
+  frontend_node_modules:
+  frontend_angular:

@@ -1,4 +1,5 @@
 WORKTREES := app/01_frontend:frontend app/02_backend:backend app/03_db:DataBase
+DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 
 all : setup up
 
@@ -21,6 +22,12 @@ status:
 		git -C "$$dir" status --branch; \
 	done
 
+dev: setup
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+dev_restart:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml restart frontend backend
+
 clean_trees:
 	git worktree prune && git worktree list
 
@@ -31,7 +38,7 @@ down:
 	docker compose down
 
 clean:
-	@echo "Chiusura container e cancellazione volumi..." && sleep 5 &&	docker compose down -v
+	@echo "Chiusura container e cancellazione volumi..." && sleep 5 &&	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
 
 fclean:
 	docker system prune -af
@@ -47,4 +54,4 @@ logs:
 db:
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
 
-.PHONY: all setup status clean_trees up down re ps logs db fclean
+.PHONY: all dev dev_restart setup status clean_trees up down clean re ps logs db fclean

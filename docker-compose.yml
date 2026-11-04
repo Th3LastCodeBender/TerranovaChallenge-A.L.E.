@@ -25,7 +25,7 @@ services:
       dockerfile: ../../Docker/backend/backend.Dockerfile
     environment:
       Rawg__ApiKey: ${Rawg__ApiKey:?manca nel .env}
-      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
     depends_on:
       db:
         condition: service_healthy
