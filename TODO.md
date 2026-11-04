@@ -1,17 +1,17 @@
 # Gaming Explorer — Lista delle cose da fare
 
-Nov 3, 2026 · @Magico
+Nov 4, 2026 · @Magico
 
 ## Chi fa cosa e a che punto siamo
 
-Il backend RAWG e la grafica di base esistono già, ma i pezzi non sono collegati: mancano preferiti, autenticazione, Docker completo e integrazione. Le responsabilità di frontend e backend sono ricavate dalla cronologia dei commit: **da confermare**, compreso che `AidenDogs` e `andre42` siano la stessa persona.
+Il backend RAWG e la grafica di base esistono già, ma i pezzi non sono collegati: mancano preferiti, autenticazione e integrazione. Le responsabilità di frontend e backend sono ricavate dalla cronologia dei commit: **da confermare**, compreso che `AidenDogs` e `andre42` siano la stessa persona.
 
 | Area | Responsabile | Branch | Cosa c'è già | Cosa manca di più importante |
 | --- | --- | --- | --- | --- |
-| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | Compose dei tre livelli, Dockerfile, nginx, Makefile con i worktree, studio di PostgreSQL | `make dev`, schema reale, migrations |
-| Backend | AidenDogs / andre42 | `backend` | .NET 10, endpoint `/api/v1` per giochi, dettaglio, screenshot, generi e piattaforme, rate limit | Collegamento al DB, Identity, endpoint preferiti, Postman |
+| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | Compose dei tre livelli, Dockerfile, nginx, Makefile con i worktree, `make dev`, studio di PostgreSQL | Correggere il proxy di `make dev`, schema reale, migrations |
+| Backend | AidenDogs / andre42 | `backend` | .NET 10, endpoint `/api/v1` per giochi, dettaglio, screenshot, generi e piattaforme, rate limit, connessione al DB con `/health/db` | Tabelle e migrations, Identity, endpoint preferiti, Postman |
 | Frontend | odoacr3e | `frontend` | Angular 22, Bootstrap, navbar, card, griglia, pagine Home e Login, cambio tema | Chiamate HTTP (la griglia usa dati finti), ricerca, filtri, dettaglio, preferiti |
-| Integrazione | Tutti | `main` | `make all` avvia i tre container; browser, nginx e backend comunicano | Collegare il backend al DB, importare i branch in `main` prima della consegna |
+| Integrazione | Tutti | `main` | `make all` avvia i tre container; browser, nginx e backend comunicano; il backend raggiunge il DB | Importare i branch in `main` prima della consegna |
 
 ## Decisioni già prese
 
@@ -40,7 +40,7 @@ Queste scelte bloccano il lavoro di più persone, quindi vanno chiuse per prime.
 
 ## Docker e architettura — Th3LastCodeBender
 
-L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1-5 quasi completati: restano la correzione del lock da committare e la prova con RAWG. Il prossimo è `make dev`.
+L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1-5 quasi completati: resta la prova con RAWG. `make dev` è quasi finito: va corretto il proxy e restano da completare le verifiche. Poi si passa al passo 8.
 
 **Passi 1-2: repo e worktree**
 
@@ -71,20 +71,24 @@ L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make d
 - [x] Reti separate, così il frontend non raggiunge il DB
 - [x] Verificare da `localhost:8080` la pagina e il refresh su `/login`
 - [x] Verificare che `/api` arrivi dal browser al backend (con RAWG giù risponde `504`, gestito dal backend)
-- [ ] Committare sul branch `frontend` il `package-lock.json` rigenerato: senza, `npm ci` fallisce da un clone pulito
+- [x] Committare sul branch `frontend` il `package-lock.json` rigenerato: senza, `npm ci` fallisce da un clone pulito
 - [ ] Quando RAWG torna, verificare che `/api/v1/genres` restituisca dati veri, chiave compresa
 
 **Passo 6: `make dev`**
 
-- [ ] `docker-compose.dev.yml` con i volumi di `app/01_frontend` e `app/02_backend`, `ng serve` e `dotnet watch`
-- [ ] Proxy di `ng serve` verso il backend, con la configurazione in `Docker/`
-- [ ] `node_modules`, `bin` e `obj` in volumi separati dai sorgenti
-- [ ] Comando per riavviare i container quando cambiano le dipendenze
-- [ ] Verificare che le modifiche appaiano senza riavvii e che si possano committare dal worktree
+- [x] `docker-compose.dev.yml` con i volumi di `app/01_frontend` e `app/02_backend`, `ng serve` e `dotnet watch`
+- [ ] Proxy di `ng serve` verso il backend, con la configurazione in `Docker/`: in `proxy.dev.json` manca `:` in `http://`, e `/api` risponde `502`
+- [x] `node_modules` e cache di Angular in volumi separati, `bin` e `obj` fuori dai sorgenti
+- [x] `make dev_restart` per riavviare i container quando cambiano le dipendenze
+- [x] Verificare che le modifiche al frontend appaiano senza riavvii
+- [ ] Verificare che le modifiche al backend si applichino senza riavvii
+- [ ] Verificare che si possa committare dal worktree
+- [ ] Verificare che dopo `make dev` il comando `make all` torni a rispondere su `localhost:8080`
 
-**Passo 7: backend e DB** (da concordare con chi lavora sul backend)
+**Passo 7: backend e DB**
 
-- [ ] Endpoint di prova che esegue `SELECT 1` sul DB
+- [x] Endpoint di prova che esegue `SELECT 1` sul DB: `/health/db`, risponde `healthy`
+- [x] Allineare il nome della stringa di connessione nel compose: `ConnectionStrings__DefaultConnection`
 
 **Passo 8: verifica finale**
 
@@ -115,7 +119,7 @@ Il primo risultato da consegnare al gruppo è la tabella dei preferiti, già col
 
 **EF Core e migrations** (se confermato nelle decisioni)
 
-- [ ] Aggiungere Npgsql ed EF Core al progetto `Terranova.Infrastructure`
+- [x] Aggiungere Npgsql ed EF Core al progetto `Terranova.Infrastructure`
 - [ ] Creare il `DbContext` con le tabelle di Identity e quella dei preferiti
 - [ ] Dichiarare in C# i vincoli decisi nella bozza
 - [ ] Generare la prima migration e controllare l'SQL con `dotnet ef migrations script`
@@ -171,7 +175,7 @@ La base grafica c'è: il passo decisivo è sostituire i dati finti con le chiama
 
 **Collegamento al backend**
 
-- [ ] Attivare `provideHttpClient` e creare un servizio per le chiamate a `/api/v1`
+- [ ] Attivare `provideHttpClient` e creare un servizio per le chiamate a `/api/v1`, con percorsi relativi per evitare errori CORS
 - [ ] Allineare i modelli TypeScript al JSON del backend
 - [ ] Sostituire `GAMES_MOCKUP` in `game-list` con i dati reali
 
