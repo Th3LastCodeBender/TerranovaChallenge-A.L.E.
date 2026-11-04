@@ -8,7 +8,7 @@ Il backend RAWG e la grafica di base esistono già, ma i pezzi non sono collegat
 
 | Area | Responsabile | Branch | Cosa c'è già | Cosa manca di più importante |
 | --- | --- | --- | --- | --- |
-| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | Compose dei tre livelli, Dockerfile, nginx, Makefile con i worktree, `make dev`, studio di PostgreSQL | Correggere il proxy di `make dev`, schema reale, migrations |
+| Docker e DB | Th3LastCodeBender | `main`, `DataBase` | Compose dei tre livelli, Dockerfile, nginx, Makefile con i worktree, `make dev`, studio di PostgreSQL | Schema reale, migrations |
 | Backend | AidenDogs / andre42 | `backend` | .NET 10, endpoint `/api/v1` per giochi, dettaglio, screenshot, generi e piattaforme, rate limit, connessione al DB con `/health/db` | Tabelle e migrations, Identity, endpoint preferiti, Postman |
 | Frontend | odoacr3e | `frontend` | Angular 22, Bootstrap, navbar, card, griglia, pagine Home e Login, cambio tema | Chiamate HTTP (la griglia usa dati finti), ricerca, filtri, dettaglio, preferiti |
 | Integrazione | Tutti | `main` | `make all` avvia i tre container; browser, nginx e backend comunicano; il backend raggiunge il DB | Importare i branch in `main` prima della consegna |
@@ -40,7 +40,7 @@ Queste scelte bloccano il lavoro di più persone, quindi vanno chiuse per prime.
 
 ## Docker e architettura — Th3LastCodeBender
 
-L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1-5 quasi completati: resta la prova con RAWG. `make dev` è quasi finito: va corretto il proxy e restano da completare le verifiche. Poi si passa al passo 8.
+L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make dev` permetta di lavorare senza riavviare i server. Passi 1-5 quasi completati: resta la prova con RAWG. `make dev` è completato. Ora si passa al passo 8.
 
 **Passi 1-2: repo e worktree**
 
@@ -77,13 +77,13 @@ L'obiettivo è che `make all` avvii tutta l'app da un clone pulito e che `make d
 **Passo 6: `make dev`**
 
 - [x] `docker-compose.dev.yml` con i volumi di `app/01_frontend` e `app/02_backend`, `ng serve` e `dotnet watch`
-- [ ] Proxy di `ng serve` verso il backend, con la configurazione in `Docker/`: in `proxy.dev.json` manca `:` in `http://`, e `/api` risponde `502`
+- [x] Proxy di `ng serve` verso il backend, con la configurazione in `Docker/`
 - [x] `node_modules` e cache di Angular in volumi separati, `bin` e `obj` fuori dai sorgenti
 - [x] `make dev_restart` per riavviare i container quando cambiano le dipendenze
 - [x] Verificare che le modifiche al frontend appaiano senza riavvii
-- [ ] Verificare che le modifiche al backend si applichino senza riavvii
-- [ ] Verificare che si possa committare dal worktree
-- [ ] Verificare che dopo `make dev` il comando `make all` torni a rispondere su `localhost:8080`
+- [x] Verificare che le modifiche al backend si applichino senza riavvii
+- [x] Verificare che si possa committare dal worktree
+- [x] Verificare che dopo `make dev` il comando `make all` torni a rispondere su `localhost:8080`
 
 **Passo 7: backend e DB**
 

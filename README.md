@@ -1,55 +1,63 @@
 # TerranovaChallenge-A.L.E.
 Progetto della Challenge Terranova da parte del gruppo A.L.E
 
-## Tool di sviluppo
+## Requisiti
 
-Ogni tool sta in una sottocartella di `scripts/` con il suo `Makefile`.
-Il `Makefile` di `scripts/` lancia lo stesso target in tutti i tool:
+- Docker con Docker Compose v2 (la versione che usiamo noi è la 2.40)
+- Git e Make
+- Una chiave API di [RAWG](https://rawg.io/apidocs) sperando che rawg non sia down come al solito
 
-```bash
-cd scripts
-make install                  # installa tutti i tool
-make uninstall                # li rimuove
-make install TOOLS="commit"   # solo i tool indicati
-make list                     # elenca i tool trovati
-```
-
-## Script di commit (`scripts/commit/`)
-
-Comando `commit` che crea commit nel formato `KEYWORD[: STATO] | messaggio | file1, file2, file3...` e fa il push.
-Pensato per lo sviluppo e non per la produzione.
-
-### Installazione
+## Avvio
 
 ```bash
-cd scripts/commit
-make install     # installa 'commit' in ~/.local/bin
-make uninstall   # lo rimuove
+git clone https://github.com/Th3LastCodeBender/TerranovaChallenge-A.L.E..git
+cd TerranovaChallenge-A.L.E.
+cp .env.example .env
 ```
 
-### Utilizzo
+Apri `.env`, inserisci la chiave in `Rawg__ApiKey` e scegli una password per il database. Poi lancia:
 
 ```bash
-commit                 # menu interattivo, stage di tutta la repo (git add -A)
-commit 1 3 file1 file2 # FEATURE: WORK IN PROGRESS, solo i file indicati
-commit 13              # equivalente a "commit 1 3"
-commit --add           # aggiunge una nuova keyword o un nuovo stato
-commit -h              # aiuto
+make all
 ```
 
-`commit --add` chiede se aggiungere una keyword (con eventuali stati) o uno stato a una keyword esistente,
-e salva il risultato direttamente nel blocco `# >>> keyword >>>` di `scripts/commit/commit.sh`: committalo per condividerlo col gruppo.
-Massimo 9 keyword e 9 stati per keyword, così i codici combinati (es. `13`) restano a due cifre.
+L'applicazione è su <http://localhost:8080>.
 
-| # | Keyword     | Stati                                                       |
-|---|-------------|-------------------------------------------------------------|
-| 1 | FEATURE     | 1 NEW · 2 UPDATE · 3 WORK IN PROGRESS · 4 DONE              |
-| 2 | BUG         | 1 FOUND · 2 FIX IN PROGRESS · 3 SOLVED                      |
-| 3 | REFACTORING | —                                                           |
-| 4 | CLEANING    | —                                                           |
-| 5 | PERFORMANCE | —                                                           |
-| 6 | TEST        | —                                                           |
-| 7 | WORKFLOW    | —                                                           |
-| 8 | MERGE       | —                                                           |
+## Sviluppo
 
-Note: lo script si rifiuta di partire se ci sono già modifiche in stage.
+```bash
+make dev
+```
+
+L'applicazione è su <http://localhost:4200>. Le modifiche ai sorgenti in `app/` si applicano senza riavviare i container. Il primo avvio richiede qualche minuto; con `make logs` puoi seguirne l'avanzamento.
+
+Il frontend deve chiamare il backend con percorsi relativi, come `/api/v1/games`. Gli endpoint nuovi devono stare sotto `/api`, altrimenti non sono raggiungibili dal browser.
+
+## Struttura
+
+Il branch `main` contiene l'infrastruttura. Ogni livello ha il suo branch, collegato come worktree da `make setup`, che `make all` e `make dev` lanciano in automatico.
+
+| Cartella | Branch | Contenuto |
+| --- | --- | --- |
+| `.` | `main` | Makefile, compose, `Docker/`, `Docs/` |
+| `app/01_frontend` | `frontend` | Angular |
+| `app/02_backend` | `backend` | .NET |
+| `app/03_db` | `DataBase` | Materiale sul database |
+
+I commit fatti dentro una cartella finiscono sul suo branch. Le modifiche a Makefile e compose si committano dalla root, su `main`.
+
+## Comandi
+
+| Comando | Cosa fa |
+| --- | --- |
+| `make all` | Costruisce e avvia la versione da consegnare |
+| `make dev` | Avvia la versione di sviluppo |
+| `make dev_restart` | Riavvia frontend e backend dopo un cambio di dipendenze |
+| `make down` | Ferma i container e conserva i dati |
+| `make re` | Ferma i container e rilancia `make all` |
+| `make ps` | Mostra lo stato dei container |
+| `make logs` | Segue i log |
+| `make db` | Apre `psql` sul database |
+| `make status` | Mostra lo stato di tutti i worktree |
+| `make clean` | Ferma i container e **cancella i dati del database** |
+| `make fclean` | **Cancella immagini, container e reti non in uso di tutto Docker**, anche di altri progetti |
