@@ -303,9 +303,9 @@
 }
 
 .custom-platform-card:hover {
-    background-color: rgba(169, 112, 255, 0.20);
+    background-color: var(--console-card-bg);
 
-    border-color: #a970ff;
+    border-color: var(--console-card-color);
 }
 
 .custom-platform-card i {
