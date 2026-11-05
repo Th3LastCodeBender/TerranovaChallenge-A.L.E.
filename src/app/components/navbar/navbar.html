@@ -89,24 +89,62 @@
                         </span>
 
                         <div class="custom-account-buttons">
+                            @if (!user.isLoggedIn()) {
+                                <a
+                                    class="custom-login-button"
+                                    routerLink="/login"
+                                    (click)="login()"
+                                >
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                    <span>Login</span>
+                                </a>
+    
+                                <a
+                                    class="custom-register-button"
+                                    routerLink="/register"
+                                    (click)="changeVisibility()"
+                                >
+                                    <i class="bi bi-person-plus"></i>
+                                    <span>Register</span>
+                                </a>
+                            } @else {
+                                <a
+                                    class="custom-user-card"
+                                    routerLink="/me"
+                                    (click)="changeVisibility()"
+                                >
+                                    <div class="custom-user-avatar">
+                                        @if (user.user?.image) {
+                                            <img
+                                                [src]="user.user?.image"
+                                                [alt]="user.user?.username"
+                                            />
+                                        } @else {
+                                            <i class="bi bi-person-fill"></i>
+                                        }
+                                    </div>
 
-                            <a
-                                class="custom-login-button"
-                                routerLink="/login"
-                                (click)="changeVisibility()"
-                            >
-                                <i class="bi bi-box-arrow-in-right"></i>
-                                <span>Login</span>
-                            </a>
+                                    <div class="custom-user-info">
+                                        <span class="custom-user-name">
+                                            {{ user.user?.username }}
+                                        </span>
 
-                            <a
-                                class="custom-register-button"
-                                routerLink="/register"
-                                (click)="changeVisibility()"
-                            >
-                                <i class="bi bi-person-plus"></i>
-                                <span>Register</span>
-                            </a>
+                                        <span class="custom-user-email">
+                                            {{ user.user?.email }}
+                                        </span>
+                                    </div>
+
+                                    <i class="bi bi-chevron-right custom-user-arrow"></i>
+                                    <button
+                                        type="button"
+                                        class="custom-logout-button"
+                                        (click)="logout()"
+                                    >
+                                        <i class="bi bi-box-arrow-right"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </a>
+                            }
 
                         </div>
 

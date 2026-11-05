@@ -5,14 +5,26 @@ import { User } from '../../models/user.model';
 	providedIn: 'root'
 })
 export class AuthService {
-	user: User | null = {
-		id: 1,
-		email: "edoraccanello@gmail.com",
-		name: "Edoardo",
-		surname: "Raccanello"
-	};
+	user: User | null = this.loadUser();
+
+	setUser(user: User): void {
+		this.user = user;
+		sessionStorage.setItem('user', JSON.stringify(user));
+	}
 
 	isLoggedIn(): boolean {
 		return this.user !== null;
+	}
+
+	logout() {
+		this.user = null;
+		sessionStorage.removeItem('user');
+	}
+
+	private loadUser(): User | null {
+		const user = sessionStorage.getItem('user');
+		if (!user)
+			return null;
+		return JSON.parse(user);
 	}
 }
