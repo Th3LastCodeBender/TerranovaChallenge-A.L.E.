@@ -97,7 +97,22 @@ $gradient-dark:
 :root, [data-bs-theme="light"] {
 
   --bg-gradient: #{$gradient-light};
+  
+  --offcanvas-bg: rgba(255, 244, 232, 0.94);
+  --offcanvas-text: #35223b;
+  --offcanvas-muted: rgba(53, 34, 59, 0.55);
+  --offcanvas-border: rgba(255, 106, 0, 0.25);
+  --offcanvas-accent: #ff6a00;
+  --offcanvas-accent-bg: rgba(255, 106, 0, 0.10);
+  --offcanvas-accent-hover: rgba(255, 106, 0, 0.17);
+  --offcanvas-accent-border: rgba(255, 106, 0, 0.35);
+  --offcanvas-accent-shadow: rgba(255, 106, 0, 0.30);
+  --offcanvas-close-filter: none;
+
   --star-color: #e6a700;
+
+  --register-start: #ff6a00;
+  --register-end: #ffb800;
 
   --tag-bg: rgba(255, 140, 0, 0.15);
   --tag-color: #ffcf99;
@@ -108,6 +123,7 @@ $gradient-dark:
 
   --title-game-start: #6d28d9;
   --title-game-end: #db2777;
+
   --card-border-color: rgba(219, 161, 26, 0.966);
   --card-border-hover: rgba(238, 255, 7, 0.966);
   --card-shadow:
@@ -124,7 +140,22 @@ $gradient-dark:
 [data-bs-theme="dark"] {
 
   --bg-gradient: #{$gradient-dark};
+  
+  --offcanvas-bg: rgba(10, 8, 24, 0.94);
+  --offcanvas-text: #ffffff;
+  --offcanvas-muted: rgba(255, 255, 255, 0.55);
+  --offcanvas-border: rgba(169, 112, 255, 0.25);
+  --offcanvas-accent: #a970ff;
+  --offcanvas-accent-bg: rgba(169, 112, 255, 0.10);
+  --offcanvas-accent-hover: rgba(169, 112, 255, 0.17);
+  --offcanvas-accent-border: rgba(169, 112, 255, 0.35);
+  --offcanvas-accent-shadow: rgba(169, 112, 255, 0.30);
+  --offcanvas-close-filter: invert(1);
+  
   --star-color: #c084fc;
+
+  --register-start: #a970ff;
+  --register-end: #ff3cac;
 
   --tag-bg: rgba(169, 112, 255, 0.15);
   --tag-color: #d8c8ff;
