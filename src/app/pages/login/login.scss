@@ -1,27 +1,310 @@
+.custom-login-page {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+
+    color: #ffffff;
+
+    background:
+        radial-gradient(
+            circle at 85% 10%,
+            rgba(255, 0, 153, 0.22) 0%,
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 10% 45%,
+            rgba(124, 58, 237, 0.25) 0%,
+            transparent 50%
+        ),
+        radial-gradient(
+            circle at 90% 65%,
+            rgba(255, 230, 0, 0.16) 0%,
+            rgba(255, 230, 0, 0.06) 20%,
+            transparent 42%
+        ),
+        radial-gradient(
+            circle at 65% 95%,
+            rgba(0, 102, 255, 0.20) 0%,
+            transparent 50%
+        ),
+        linear-gradient(
+            145deg,
+            #02040d 0%,
+            #070b1d 30%,
+            #0b1026 55%,
+            #110824 80%,
+            #03050c 100%
+        );
+}
 
 .custom-login-card {
-	border: 2px solid white;
+    position: relative;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(169, 112, 255, 0.30);
+    border-radius: 22px;
+
+    background: rgba(10, 8, 24, 0.82);
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.40),
+        0 0 30px rgba(169, 112, 255, 0.16);
 }
 
-.custom-title {
-    font-size: clamp(2rem, 3vw, 3rem);
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    line-height: 1;
-}
+.custom-login-card::before {
+    content: "";
 
-.custom-title-game {
-    display: inline-block;
+    position: absolute;
+
+    top: 0;
+    left: 12%;
+
+    width: 76%;
+    height: 1px;
 
     background: linear-gradient(
         90deg,
-        #a970ff 0%,
-        #ff3cac 100%
+        transparent,
+        #a970ff,
+        #ff3cac,
+        transparent
+    );
+}
+
+.custom-login-body {
+    padding: 3rem;
+
+    text-align: center;
+}
+
+.custom-title {
+    display: inline-block;
+
+    margin-bottom: 0.6rem;
+
+    color: #ffffff;
+
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.03em;
+
+    text-decoration: none;
+}
+
+.custom-title-game {
+    background: linear-gradient(
+        90deg,
+        #a970ff,
+        #ff3cac
     );
 
     background-clip: text;
     -webkit-background-clip: text;
 
-    color: transparent !important;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.custom-login-subtitle {
+    margin-bottom: 2.5rem;
+
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 0.9rem;
+}
+
+.custom-form-field {
+    margin-bottom: 1.3rem;
+
+    text-align: left;
+}
+
+.custom-form-field label {
+    display: block;
+
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    letter-spacing: 0.05rem;
+}
+
+.custom-input-container {
+    position: relative;
+}
+
+.custom-input-container i {
+    position: absolute;
+
+    top: 50%;
+    left: 1rem;
+
+    z-index: 2;
+
+    color: #a970ff;
+
+    transform: translateY(-50%);
+}
+
+.custom-input-container .form-control {
+    min-height: 52px;
+
+    padding-left: 2.8rem;
+
+    color: #ffffff;
+
+    background: rgba(169, 112, 255, 0.06);
+
+    border: 1px solid rgba(169, 112, 255, 0.25);
+    border-radius: 13px;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.custom-input-container .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.custom-input-container .form-control:focus {
+    color: #ffffff;
+
+    background: rgba(169, 112, 255, 0.10);
+
+    border-color: #a970ff;
+
+    box-shadow:
+        0 0 0 3px rgba(169, 112, 255, 0.12),
+        0 0 18px rgba(169, 112, 255, 0.18);
+
+    outline: none;
+}
+
+.custom-forgot-password {
+    margin-top: -0.4rem;
+    margin-bottom: 1.8rem;
+
+    text-align: right;
+}
+
+.custom-forgot-password a {
+    color: rgba(255, 255, 255, 0.50);
+
+    font-size: 0.78rem;
+
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.custom-forgot-password a:hover {
+    color: #a970ff;
+}
+
+.custom-login-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.6rem;
+
+    width: 100%;
+    min-height: 52px;
+
+    border: 0;
+    border-radius: 13px;
+
+    color: #ffffff;
+
+    font-weight: 700;
+
+    background: linear-gradient(
+        135deg,
+        #a970ff,
+        #ff3cac
+    );
+
+    box-shadow:
+        0 8px 25px rgba(169, 112, 255, 0.25);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.custom-login-submit:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 30px rgba(169, 112, 255, 0.30),
+        0 0 20px rgba(169, 112, 255, 0.20);
+}
+
+.custom-login-submit:active {
+    transform: translateY(0);
+}
+
+.custom-login-divider {
+    display: flex;
+    align-items: center;
+
+    gap: 1rem;
+
+    margin: 2rem 0;
+}
+
+.custom-login-divider span {
+    flex: 1;
+
+    height: 1px;
+
+    background: rgba(169, 112, 255, 0.25);
+}
+
+.custom-login-divider p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.40);
+
+    font-size: 0.75rem;
+}
+
+.custom-register-text {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 0.85rem;
+}
+
+.custom-register-text a {
+    margin-left: 0.25rem;
+
+    color: #a970ff;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.custom-register-text a:hover {
+    color: #ff3cac;
+}
+
+@media (max-width: 576px) {
+    .custom-login-body {
+        padding: 2rem 1.5rem;
+    }
 }
