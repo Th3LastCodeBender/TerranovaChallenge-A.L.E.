@@ -45,13 +45,13 @@ down:
 
 migration:
 	@test -n "$(name)" || { echo "Uso: make migration name=nome_della_migration"; exit 1; }
-	$(DEV_COMPOSE) exec backend sh -c 'npx prisma migrate dev --create-only --name $(name); status=$$?; chown -R $(OWNER) prisma; exit $$status'
+	$(DEV_COMPOSE) exec backend sh -c 'pnpm exec prisma migrate dev --create-only --name $(name); status=$$?; chown -R $(OWNER) prisma; exit $$status'
 
 migrate:
-	$(DEV_COMPOSE) exec backend sh -c 'npx prisma migrate dev && npx prisma generate; status=$$?; chown -R $(OWNER) prisma src/generated; exit $$status'
+	$(DEV_COMPOSE) exec backend sh -c 'pnpm exec prisma migrate dev && npx prisma generate; status=$$?; chown -R $(OWNER) prisma src/generated; exit $$status'
 
 migrate_status:
-	$(DEV_COMPOSE) exec backend npx prisma migrate status
+	$(DEV_COMPOSE) exec backend pnpm exec prisma migrate status
 
 clean:
 	@echo "Stai per cancellare i volumi, questo significa dati db."
