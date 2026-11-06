@@ -22,7 +22,7 @@ model WG_User {
 	createdAt		DateTime		@default(now()) @map("created_at")
 	sessions		WG_Session[]
 
-	@@map("users")
+	@@map("wgUsers")
 }
 
 model WG_Session {
@@ -36,5 +36,5 @@ model WG_Session {
 	expiresAt		DateTime		@db.Timestamptz(3)	@map("expires_at")
 
 	@@index([userId])
-	@@map("sessions")
+	@@map("wgSessions")
 }
