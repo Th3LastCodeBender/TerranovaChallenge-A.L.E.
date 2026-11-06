@@ -1,14 +1,13 @@
 services:
   backend:
     build: !reset null
-    image: mcr.microsoft.com/dotnet/sdk:10.0
+    image: node:24-alpine
     working_dir: /app
-    command: dotnet watch --no-hot-reload run --project src/Terranova.Api --no-launch-profile
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ArtifactsPath: /artifacts
+    command: sh -c "npm ci && npx prisma generate && npx prisma migrate deploy && npx next dev -H 0.0.0.0 -p 8080"
     volumes:
       - ./app/02_backend:/app
+      - backend_node_modules:/app/node_modules
+      - backend_next:/app/.next
 
   frontend:
     build: !reset null
@@ -26,3 +25,5 @@ services:
 volumes:
   frontend_node_modules:
   frontend_angular:
+  backend_node_modules:
+  backend_next:

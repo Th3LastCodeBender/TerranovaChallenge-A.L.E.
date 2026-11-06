@@ -1,5 +1,6 @@
-**/bin/
-**/obj/
+node_modules/
+.next/
+src/generated/
 .git
 .env
 .env.*

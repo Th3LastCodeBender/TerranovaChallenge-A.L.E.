@@ -1,5 +1,6 @@
 WORKTREES := app/01_frontend:frontend app/02_backend:backend app/03_db:DataBase
-DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
+DEV_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.dev.yml
+OWNER := $(shell id -u):$(shell id -g)
 
 all : setup up
 
@@ -28,10 +29,10 @@ pull:
 	git -C app/03_db pull
 
 dev: setup
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+	$(DEV_COMPOSE) up -d
 
 dev_restart:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml restart frontend backend
+	$(DEV_COMPOSE) restart frontend backend
 
 clean_trees:
 	git worktree prune && git worktree list
@@ -40,19 +41,29 @@ up:
 	docker compose up -d --build --wait
 
 down:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+	$(DEV_COMPOSE) down
+
+migration:
+	@test -n "$(name)" || { echo "Uso: make migration name=nome_della_migration"; exit 1; }
+	$(DEV_COMPOSE) exec backend sh -c 'npx prisma migrate dev --create-only --name $(name); status=$$?; chown -R $(OWNER) prisma; exit $$status'
+
+migrate:
+	$(DEV_COMPOSE) exec backend sh -c 'npx prisma migrate dev && npx prisma generate; status=$$?; chown -R $(OWNER) prisma src/generated; exit $$status'
+
+migrate_status:
+	$(DEV_COMPOSE) exec backend npx prisma migrate status
 
 clean:
 	@echo "Stai per cancellare i volumi, questo significa dati db."
 	@echo "Premi Invio per continuare o Ctrl+C per annullare."
 	@read confirm
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+	$(DEV_COMPOSE) down -v
 
 fclean:
 	@echo "Stai per cancellare TUTTO, volumi e container"
 	@echo "Premi Invio per continuare o Ctrl+C per annullare."
 	@read confirm
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+	$(DEV_COMPOSE) down -v
 	docker system prune -af
 
 re: down all
@@ -66,4 +77,4 @@ logs:
 db:
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
 
-.PHONY: all dev dev_restart setup status pull clean_trees up down clean re ps logs db fclean
+.PHONY: all dev dev_restart setup status pull clean_trees up down clean re ps logs db fclean migration migrate migrate_status

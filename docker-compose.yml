@@ -24,8 +24,9 @@ services:
       context: ./app/02_backend
       dockerfile: ../../Docker/backend/backend.Dockerfile
     environment:
-      Rawg__ApiKey: ${Rawg__ApiKey:?manca nel .env}
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:?manca nel .env}
+      TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:?manca nel .env}
     depends_on:
       db:
         condition: service_healthy
