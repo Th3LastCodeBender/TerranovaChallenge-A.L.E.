@@ -9,18 +9,11 @@
             <div class="custom-search-bar d-flex align-items-md-center gap-2">
                 <form role="search">
                     <div class="position-relative">
-                        <input
-                            class="form-control rounded-pill pe-5"
-                            type="search"
-                            placeholder="Search"
-                            aria-label="Search"
-                        />
+                        <input class="form-control rounded-pill pe-5" type="search" placeholder="Search"
+                            aria-label="Search" />
 
-                        <button
-                            class="btn border-0 position-absolute top-50 end-0 translate-middle-y"
-                            type="submit"
-                            aria-label="Search"
-                        >
+                        <button class="btn border-0 position-absolute top-50 end-0 translate-middle-y" type="submit"
+                            aria-label="Search">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
@@ -29,41 +22,26 @@
 
             <div class="custom-menu custom-theme-button">
 
-                <button
-                    class="btn theme-button"
-                    (click)="changeTheme()"
-                >
+                <button class="btn theme-button" (click)="changeTheme()">
                     @if (isDarkMode()) {
-                        <i class="bi bi-moon fs-4 custom-theme-icon"></i>
+                    <i class="bi bi-moon fs-4 custom-theme-icon"></i>
                     } @else {
-                        <i class="bi bi-sun fs-4 custom-theme-icon"></i>
+                    <i class="bi bi-sun fs-4 custom-theme-icon"></i>
                     }
                 </button>
 
-                <button
-                    class="navbar-toggler"
-                    type="button"
-                    aria-label="Toggle navigation"
-                    (click)="changeVisibility()"
-                >
+                <button class="navbar-toggler" type="button" aria-label="Toggle navigation"
+                    (click)="changeVisibility()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
             </div>
 
             @if (visibile()) {
-                <div
-                    class="custom-offcanvas-backdrop"
-                    (click)="changeVisibility()"
-                ></div>
+            <div class="custom-offcanvas-backdrop" (click)="changeVisibility()"></div>
             }
 
-            <div
-                class="offcanvas offcanvas-end"
-                [class.show]="visibile()"
-                tabindex="-1"
-                id="offcanvasNavbar"
-            >
+            <div class="offcanvas offcanvas-end" [class.show]="visibile()" tabindex="-1" id="offcanvasNavbar">
 
                 <div class="offcanvas-header">
 
@@ -71,12 +49,8 @@
                         Wiki<span class="custom-title-game">game</span>
                     </h5>
 
-                    <button
-                        type="button"
-                        class="btn-close custom-offcanvas-close"
-                        aria-label="Close"
-                        (click)="changeVisibility()"
-                    ></button>
+                    <button type="button" class="btn-close custom-offcanvas-close" aria-label="Close"
+                        (click)="changeVisibility()"></button>
 
                 </div>
 
@@ -90,60 +64,41 @@
 
                         <div class="custom-account-buttons">
                             @if (!user.isLoggedIn()) {
-                                <a
-                                    class="custom-login-button"
-                                    routerLink="/login"
-                                    (click)="login()"
-                                >
-                                    <i class="bi bi-box-arrow-in-right"></i>
-                                    <span>Login</span>
-                                </a>
-    
-                                <a
-                                    class="custom-register-button"
-                                    routerLink="/register"
-                                    (click)="changeVisibility()"
-                                >
-                                    <i class="bi bi-person-plus"></i>
-                                    <span>Register</span>
-                                </a>
+                            <a class="custom-login-button" routerLink="/login">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                                <span>Login</span>
+                            </a>
+
+                            <a class="custom-register-button" routerLink="/register" (click)="changeVisibility()">
+                                <i class="bi bi-person-plus"></i>
+                                <span>Register</span>
+                            </a>
                             } @else {
-                                <a
-                                    class="custom-user-card"
-                                    routerLink="/me"
-                                    (click)="changeVisibility()"
-                                >
-                                    <div class="custom-user-avatar">
-                                        @if (user.user?.image) {
-                                            <img
-                                                [src]="user.user?.image"
-                                                [alt]="user.user?.username"
-                                            />
-                                        } @else {
-                                            <i class="bi bi-person-fill"></i>
-                                        }
-                                    </div>
+                            <a class="custom-user-card" routerLink="/me" (click)="changeVisibility()">
+                                <div class="custom-user-avatar">
+                                    @if (user.user?.image) {
+                                    <img [src]="user.user?.image" [alt]="user.user?.username" />
+                                    } @else {
+                                    <i class="bi bi-person-fill"></i>
+                                    }
+                                </div>
 
-                                    <div class="custom-user-info">
-                                        <span class="custom-user-name">
-                                            {{ user.user?.username }}
-                                        </span>
+                                <div class="custom-user-info">
+                                    <span class="custom-user-name">
+                                        {{ user.user?.username }}
+                                    </span>
 
-                                        <span class="custom-user-email">
-                                            {{ user.user?.email }}
-                                        </span>
-                                    </div>
+                                    <span class="custom-user-email">
+                                        {{ user.user?.email }}
+                                    </span>
+                                </div>
 
-                                    <i class="bi bi-chevron-right custom-user-arrow"></i>
-                                    <button
-                                        type="button"
-                                        class="custom-logout-button"
-                                        (click)="logout()"
-                                    >
-                                        <i class="bi bi-box-arrow-right"></i>
-                                        <span>Logout</span>
-                                    </button>
-                                </a>
+                                <i class="bi bi-chevron-right custom-user-arrow"></i>
+                                <button type="button" class="custom-logout-button" (click)="logout()">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </a>
                             }
 
                         </div>
@@ -160,12 +115,8 @@
 
                         <nav class="custom-navigation">
 
-                            <a
-                                class="custom-navigation-link"
-                                routerLink="/"
-                                routerLinkActive="active"
-                                (click)="changeVisibility()"
-                            >
+                            <a class="custom-navigation-link" routerLink="/" routerLinkActive="active"
+                                (click)="changeVisibility()">
                                 <i class="bi bi-house-door"></i>
 
                                 <span>Home</span>
@@ -173,12 +124,8 @@
                                 <i class="bi bi-chevron-right custom-navigation-arrow"></i>
                             </a>
 
-                            <a
-                                class="custom-navigation-link"
-                                routerLink="/catalog"
-                                routerLinkActive="active"
-                                (click)="changeVisibility()"
-                            >
+                            <a class="custom-navigation-link" routerLink="/catalog" routerLinkActive="active"
+                                (click)="changeVisibility()">
                                 <i class="bi bi-grid"></i>
 
                                 <span>Cataloghi</span>
@@ -186,12 +133,8 @@
                                 <i class="bi bi-chevron-right custom-navigation-arrow"></i>
                             </a>
 
-                            <a
-                                class="custom-navigation-link"
-                                routerLink="/games"
-                                routerLinkActive="active"
-                                (click)="changeVisibility()"
-                            >
+                            <a class="custom-navigation-link" routerLink="/games" routerLinkActive="active"
+                                (click)="changeVisibility()">
                                 <i class="bi bi-controller"></i>
 
                                 <span>Giochi</span>

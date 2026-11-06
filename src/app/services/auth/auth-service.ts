@@ -12,6 +12,10 @@ export class AuthService {
 		sessionStorage.setItem('user', JSON.stringify(user));
 	}
 
+	getUser(): User {
+		return this.getUser();
+	}
+
 	isLoggedIn(): boolean {
 		return this.user !== null;
 	}

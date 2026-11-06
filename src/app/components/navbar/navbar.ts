@@ -1,6 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { User } from '../../models/user.model';
 import { AuthService } from '../../services/auth/auth-service';
 
 @Component({
@@ -15,19 +14,6 @@ export class Navbar {
   isDarkMode = signal(true);
   user = inject(AuthService);
   router = inject(Router);
-
-  login () {
-    const user: User = {
-      id: 1,
-      username: "odoacr3e",
-      email: "edoraccanello@gmail.com",
-      name: "Edoardo",
-      surname: "Raccanello"
-    }
-    this.changeVisibility();
-    this.user.setUser(user);
-    this.router.navigate(['/']);
-  }
 
   logout() {
     this.user.logout();
