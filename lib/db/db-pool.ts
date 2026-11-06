@@ -19,8 +19,8 @@ export const pool =
 		password: requireEnv("DB_PASSWORD"),
 		port: Number(requireEnv("DB_PORT")),
 		max: optionalEnvInt("DB_MAX_CONNECTIONS", 10),
-		connectionTimeout: optionalEnvInt("DB_CONN_TIMEOUT", 5_000),
-		idleTimeout: optionalEnvInt("DB_IDLE_TIMEOUT", 30_000),
+		connectionTimeoutMillis: optionalEnvInt("DB_CONN_TIMEOUT", 5_000),
+		idleTimeoutMillis: optionalEnvInt("DB_IDLE_TIMEOUT", 30_000),
 		query_timeout: optionalEnvInt("DB_QUERY_TIMEOUT", 15_000),
 		statement_timeout: optionalEnvInt("DB_STATEMENT_TIMEOUT", 15_000) 
 	})
