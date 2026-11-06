@@ -21,7 +21,8 @@ export class Login {
       username: "odoacr3e",
       email: "edoraccanello@gmail.com",
       name: "Edoardo",
-      surname: "Raccanello"
+      surname: "Raccanello",
+      image: 'assets/ichigo_wallpaper.png'
     }
     this.user.setUser(user);
     this.router.navigate(['/']);
