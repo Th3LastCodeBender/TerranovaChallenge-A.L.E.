@@ -1,5 +1,6 @@
 FROM node:24-alpine
 WORKDIR /app
+RUN apk add --no-cache openssl
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable pnpm
