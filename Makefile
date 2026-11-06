@@ -1,4 +1,4 @@
-WORKTREES := app/01_frontend:frontend app/02_backend:backend app/03_db:DataBase
+WORKTREES := app/01_frontend:frontend app/02_backend:backend_ts app/03_db:DataBase
 DEV_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 OWNER := $(shell id -u):$(shell id -g)
 
