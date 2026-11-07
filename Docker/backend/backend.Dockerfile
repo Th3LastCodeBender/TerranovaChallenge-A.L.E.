@@ -1,14 +1,16 @@
 FROM node:24-alpine
 WORKDIR /app
+
 RUN apk add --no-cache openssl
-
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable pnpm
+RUN corepack enable pnpm && chown node:node /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+USER node
+
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY --chown=node:node . .
 RUN DATABASE_URL="postgresql://finto:finto@localhost/finto" pnpm exec prisma generate
 RUN pnpm exec next build
 

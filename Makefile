@@ -29,7 +29,7 @@ pull:
 	git -C app/03_db pull
 
 dev: setup
-	$(DEV_COMPOSE) up -d
+	$(DEV_COMPOSE) up -d --build
 
 dev_restart:
 	$(DEV_COMPOSE) restart frontend backend
