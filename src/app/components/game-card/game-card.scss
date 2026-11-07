@@ -6,7 +6,11 @@
 
 .custom-card {
     position: relative;
-    width: 100%;
+
+    width: 90%;
+    max-width: 320px;
+    margin: 0 auto;
+
     aspect-ratio: 4 / 5;
     overflow: hidden;
 
