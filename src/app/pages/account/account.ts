@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { AuthService } from '../../services/auth/auth-service';
+import { Navbar } from '../../components/navbar/navbar';
 
 @Component({
-  imports: [],
+  imports: [Navbar],
   selector: 'app-account',
   styleUrl: './account.scss',
   templateUrl: './account.html',

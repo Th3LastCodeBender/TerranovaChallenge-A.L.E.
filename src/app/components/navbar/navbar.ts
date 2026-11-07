@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth/auth-service';
+import { ThemeService } from '../../services/theme/theme-service';
+
 
 @Component({
   imports: [RouterLink],
@@ -11,17 +13,16 @@ import { AuthService } from '../../services/auth/auth-service';
 
 export class Navbar {
   visibile = signal(false);
-  isDarkMode = signal(true);
-  user = inject(AuthService);
+  themeService = inject(ThemeService);
+  authService = inject(AuthService);
   router = inject(Router);
 
-  logout() {
-    this.user.logout();
+  changeTheme() {
+    this.themeService.changeTheme();
   }
 
-  changeTheme() {
-    this.isDarkMode.update(v => !v);
-    document.documentElement.setAttribute('data-bs-theme', this.isDarkMode() ? 'dark' : 'light');
+  logout() {
+    this.authService.logout();
   }
 
   protected changeVisibility () {

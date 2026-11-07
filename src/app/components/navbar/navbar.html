@@ -23,7 +23,7 @@
             <div class="custom-menu custom-theme-button">
 
                 <button class="btn theme-button" (click)="changeTheme()">
-                    @if (isDarkMode()) {
+                    @if (themeService.isDarkMode()) {
                     <i class="bi bi-moon fs-4 custom-theme-icon"></i>
                     } @else {
                     <i class="bi bi-sun fs-4 custom-theme-icon"></i>
@@ -63,7 +63,7 @@
                         </span>
 
                         <div class="custom-account-buttons">
-                            @if (!user.isLoggedIn()) {
+                            @if (!authService.isLoggedIn()) {
                             <a class="custom-login-button" routerLink="/login">
                                 <i class="bi bi-box-arrow-in-right"></i>
                                 <span>Login</span>
@@ -76,8 +76,8 @@
                             } @else {
                             <a class="custom-user-card" routerLink="/me" (click)="changeVisibility()">
                                 <div class="custom-user-avatar">
-                                    @if (user.user?.image) {
-                                    <img [src]="user.user?.image" [alt]="user.user?.username" />
+                                    @if (authService.user?.image) {
+                                    <img [src]="authService.user?.image" [alt]="authService.user?.username" />
                                     } @else {
                                     <i class="bi bi-person-fill"></i>
                                     }
@@ -85,11 +85,11 @@
 
                                 <div class="custom-user-info">
                                     <span class="custom-user-name">
-                                        {{ user.user?.username }}
+                                        {{ authService.user?.username }}
                                     </span>
 
                                     <span class="custom-user-email">
-                                        {{ user.user?.email }}
+                                        {{ authService.user?.email }}
                                     </span>
                                 </div>
 
