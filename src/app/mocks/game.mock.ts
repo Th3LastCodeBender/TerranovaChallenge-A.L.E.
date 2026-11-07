@@ -6,6 +6,7 @@ export const GAMES_MOCKUP: IgdbGame[] = [
     id: 1,
     slug: 'cyber-city-2077',
     name: 'Cyber City 2077',
+    cover: { id: 101, image_id: 'https://media.rawg.io/media/games/20a/20aa03a10cda45239fe22d035c0ebe64.jpg' },
     first_release_date: 1607558400, // 2020-12-10
     rating: 88.4,                   // ex 4.42 / 5
     rating_count: 5200,
@@ -36,6 +37,7 @@ export const GAMES_MOCKUP: IgdbGame[] = [
     id: 3,
     slug: 'galactic-racing',
     name: 'Galactic Racing',
+    cover: { id: 103, image_id: 'https://media.rawg.io/media/screenshots/f95/f9518b1d99210c0cae21fc09e95b4e31.jpg' },
     first_release_date: 1755734400, // 2025-08-21
     rating: 97,                     // ex 4.85 / 5
     aggregated_rating: 94,          // ex metacritic
@@ -50,6 +52,7 @@ export const GAMES_MOCKUP: IgdbGame[] = [
     id: 4,
     slug: 'project-neon',
     name: 'Project Neon: The Last Horizon',
+    cover: { id: 104, image_id: 'https://media.rawg.io/media/screenshots/a5c/a5c95ea539c87d5f538763e16e18fb99.jpg' },
     // nessuna first_release_date + release "TBD" = ex tba: true
     release_dates: [{ id: 1, human: 'TBD' }],
     platforms: [],

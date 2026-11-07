@@ -14,11 +14,14 @@ export class GameCard {
   game = input.required<IgdbGame>();
 
   imageUrl = computed(() => {
+    const cover = this.game().cover;
+    return cover ? igdbImageUrl(cover.image_id, 'cover_big') : null;
+  });
+
+  galleryUrls = computed(() => {
     const g = this.game();
-    const wide = g.screenshots?.[0] ?? g.artworks?.[0];
-    if (wide) return igdbImageUrl(wide.image_id, 'screenshot_big');
-    if (g.cover) return igdbImageUrl(g.cover.image_id, 'cover_big');
-    return null;
+    return [...(g.screenshots ?? []), ...(g.artworks ?? [])]
+      .map(img => igdbImageUrl(img.image_id, 'screenshot_big'));
   });
 
   rating = computed(() => (this.game().total_rating ?? this.game().rating ?? 0) / 20);
