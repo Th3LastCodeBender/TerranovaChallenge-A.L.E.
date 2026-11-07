@@ -8,3 +8,6 @@ ALTER TABLE "wgFavourites" ADD CONSTRAINT "wgFavourites_game_id_check"
 -- Sessioni: una sessione non può scadere prima di essere creata
 ALTER TABLE "wgSessions" ADD CONSTRAINT "wgSessions_expires_check"
   CHECK ("expires_at" > "created_at");
+
+ALTER TABLE "wgFavourites" ADD CONSTRAINT "wgFavourites_game_id_check" CHECK ("game_id" > 0);
+ALTER TABLE "wgUserGames"  ADD CONSTRAINT "wgUserGames_game_id_check"  CHECK ("game_id" > 0);

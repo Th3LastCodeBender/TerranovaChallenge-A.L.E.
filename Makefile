@@ -48,7 +48,7 @@ migration:
 	$(DEV_COMPOSE) exec backend sh -c 'pnpm exec prisma migrate dev --create-only --name $(name); status=$$?; chown -R $(OWNER) prisma; exit $$status'
 
 migrate:
-	$(DEV_COMPOSE) exec backend sh -c 'pnpm exec prisma migrate dev && npx prisma generate; status=$$?; chown -R $(OWNER) prisma src/generated; exit $$status'
+	$(DEV_COMPOSE) exec backend sh -c 'pnpm exec prisma migrate dev && npx prisma generate; status=$$?; chown -R $(OWNER) prisma lib/generated; exit $$status'
 
 migrate_status:
 	$(DEV_COMPOSE) exec backend pnpm exec prisma migrate status
