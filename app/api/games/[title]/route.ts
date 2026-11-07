@@ -129,7 +129,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ title: 
 	try
 	{
 		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
-		const rl_result = await rateLimit(ip, "/games/[title]", RATE_LIMIT_POLICIES.search)
+		const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.search)
 
 		if (!rl_result.success)
 		{
