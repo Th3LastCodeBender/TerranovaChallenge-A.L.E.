@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server"
+
 export function requireEnv(name: string): string
 {
 	const value = process.env[name]
@@ -21,4 +23,9 @@ export function optionalEnvInt(name: string, fallback: number): number
 		throw new Error(`Invalid value for ${name}: expected a positive integer, got "${raw}"`)
 
 	return parsed
+}
+
+export function jsonError(message: string, status: number)
+{
+	return NextResponse.json({ error: message }, { status })
 }
