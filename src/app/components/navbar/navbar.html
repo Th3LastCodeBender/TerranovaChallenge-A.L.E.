@@ -63,8 +63,10 @@
                         </span>
 
                         <div class="custom-account-buttons">
+
                             @if (!authService.isLoggedIn()) {
-                            <a class="custom-login-button" routerLink="/login">
+
+                            <a class="custom-login-button" routerLink="/login" (click)="changeVisibility()">
                                 <i class="bi bi-box-arrow-in-right"></i>
                                 <span>Login</span>
                             </a>
@@ -73,8 +75,11 @@
                                 <i class="bi bi-person-plus"></i>
                                 <span>Register</span>
                             </a>
+
                             } @else {
+
                             <a class="custom-user-card" routerLink="/me" (click)="changeVisibility()">
+
                                 <div class="custom-user-avatar">
                                     @if (authService.user?.image) {
                                     <img [src]="authService.user?.image" [alt]="authService.user?.username" />
@@ -94,11 +99,16 @@
                                 </div>
 
                                 <i class="bi bi-chevron-right custom-user-arrow"></i>
-                                <button type="button" class="custom-logout-button" (click)="logout()">
-                                    <i class="bi bi-box-arrow-right"></i>
-                                    <span>Logout</span>
-                                </button>
+
                             </a>
+
+                            <button type="button" class="custom-logout-button" (click)="logout()" routerLink="/">
+
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Logout</span>
+
+                            </button>
+
                             }
 
                         </div>

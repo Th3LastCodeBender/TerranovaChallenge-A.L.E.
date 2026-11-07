@@ -23,6 +23,7 @@ export class Navbar {
 
   logout() {
     this.authService.logout();
+    this.changeVisibility();
   }
 
   protected changeVisibility () {

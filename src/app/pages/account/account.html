@@ -7,7 +7,7 @@
 
       <div class="col-auto">
         <img
-          [src]="user.user?.image"
+          [src]="authService.user?.image"
           class="profile-avatar"
           alt="Immagine profilo"
         >
@@ -15,20 +15,20 @@
 
       <div class="col">
         <h1 class="mb-1">
-          {{ user.user?.name }} {{ user.user?.surname }}
+          {{ authService.user?.name }} {{ authService.user?.surname }}
         </h1>
 
         <p class="text-secondary mb-3">
-          @{{ user.user?.username }}
+          @{{ authService.user?.username }}
         </p>
 
         <div class="d-flex align-items-center gap-3">
           <span class="badge rounded-pill">
-            Livello
+            Member
           </span>
 
           <span>
-            XP
+            since {{ authService.user?.memberSince }}
           </span>
         </div>
       </div>
@@ -82,22 +82,22 @@
 
         <div class="profile-info">
           <span>Email</span>
-          <p>{{ user.user?.email }}</p>
+          <p>{{ authService.user?.email }}</p>
         </div>
 
         <!-- <div class="profile-info">
           <span>Ruolo</span>
-          <p>{{ user.role }}</p>
+          <p>{{ authService.role }}</p>
         </div>
 
         <div class="profile-info">
           <span>Data iscrizione</span>
-          <p>{{ user.createdAt }}</p>
+          <p>{{ authService.createdAt }}</p>
         </div>
 
         <div class="profile-info">
           <span>Ultimo accesso</span>
-          <p>{{ user.lastLogin }}</p>
+          <p>{{ authService.lastLogin }}</p>
         </div> -->
 
       </div>

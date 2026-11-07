@@ -9,9 +9,9 @@ import { Navbar } from '../../components/navbar/navbar';
   templateUrl: './account.html',
 })
 export class Account {
-  user = inject(AuthService);
+  authService = inject(AuthService);
   
   getUserParams() {
-    return this.user.getUser();
+    return this.authService.getUser();
   }
 }

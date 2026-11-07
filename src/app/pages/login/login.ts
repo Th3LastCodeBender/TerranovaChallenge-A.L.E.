@@ -22,6 +22,7 @@ export class Login {
       email: "edoraccanello@gmail.com",
       name: "Edoardo",
       surname: "Raccanello",
+      memberSince: new Date('2025-06-15'),
       image: 'assets/ichigo_wallpaper.png'
     }
     this.user.setUser(user);
