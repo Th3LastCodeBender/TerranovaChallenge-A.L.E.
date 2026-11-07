@@ -136,6 +136,22 @@ $gradient-dark:
   --card-glow-first: #ff5e00;
   --card-glow-second: #ffea00;
   --card-glow-third: #ffffff;
+
+  --profile-bg-first: #fff4e8;
+  --profile-bg-second: #fff8ef;
+  --profile-bg-third: #f7f2ff;
+  --profile-card-bg: rgba(255, 255, 255, 0.65);
+  --profile-card-border: rgba(255, 106, 0, 0.25);
+  --profile-text: #35223b;
+  --profile-text-secondary: rgba(53, 34, 59, 0.65);
+  --profile-label: rgba(53, 34, 59, 0.50);
+  --profile-accent: #ff6a00;
+  --profile-accent-second: #ffb800;
+  --profile-member-bg: rgba(255, 106, 0, 0.10);
+  --profile-member-border: rgba(255, 106, 0, 0.35);
+  --profile-member-color: #ff6a00;
+  --profile-shadow: rgba(255, 106, 0, 0.18);
+
 }
 [data-bs-theme="dark"] {
 
@@ -176,6 +192,21 @@ $gradient-dark:
   --card-glow-first: #a970ff;
   --card-glow-second: #ff3cac;
   --card-glow-third: #ffffff;
+
+  --profile-bg-first: #160d36;
+  --profile-bg-second: #101a45;
+  --profile-bg-third: #171816;
+  --profile-card-bg: rgba(255, 255, 255, 0.035);
+  --profile-card-border: rgba(169, 112, 255, 0.25);
+  --profile-text: #ffffff;
+  --profile-text-secondary: #918aa5;
+  --profile-label: #817a99;
+  --profile-accent: #a970ff;
+  --profile-accent-second: #ff3cac;
+  --profile-member-bg: rgba(169, 112, 255, 0.12);
+  --profile-member-border: rgba(169, 112, 255, 0.30);
+  --profile-member-color: #ff3cac;
+  --profile-shadow: rgba(0, 0, 0, 0.25);
 }
 
 .custom-bg-gradient {

@@ -1,16 +1,11 @@
-
-<app-navbar/>
+<app-navbar />
 <div class="container py-5">
 
   <section class="profile-header mb-4">
     <div class="row align-items-center">
 
       <div class="col-auto">
-        <img
-          [src]="authService.user?.image"
-          class="profile-avatar"
-          alt="Immagine profilo"
-        >
+        <img [src]="authService.user?.image" class="profile-avatar" alt="Immagine profilo">
       </div>
 
       <div class="col">
@@ -21,15 +16,11 @@
         <p class="text-secondary mb-3">
           @{{ authService.user?.username }}
         </p>
-
-        <div class="d-flex align-items-center gap-3">
-          <span class="badge rounded-pill">
-            Member
-          </span>
-
-          <span>
-            since {{ authService.user?.memberSince }}
-          </span>
+        <div class="member-info">
+          <div class="member-content">
+            <span class="member-role">Member</span>
+            <span class="member-date">since {{ authService.user?.memberSince | date: 'dd MMMM yyyy'}}</span>
+          </div>
         </div>
       </div>
 
@@ -84,22 +75,6 @@
           <span>Email</span>
           <p>{{ authService.user?.email }}</p>
         </div>
-
-        <!-- <div class="profile-info">
-          <span>Ruolo</span>
-          <p>{{ authService.role }}</p>
-        </div>
-
-        <div class="profile-info">
-          <span>Data iscrizione</span>
-          <p>{{ authService.createdAt }}</p>
-        </div>
-
-        <div class="profile-info">
-          <span>Ultimo accesso</span>
-          <p>{{ authService.lastLogin }}</p>
-        </div> -->
-
       </div>
 
     </div>

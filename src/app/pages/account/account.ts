@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject,  } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { AuthService } from '../../services/auth/auth-service';
 import { Navbar } from '../../components/navbar/navbar';
 
 @Component({
-  imports: [Navbar],
+  imports: [Navbar, DatePipe],
   selector: 'app-account',
   styleUrl: './account.scss',
   templateUrl: './account.html',

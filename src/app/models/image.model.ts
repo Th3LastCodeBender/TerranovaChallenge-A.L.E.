@@ -24,10 +24,6 @@ export function igdbImageUrl(imageId: string, size: IgdbImageSize = 'cover_big')
     return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
 
-export function igdbUrlImage(imageId: string, size: IgdbImageSize = 'cover_big'): string {
-    return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
-}
-
 export interface IgdbVideo {
     id: number;
     name?: string;
