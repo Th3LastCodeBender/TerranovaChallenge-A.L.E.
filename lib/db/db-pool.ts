@@ -1,14 +1,18 @@
 import "server-only"
 
-import { Pool } from "pg"
-import { requireEnv, optionalEnvInt } from "@/lib/utils"
+import { PrismaPg }						from "@prisma/adapter-pg"
+import { PrismaClient } 				from "@/lib/generated/prisma/client"
+import { requireEnv, optionalEnvInt }	from "@/lib/utils"
+import { Pool }							from "pg"
 
-const globalForDb = globalThis as GlobalWithDb
 
 type GlobalWithDb = typeof globalThis &
 {
 	dbPool?: Pool
 }
+
+const globalForDb = globalThis as GlobalWithDb
+const globalForPrisma = globalThis as typeof globalThis & { prisma?: PrismaClient }
 
 export const pool =
 	globalForDb.dbPool ??
@@ -30,5 +34,10 @@ pool.on("error", (err: Error) =>
 	console.error("Unexpected error on idle PostgreSQL client", err)
 })
 
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter: new PrismaPg(pool) })
+
 if (requireEnv("NODE_ENV") !== "production")
+{
 	globalForDb.dbPool = pool
+	globalForPrisma.prisma = prisma
+}

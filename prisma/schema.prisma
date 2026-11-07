@@ -5,7 +5,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -13,23 +13,25 @@ datasource db {
 }
 
 model WG_User {
-	id				Int			@id @default(autoincrement())
+	id				Int				@id @default(autoincrement())
 	username		String			@unique
 	email			String			@unique
 	passwordHash	String			@map("password_hash")
 	firstName		String			@map("first_name")
 	lastName		String			@map("last_name")
-	createdAt		DateTime		@default(now()) @map("created_at")
+	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
 	sessions		WG_Session[]
+	favourites		WG_Favourite[]
+	sysCollection	WG_GameUser[]
 
 	@@map("wgUsers")
 }
 
 model WG_Session {
-	id				Int			@id @default(autoincrement())
-	userId			Int			@map("user_id")
+	id				Int				@id @default(autoincrement())
+	userId			Int				@map("user_id")
 	tokenHash		String			@unique @map("token_hash")
-	user			WG_User			@relation(fields: [userId], references: [id], onDelete: Cascade)
+	user			WG_User			@relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 	ip				String			@db.Inet
 	device			Json
 	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
@@ -37,4 +39,35 @@ model WG_Session {
 
 	@@index([userId])
 	@@map("wgSessions")
+}
+
+model WG_Favourite {
+	userId			Int				@map("user_id")
+	gameId			Int				@map("game_id")
+	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
+	user			WG_User			@relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+	@@id([userId, gameId])
+	@@map("wgFavourites")
+}
+
+enum WG_GameStatus {
+	TO_PLAY			@map("to_play")
+	PLAYING			@map("playing")
+	COMPLETED		@map("completed")
+
+	@@map("enum_game_status")
+}
+
+model WG_GameUser{
+	userId			Int				@map("user_id")
+	gameId			Int				@map("game_id")
+	status			WG_GameStatus
+	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
+	updatedAt		DateTime		@updatedAt @db.Timestamptz(3) @map("updated_at")
+	user			WG_User			@relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+	@@id([userId, gameId])
+	@@index([userId, status])
+	@@map("wgUsersGames")
 }

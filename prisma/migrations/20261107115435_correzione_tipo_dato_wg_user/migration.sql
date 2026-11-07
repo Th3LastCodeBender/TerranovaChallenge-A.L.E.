@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "wgUsers" ALTER COLUMN "created_at" SET DATA TYPE TIMESTAMPTZ(3);
