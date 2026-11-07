@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Game } from '../../models/game.model';
+import { IgdbGame } from '../../models/game.model';
 import { GameCard } from '../game-card/game-card';
 import { GAMES_MOCKUP } from '../../mocks/game.mock';
 
@@ -10,5 +10,5 @@ import { GAMES_MOCKUP } from '../../mocks/game.mock';
   templateUrl: './game-list.html',
 })
 export class GameList {
-  games: Game[] = GAMES_MOCKUP;
+  games: IgdbGame[] = GAMES_MOCKUP;
 }

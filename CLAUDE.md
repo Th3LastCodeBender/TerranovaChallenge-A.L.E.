@@ -1,0 +1,3 @@
+- Non toccare mai il mio codice senza che ti dia il permesso
+- Fammi sempre una preview in un'altra finestra del codice che stai aggiornando cosi che io possa vederla
+- Elencami sempre quello che vai a modificare e perche in maniera dettagliata ma comprensibile

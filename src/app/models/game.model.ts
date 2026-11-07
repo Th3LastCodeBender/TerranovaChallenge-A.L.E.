@@ -1,55 +1,67 @@
+import { IgdbImage, IgdbVideo } from './image.model';
 
-import { GamePlatform, ParentPlatform } from "./platform.model";
-import { Genre } from "./genre.model";
-import { GameStore } from "./store.model";
-import { Tag } from "./tag.model";
+import {
+    IgdbGenre,
+    IgdbTheme,
+    IgdbGameMode,
+    IgdbPlayerPerspective,
+    IgdbKeyword,
+    IgdbFranchise,
+    IgdbCollection,
+    IgdbGameType
+} from './classification.model';
 
-export interface Game {
-	id: number;
-	slug: string;
-	name: string;
+import { IgdbPlatform } from './platform.model';
+import { IgdbInvolvedCompany } from './company.model';
+import { IgdbReleaseDate } from './release.model';
+import { IgdbWebsite } from './website.model';
 
-	released: string | null;
-	tba: boolean;
+export interface IgdbGame {
+    id: number;
 
-	background_image: string | null;
+    name?: string;
+    slug?: string;
+    url?: string;
 
-	rating: number;
-	rating_top: number;
-	ratings: Rating[];
+    summary?: string;
+    storyline?: string;
 
-	ratings_count: number;
-	reviews_count: number;
+    cover?: IgdbImage;
+    artworks?: IgdbImage[];
+    screenshots?: IgdbImage[];
+    videos?: IgdbVideo[];
 
-	metacritic: number | null;
-	playtime: number;
+    first_release_date?: number;
+    release_dates?: IgdbReleaseDate[];
 
-	platforms: GamePlatform[];
-	parent_platforms: ParentPlatform[];
+    genres?: IgdbGenre[];
+    themes?: IgdbTheme[];
+    game_modes?: IgdbGameMode[];
+    player_perspectives?: IgdbPlayerPerspective[];
+    keywords?: IgdbKeyword[];
+    platforms?: IgdbPlatform[];
+    game_type?: IgdbGameType;
 
-	genres: Genre[];
-	stores: GameStore[];
-	tags: Tag[];
+    franchises?: IgdbFranchise[];
+    collections?: IgdbCollection[];
 
-	esrb_rating: EsrbRating | null;
+    involved_companies?: IgdbInvolvedCompany[];
 
-	short_screenshots: Screenshot[];
-}
+    websites?: IgdbWebsite[];
 
-interface Rating {
-	id: number;
-	title: string;
-	count: number;
-	percent: number;
-}
+    rating?: number;
+    rating_count?: number;
 
-export interface EsrbRating {
-	id: number;
-	name: string;
-	slug: string;
-}
+    aggregated_rating?: number;
+    aggregated_rating_count?: number;
 
-export interface Screenshot {
-	id: number;
-	image: string;
+    total_rating?: number;
+    total_rating_count?: number;
+
+    hypes?: number;
+
+    similar_games?: IgdbGame[];
+    dlcs?: IgdbGame[];
+    expansions?: IgdbGame[];
+    parent_game?: IgdbGame;
 }
