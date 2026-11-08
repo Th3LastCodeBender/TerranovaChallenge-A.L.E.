@@ -3,6 +3,14 @@ import "server-only"
 import { prisma } from "@/lib/db/db-pool"
 import { jsonError } from "@/lib/utils"
 
+export type NewUser = {
+	username: string
+	email: string
+	passwordHash: string
+	firstName: string
+	lastName: string
+}
+
 export function findUserById(id: number)
 {
 	return prisma.wG_User.findUnique({
@@ -11,19 +19,11 @@ export function findUserById(id: number)
 	})
 }
 
-export function findUserForLogin(email: string)
+export function findUserByEmail(email: string)
 {
 	return prisma.wG_User.findUnique({
 		where: { email },
 	})
-}
-
-export type NewUser = {
-	username: string
-	email: string
-	passwordHash: string
-	firstName: string
-	lastName: string
 }
 
 export function createUser(data: NewUser)
