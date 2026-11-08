@@ -109,6 +109,7 @@ function getFiltersFromRequest(request: NextRequest): Filters
 		platform: params.get("platform"),
 		year: params.get("year"),
 		rating: params.get("rating"),
+		aggregate_rating: params.get("aggregate_rating"),
 		sort: params.get("sort") ?? "name",
 		order: params.get("order") ?? "asc"
 	}
