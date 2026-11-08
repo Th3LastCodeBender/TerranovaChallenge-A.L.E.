@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { IgdbGame } from '../../models/game.model';
 import { GameCard } from '../game-card/game-card';
-import { Games } from '../../services/games/games';
+import { GamesService } from '../../services/games/games-service';
 
 @Component({
   imports: [GameCard],
@@ -10,12 +10,12 @@ import { Games } from '../../services/games/games';
   templateUrl: './game-list.html',
 })
 export class GameList implements OnInit {
-  private gameService = inject(Games);
+  private gameService = inject(GamesService);
 
   games = signal<IgdbGame[]>([]);
 
   ngOnInit(): void {
-    this.gameService.getGameByName('Minecraft').subscribe({
+    this.gameService.getGameByName('Elden Ring').subscribe({
       next: (games) => {
         console.log('RISPOSTA BACKEND:', games);
 

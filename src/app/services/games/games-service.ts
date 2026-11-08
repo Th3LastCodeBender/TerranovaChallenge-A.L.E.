@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
 
-interface GamesSearchResponse {
+interface GamesServiceSearchResponse {
 	results: IgdbGame[];
 	count: number;
 }
@@ -12,13 +12,13 @@ interface GamesSearchResponse {
 @Injectable({
 	providedIn: 'root'
 })
-export class Games {
+export class GamesService {
 	private http = inject(HttpClient);
 	private baseUrl = '/api/games';
 
 	getGameByName(name: string): Observable<IgdbGame[]> {
 		return this.http
-			.get<GamesSearchResponse>(`${this.baseUrl}/${encodeURIComponent(name)}`)
+			.get<GamesServiceSearchResponse>(`${this.baseUrl}/${encodeURIComponent(name)}`)
 			.pipe(map(res => res.results));
 	}
 }

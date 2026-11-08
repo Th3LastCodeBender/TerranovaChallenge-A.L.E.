@@ -1,165 +1,134 @@
 <div>
     <nav class="navbar">
         <div class="container-fluid">
-
             <a class="navbar-brand custom-title" routerLink="/">
                 Wiki<span class="custom-title-game">game</span>
             </a>
-
-            <div class="custom-search-bar d-flex align-items-md-center gap-2">
-                <form role="search">
+            <div class="custom-search-bar">
+                <div class="custom-search-container">
                     <div class="position-relative">
-                        <input class="form-control rounded-pill pe-5" type="search" placeholder="Search"
-                            aria-label="Search" />
-
-                        <button class="btn border-0 position-absolute top-50 end-0 translate-middle-y" type="submit"
-                            aria-label="Search">
-                            <i class="bi bi-search"></i>
-                        </button>
+                        <input class="form-control rounded-pill pe-5" type="search" placeholder="Search games..." aria-label="Search games" autocomplete="off" (input)="onSearch($event)" />
+                        @if (isSearching()) {
+                            <div class="spinner-border spinner-border-sm custom-search-spinner" role="status">
+                                <span class="visually-hidden">Searching...</span>
+                            </div>
+                        } @else {
+                            <i class="bi bi-search custom-search-icon"></i>
+                        }
                     </div>
-                </form>
+                    @if (isSearchOpen()) {
+                        <div class="custom-search-dropdown">
+                            @if (isSearching()) {
+                                <div class="custom-search-message">Searching...</div>
+                            } @else {
+                                @for (game of searchResults().slice(0, 5); track game.id) {
+                                    <button type="button" class="custom-search-result" (click)="selectGame(game)">
+                                        <div class="custom-search-result-cover">
+                                            @if (getGameImage(game); as imageUrl) {
+                                                <img [src]="imageUrl" [alt]="game.name" />
+                                            } @else {
+                                                <i class="bi bi-image"></i>
+                                            }
+                                        </div>
+                                        <div class="custom-search-result-info">
+                                            <span class="custom-search-result-name">{{ game.name }}</span>
+                                        </div>
+                                        <i class="bi bi-chevron-right custom-search-result-arrow"></i>
+                                    </button>
+                                } @empty {
+                                    <div class="custom-search-message">No games found</div>
+                                }
+                                @if (searchResults().length > 0) {
+                                    <button type="button" class="custom-search-view-all" (click)="viewAllResults()">
+                                        <span>Visualizza tutti i risultati</span>
+                                        <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
             </div>
-
             <div class="custom-menu custom-theme-button">
-
                 <button class="btn theme-button" (click)="changeTheme()">
                     @if (themeService.isDarkMode()) {
-                    <i class="bi bi-moon fs-4 custom-theme-icon"></i>
+                        <i class="bi bi-moon fs-4 custom-theme-icon"></i>
                     } @else {
-                    <i class="bi bi-sun fs-4 custom-theme-icon"></i>
+                        <i class="bi bi-sun fs-4 custom-theme-icon"></i>
                     }
                 </button>
-
-                <button class="navbar-toggler" type="button" aria-label="Toggle navigation"
-                    (click)="changeVisibility()">
+                <button class="navbar-toggler" type="button" aria-label="Toggle navigation" (click)="changeVisibility()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
             </div>
-
             @if (visibile()) {
-            <div class="custom-offcanvas-backdrop" (click)="changeVisibility()"></div>
+                <div class="custom-offcanvas-backdrop" (click)="changeVisibility()"></div>
             }
-
             <div class="offcanvas offcanvas-end" [class.show]="visibile()" tabindex="-1" id="offcanvasNavbar">
-
                 <div class="offcanvas-header">
-
                     <h5 class="offcanvas-title">
                         Wiki<span class="custom-title-game">game</span>
                     </h5>
-
-                    <button type="button" class="btn-close custom-offcanvas-close" aria-label="Close"
-                        (click)="changeVisibility()"></button>
-
+                    <button type="button" class="btn-close custom-offcanvas-close" aria-label="Close" (click)="changeVisibility()"></button>
                 </div>
-
                 <div class="offcanvas-body">
-
                     <div class="custom-offcanvas-section">
-
-                        <span class="custom-menu-label">
-                            Account
-                        </span>
-
+                        <span class="custom-menu-label">Account</span>
                         <div class="custom-account-buttons">
-
                             @if (!authService.isLoggedIn()) {
-
-                            <a class="custom-login-button" routerLink="/login" (click)="changeVisibility()">
-                                <i class="bi bi-box-arrow-in-right"></i>
-                                <span>Login</span>
-                            </a>
-
-                            <a class="custom-register-button" routerLink="/register" (click)="changeVisibility()">
-                                <i class="bi bi-person-plus"></i>
-                                <span>Register</span>
-                            </a>
-
+                                <a class="custom-login-button" routerLink="/login" (click)="changeVisibility()">
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                    <span>Login</span>
+                                </a>
+                                <a class="custom-register-button" routerLink="/register" (click)="changeVisibility()">
+                                    <i class="bi bi-person-plus"></i>
+                                    <span>Register</span>
+                                </a>
                             } @else {
-
-                            <a class="custom-user-card" routerLink="/me" (click)="changeVisibility()">
-
-                                <div class="custom-user-avatar">
-                                    @if (authService.user?.image) {
-                                    <img [src]="authService.user?.image" [alt]="authService.user?.username" />
-                                    } @else {
-                                    <i class="bi bi-person-fill"></i>
-                                    }
-                                </div>
-
-                                <div class="custom-user-info">
-                                    <span class="custom-user-name">
-                                        {{ authService.user?.username }}
-                                    </span>
-
-                                    <span class="custom-user-email">
-                                        {{ authService.user?.email }}
-                                    </span>
-                                </div>
-
-                                <i class="bi bi-chevron-right custom-user-arrow"></i>
-
-                            </a>
-
-                            <button type="button" class="custom-logout-button" (click)="logout()" routerLink="/">
-
-                                <i class="bi bi-box-arrow-right"></i>
-                                <span>Logout</span>
-
-                            </button>
-
+                                <a class="custom-user-card" routerLink="/me" (click)="changeVisibility()">
+                                    <div class="custom-user-avatar">
+                                        @if (authService.user?.image) {
+                                            <img [src]="authService.user?.image" [alt]="authService.user?.username" />
+                                        } @else {
+                                            <i class="bi bi-person-fill"></i>
+                                        }
+                                    </div>
+                                    <div class="custom-user-info">
+                                        <span class="custom-user-name">{{ authService.user?.username }}</span>
+                                        <span class="custom-user-email">{{ authService.user?.email }}</span>
+                                    </div>
+                                    <i class="bi bi-chevron-right custom-user-arrow"></i>
+                                </a>
+                                <button type="button" class="custom-logout-button" (click)="logout()" routerLink="/">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Logout</span>
+                                </button>
                             }
-
                         </div>
-
                     </div>
-
                     <div class="custom-menu-divider"></div>
-
                     <div class="custom-offcanvas-section">
-
-                        <span class="custom-menu-label">
-                            Navigazione
-                        </span>
-
+                        <span class="custom-menu-label">Navigazione</span>
                         <nav class="custom-navigation">
-
-                            <a class="custom-navigation-link" routerLink="/" routerLinkActive="active"
-                                (click)="changeVisibility()">
+                            <a class="custom-navigation-link" routerLink="/" routerLinkActive="active" (click)="changeVisibility()">
                                 <i class="bi bi-house-door"></i>
-
                                 <span>Home</span>
-
                                 <i class="bi bi-chevron-right custom-navigation-arrow"></i>
                             </a>
-
-                            <a class="custom-navigation-link" routerLink="/catalog" routerLinkActive="active"
-                                (click)="changeVisibility()">
+                            <a class="custom-navigation-link" routerLink="/catalog" routerLinkActive="active" (click)="changeVisibility()">
                                 <i class="bi bi-grid"></i>
-
                                 <span>Cataloghi</span>
-
                                 <i class="bi bi-chevron-right custom-navigation-arrow"></i>
                             </a>
-
-                            <a class="custom-navigation-link" routerLink="/games" routerLinkActive="active"
-                                (click)="changeVisibility()">
+                            <a class="custom-navigation-link" routerLink="/games" routerLinkActive="active" (click)="changeVisibility()">
                                 <i class="bi bi-controller"></i>
-
                                 <span>Giochi</span>
-
                                 <i class="bi bi-chevron-right custom-navigation-arrow"></i>
                             </a>
-
                         </nav>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     </nav>
 </div>

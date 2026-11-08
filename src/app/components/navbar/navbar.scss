@@ -475,3 +475,236 @@
 
     transform: translateX(3px);
 }
+
+
+.custom-search-bar {
+    position: relative;
+    width: 380px;
+}
+
+.custom-search-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-search-container .position-relative {
+    width: 100%;
+}
+
+.custom-search-container input {
+    width: 100%;
+}
+
+.custom-search-icon,
+.custom-search-spinner {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.custom-search-icon {
+    color: var(--offcanvas-muted);
+    pointer-events: none;
+}
+
+.custom-search-spinner {
+    color: var(--offcanvas-accent);
+}
+
+.custom-search-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    z-index: 2000;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    max-height: 450px;
+
+    padding: 0.4rem;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background: var(--offcanvas-bg);
+
+    border: 1px solid var(--offcanvas-border);
+    border-radius: 0.8rem;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.35),
+        0 0 20px var(--offcanvas-accent-shadow);
+
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+.custom-search-result {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    gap: 0.75rem;
+    padding: 0.55rem;
+
+    color: var(--offcanvas-text);
+    text-align: left;
+
+    background: transparent;
+
+    border: 1px solid transparent;
+    border-radius: 0.6rem;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.custom-search-result:hover {
+    background: var(--offcanvas-accent-hover);
+    border-color: var(--offcanvas-accent-border);
+}
+
+.custom-search-result-cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 56px;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    color: var(--offcanvas-muted);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-border);
+    border-radius: 0.4rem;
+}
+
+.custom-search-result-cover img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.custom-search-result-info {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+    flex: 1;
+}
+
+.custom-search-result-name {
+    display: block;
+
+    overflow: hidden;
+
+    color: var(--offcanvas-text);
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-search-result-arrow {
+    flex-shrink: 0;
+
+    color: var(--offcanvas-muted);
+
+    font-size: 0.8rem;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.custom-search-result:hover .custom-search-result-arrow {
+    color: var(--offcanvas-accent);
+    transform: translateX(2px);
+}
+
+.custom-search-message {
+    padding: 1rem;
+
+    color: var(--offcanvas-muted);
+
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.custom-search-dropdown {
+    scrollbar-width: thin;
+    scrollbar-color:
+        var(--offcanvas-accent)
+        transparent;
+}
+
+.custom-search-dropdown::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-search-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-search-dropdown::-webkit-scrollbar-thumb {
+    background: var(--offcanvas-accent);
+    border-radius: 10px;
+}
+
+.custom-search-view-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.4rem;
+
+    color: var(--offcanvas-accent);
+    background: transparent;
+
+    border: 0;
+    border-top: 1px solid var(--offcanvas-border);
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.custom-search-view-all:hover {
+    color: var(--offcanvas-text);
+    background-color: var(--offcanvas-accent-hover);
+}
+
+.custom-search-view-all i {
+    transition: transform 0.2s ease;
+}
+
+.custom-search-view-all:hover i {
+    transform: translateX(4px);
+}
