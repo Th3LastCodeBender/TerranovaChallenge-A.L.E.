@@ -8,6 +8,7 @@ type Filters = {
 	platform: string | null
 	year: string | null
 	rating: string | null
+	aggregate_rating: string | null
 	sort: string
 	order: string
 }
@@ -28,7 +29,7 @@ function validateFilters(filters: Filters): string | null
 	if (rating && (!/^\d+(\.\d+)?$/.test(rating) || Number(rating) < 0 || Number(rating) > 100))
 		return "Invalid rating"
 
-	if (!["name", "date", "rating"].includes(sort))
+	if (!["name", "date", "rating", "aggregated_rating"].includes(sort))
 		return "Invalid sort parameter"
 
 	if (!["asc", "desc"].includes(order))
@@ -68,7 +69,8 @@ function buildIGDBQuery(title: string, filters: Filters): string
 	const sortFields: Record<string, string> = {
 		name: "name",
 		date: "first_release_date",
-		rating: "rating"
+		rating: "rating",
+		aggregated_rating: "aggregated_rating"
 	}
 
 	const safeTitle = title.trim().replace(/\\/g, "\\\\").replace(/"/g, '\\"')
@@ -85,6 +87,8 @@ function buildIGDBQuery(title: string, filters: Filters): string
 			first_release_date,
 			rating,
 			rating_count,
+			aggregated_rating,
+			aggregated_rating_count,
 			cover.image_id,
 			genres.id,
 			genres.name,
@@ -105,6 +109,7 @@ function getFiltersFromRequest(request: NextRequest): Filters
 		platform: params.get("platform"),
 		year: params.get("year"),
 		rating: params.get("rating"),
+		aggregate_rating: params.get("aggregate_rating"),
 		sort: params.get("sort") ?? "name",
 		order: params.get("order") ?? "asc"
 	}
