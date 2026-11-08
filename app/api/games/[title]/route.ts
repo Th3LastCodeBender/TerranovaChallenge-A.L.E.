@@ -11,6 +11,7 @@ type Filters = {
 	aggregate_rating: string | null
 	sort: string
 	order: string
+	offset: number
 }
 
 function validateFilters(filters: Filters): string | null
@@ -34,6 +35,9 @@ function validateFilters(filters: Filters): string | null
 
 	if (!["asc", "desc"].includes(order))
 		return "Invalid order parameter"
+
+	if (!Number.isInteger(filters.offset) || filters.offset < 0 || filters.offset > 9999)
+		return "Invalid offset"
 
 	return null
 }
@@ -97,6 +101,7 @@ function buildIGDBQuery(title: string, filters: Filters): string
 		where ${conditions.join(" & ")};
 		sort ${sortFields[filters.sort]} ${filters.order};
 		limit 20;
+		offset ${filters.offset};
 	`
 }
 
@@ -111,7 +116,8 @@ function getFiltersFromRequest(request: NextRequest): Filters
 		rating: params.get("rating"),
 		aggregate_rating: params.get("aggregate_rating"),
 		sort: params.get("sort") ?? "name",
-		order: params.get("order") ?? "asc"
+		order: params.get("order") ?? "asc",
+		offset: Math.max(0, Number(params.get("offset")) || 0)
 	}
 }
 
@@ -188,7 +194,13 @@ export async function GET(req: NextRequest, context: { params: Promise<{ title: 
 
 		const games = await res.json()
 
-		return NextResponse.json({results: games, count: games.length})
+		return NextResponse.json({
+			results: games,
+			count: games.length,
+			offset: filters.offset,
+			limit: 20,
+			hasMore: games.length === 20
+		})
 	}
 	catch (error)
 	{
