@@ -20,10 +20,9 @@ export class Login {
       id: 1,
       username: "odoacr3e",
       email: "edoraccanello@gmail.com",
-      name: "Edoardo",
-      surname: "Raccanello",
-      memberSince: new Date('2025-06-15'),
-      image: 'assets/ichigo_wallpaper.png'
+      firstName: "Edoardo",
+      lastName: "Raccanello",
+      createdAt: new Date('2025-06-15')
     }
     this.user.setUser(user);
     this.router.navigate(['/']);

@@ -2,9 +2,8 @@
 export interface User {
 	id: number,
 	username: string,
-	name: string,
-	surname: string,
+	firstName: string,
+	lastName: string,
 	email: string,
-	memberSince: Date
-	image?: string
+	createdAt: Date
 }

@@ -5,12 +5,13 @@
     <div class="row align-items-center">
 
       <div class="col-auto">
-        <img [src]="authService.user?.image" class="profile-avatar" alt="Immagine profilo">
+        <i class="bi bi-person-fill"></i>
+        <!-- <img [src]="authService.user?.image" class="profile-avatar" alt="Immagine profilo"> -->
       </div>
 
       <div class="col">
         <h1 class="mb-1">
-          {{ authService.user?.name }} {{ authService.user?.surname }}
+          {{ authService.user?.firstName }} {{ authService.user?.lastName }}
         </h1>
 
         <p class="text-secondary mb-3">
@@ -19,7 +20,7 @@
         <div class="member-info">
           <div class="member-content">
             <span class="member-role">Member</span>
-            <span class="member-date">since {{ authService.user?.memberSince | date: 'dd MMMM yyyy'}}</span>
+            <span class="member-date">since {{ authService.user?.createdAt | date: 'dd MMMM yyyy'}}</span>
           </div>
         </div>
       </div>
