@@ -85,11 +85,7 @@
                             } @else {
                                 <a class="custom-user-card" routerLink="/me" (click)="changeVisibility()">
                                     <div class="custom-user-avatar">
-                                        <!-- @if (authService.user?.image) {
-                                            <img [src]="authService.user?.image" [alt]="authService.user?.username" />
-                                        } @else { -->
                                             <i class="bi bi-person-fill"></i>
-                                        <!-- } -->
                                     </div>
                                     <div class="custom-user-info">
                                         <span class="custom-user-name">{{ authService.user?.username }}</span>

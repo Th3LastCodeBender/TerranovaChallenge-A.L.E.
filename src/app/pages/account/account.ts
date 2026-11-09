@@ -2,6 +2,7 @@ import { Component, inject,  } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../../services/auth/auth-service';
 import { Navbar } from '../../components/navbar/navbar';
+import { Router } from '@angular/router';
 
 @Component({
   imports: [Navbar, DatePipe],
@@ -10,9 +11,13 @@ import { Navbar } from '../../components/navbar/navbar';
   templateUrl: './account.html',
 })
 export class Account {
-  authService = inject(AuthService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   
-  getUserParams() {
-    return this.authService.getUser();
-  }
+  logout(): void {
+		this.authService.logout().subscribe({
+			complete: () => this.router.navigate(['/']),
+			error: () => this.router.navigate(['/'])
+		});
+	}
 }

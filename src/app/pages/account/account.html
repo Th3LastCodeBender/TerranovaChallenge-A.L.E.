@@ -1,9 +1,11 @@
 <app-navbar />
 <div class="container py-5">
-
   <section class="profile-header mb-4">
+    <button type="button" class="profile-logout-button" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i>
+      <span>Logout</span>
+    </button>
     <div class="row align-items-center">
-
       <div class="col-auto">
         <div class="profile-avatar">
           <div class="profile-avatar-inner">
@@ -13,106 +15,78 @@
           </div>
         </div>
       </div>
-
       <div class="col">
         <h1 class="mb-1">
           {{ authService.user?.firstName }} {{ authService.user?.lastName }}
         </h1>
-
         <p class="text-secondary mb-3">
           @{{ authService.user?.username }}
         </p>
         <div class="member-info">
           <div class="member-content">
             <span class="member-role">Member</span>
-            <span class="member-date">since {{ authService.user?.createdAt | date: 'dd MMMM yyyy'}}</span>
+            <span class="member-date">since {{ authService.user?.createdAt | date: 'dd MMMM yyyy' }}</span>
           </div>
         </div>
       </div>
-
     </div>
   </section>
-
-
   <section class="row g-3 mb-4">
-
     <div class="col-6 col-md-3">
       <div class="stat-card text-center">
         <span>Partite</span>
         <h3>Partite ...</h3>
       </div>
     </div>
-
     <div class="col-6 col-md-3">
       <div class="stat-card text-center">
         <span>Completati</span>
         <h3>Completati ...</h3>
       </div>
     </div>
-
     <div class="col-6 col-md-3">
       <div class="stat-card text-center">
         <span>Preferiti</span>
         <h3>Preferiti ...</h3>
       </div>
     </div>
-
     <div class="col-6 col-md-3">
       <div class="stat-card text-center">
         <span>Recensioni</span>
         <h3>Recensioni ...</h3>
       </div>
     </div>
-
   </section>
-
-
   <section class="row g-4">
-
     <div class="col-12 col-lg-6">
-
       <div class="profile-card h-100">
-
         <h4 class="mb-4">
           Informazioni
         </h4>
-
         <div class="profile-info">
           <span>Email</span>
           <p>{{ authService.user?.email }}</p>
         </div>
       </div>
-
     </div>
-
-
     <div class="col-12 col-lg-6">
-
       <div class="profile-card h-100">
-
         <h4 class="mb-4">
           Preferenze
         </h4>
-
         <div class="profile-info">
           <span>Genere preferito</span>
           <p>preferenza 1</p>
         </div>
-
         <div class="profile-info">
           <span>Piattaforma preferita</span>
           <p>preferenza 2</p>
         </div>
-
         <div class="profile-info">
           <span>Lingua</span>
           <p>preferenza 3</p>
         </div>
-
       </div>
-
     </div>
-
   </section>
-
 </div>
