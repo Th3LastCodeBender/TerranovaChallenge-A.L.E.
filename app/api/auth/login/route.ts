@@ -60,9 +60,11 @@ async function login(body: unknown)
 			status: 401
 		}
 
+	const {passwordHash, ...safeUser} = user
+
 	return {
 		success: true as const,
-		user
+		user: safeUser
 	}
 }
 
@@ -118,7 +120,7 @@ export async function POST(req: NextRequest)
 		if (!login_result.success)
 			return jsonError(login_result.message, login_result.status)
 
-		const res = NextResponse.json({success: true})
+		const res = NextResponse.json({login_result.user})
 
 		const client =
 		{
