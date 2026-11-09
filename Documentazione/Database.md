@@ -11,3 +11,5 @@ ALTER TABLE "wgSessions" ADD CONSTRAINT "wgSessions_expires_check"
 
 ALTER TABLE "wgFavourites" ADD CONSTRAINT "wgFavourites_game_id_check" CHECK ("game_id" > 0);
 ALTER TABLE "wgUserGames"  ADD CONSTRAINT "wgUserGames_game_id_check"  CHECK ("game_id" > 0);
+
+Le sessioni scadute vanno cancellate automaticamente dal db

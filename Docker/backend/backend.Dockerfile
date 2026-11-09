@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY --chown=node:node . .
 RUN DATABASE_URL="postgresql://finto:finto@localhost/finto" pnpm exec prisma generate
-RUN pnpm exec next build
+RUN REDIS_HOST=finto REDIS_PORT=6379 REDIS_PASSWORD=finto pnpm exec next build
 
 EXPOSE 8080
 CMD ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm exec next start -H 0.0.0.0 -p 8080"]

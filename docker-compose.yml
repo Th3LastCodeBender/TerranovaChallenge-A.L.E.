@@ -1,6 +1,18 @@
 name: terranova
 
 services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
   db:
     image: postgres:17
     environment:
@@ -49,6 +61,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?manca nel .env}
       TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:?manca nel .env}
       TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:?manca nel .env}
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
     depends_on:
       db:
         condition: service_healthy
@@ -72,8 +86,10 @@ services:
     networks:
       - frontend
     restart: unless-stopped
+
 volumes:
   pgdata:
+  ollama_models:
 
 networks:
   backend:

@@ -1,6 +1,7 @@
 WORKTREES := app/01_frontend:frontend app/02_backend:backend_ts app/03_db:DataBase
 DEV_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 OWNER := $(shell id -u):$(shell id -g)
+GPU_COMPOSE := $(DEV_COMPOSE) -f docker-compose.gpu.yml
 
 all : setup up
 
@@ -53,6 +54,12 @@ migrate:
 migrate_status:
 	$(DEV_COMPOSE) exec backend pnpm exec prisma migrate status
 
+dev_gpu: setup
+	$(GPU_COMPOSE) up -d --build
+
+llm_pull:
+	$(DEV_COMPOSE) exec ollama ollama pull $${OLLAMA_MODEL:-qwen3:8b}
+
 clean:
 	@echo "Stai per cancellare i volumi, questo significa dati db."
 	@echo "Premi Invio per continuare o Ctrl+C per annullare."
@@ -77,4 +84,4 @@ logs:
 db:
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
 
-.PHONY: all dev dev_restart setup status pull clean_trees up down clean re ps logs db fclean migration migrate migrate_status
+.PHONY: all dev dev_restart setup status pull clean_trees up down clean re ps logs db fclean migration migrate migrate_status dev_gpu llm_pull
