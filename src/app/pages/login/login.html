@@ -44,6 +44,12 @@
 								</div>
 							</div>
 
+							@if (errorMessage()) {
+								<div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+									<i class="bi bi-exclamation-circle"></i>
+									<span>{{ errorMessage() }}</span>
+								</div>
+							}
 							<button class="custom-login-submit" type="submit" [disabled]="loading()">
 								@if (loading()) {
 									<span class="spinner-border spinner-border-sm"></span>
@@ -54,8 +60,6 @@
 									Login
 								</span>
 							</button>
-
-
 						</form>
 
 						<div class="custom-login-divider">

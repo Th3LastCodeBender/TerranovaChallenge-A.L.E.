@@ -10,15 +10,18 @@
                         <p class="custom-register-subtitle">
                             Crea il tuo account
                         </p>
-                        <form>
+                        <form [formGroup]="form" (ngSubmit)="register()">
                             <div class="custom-form-field">
                                 <label for="name">
                                     Nome
                                 </label>
                                 <div class="custom-input-container">
                                     <i class="bi bi-person"></i>
-                                    <input id="name" type="text" class="form-control" placeholder="Nome" autocomplete="given-name" />
+                                    <input id="name" type="text" class="form-control" placeholder="Nome" autocomplete="given-name" formControlName="name" />
                                 </div>
+                                @if (form.controls.name.touched && form.controls.name.invalid) {
+                                    <small class="text-danger">Inserisci il nome</small>
+                                }
                             </div>
                             <div class="custom-form-field">
                                 <label for="surname">
@@ -26,8 +29,11 @@
                                 </label>
                                 <div class="custom-input-container">
                                     <i class="bi bi-person"></i>
-                                    <input id="surname" type="text" class="form-control" placeholder="Cognome" autocomplete="family-name" />
+                                    <input id="surname" type="text" class="form-control" placeholder="Cognome" autocomplete="family-name" formControlName="surname" />
                                 </div>
+                                @if (form.controls.surname.touched && form.controls.surname.invalid) {
+                                    <small class="text-danger">Inserisci il cognome</small>
+                                }
                             </div>
                             <div class="custom-form-field">
                                 <label for="email">
@@ -35,8 +41,11 @@
                                 </label>
                                 <div class="custom-input-container">
                                     <i class="bi bi-envelope"></i>
-                                    <input id="email" type="email" class="form-control" placeholder="Email" autocomplete="email" />
+                                    <input id="email" type="email" class="form-control" placeholder="Email" autocomplete="email" formControlName="email" />
                                 </div>
+                                @if (form.controls.email.touched && form.controls.email.invalid) {
+                                    <small class="text-danger">Inserisci un'email valida</small>
+                                }
                             </div>
                             <div class="custom-form-field">
                                 <label for="username">
@@ -44,8 +53,11 @@
                                 </label>
                                 <div class="custom-input-container">
                                     <i class="bi bi-at"></i>
-                                    <input id="username" type="text" class="form-control" placeholder="Username" autocomplete="username" />
+                                    <input id="username" type="text" class="form-control" placeholder="Username" autocomplete="username" formControlName="username" />
                                 </div>
+                                @if (form.controls.username.touched && form.controls.username.invalid) {
+                                    <small class="text-danger">Lo username deve avere almeno 5 caratteri</small>
+                                }
                             </div>
                             <div class="custom-form-field">
                                 <label for="password">
@@ -53,11 +65,26 @@
                                 </label>
                                 <div class="custom-input-container">
                                     <i class="bi bi-lock"></i>
-                                    <input id="password" type="password" class="form-control" placeholder="Password" autocomplete="new-password" />
+                                    <input id="password" type="password" class="form-control" placeholder="Password" autocomplete="new-password" formControlName="password" />
                                 </div>
+                                @if (form.controls.password.touched && form.controls.password.invalid) {
+                                    <small class="text-danger">La password deve avere almeno 12 caratteri</small>
+                                }
                             </div>
-                            <button class="custom-register-submit" type="submit">
-                                <i class="bi bi-person-plus"></i>
+
+                            @if (errorMessage()) {
+                                <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    <span>{{ errorMessage() }}</span>
+                                </div>
+                            }
+
+                            <button class="custom-register-submit" type="submit" [disabled]="loading()">
+                                @if (loading()) {
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                } @else {
+                                    <i class="bi bi-person-plus"></i>
+                                }
                                 <span>Registrati</span>
                             </button>
                         </form>

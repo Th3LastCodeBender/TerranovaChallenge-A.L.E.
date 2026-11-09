@@ -5,8 +5,13 @@
     <div class="row align-items-center">
 
       <div class="col-auto">
-        <i class="bi bi-person-fill"></i>
-        <!-- <img [src]="authService.user?.image" class="profile-avatar" alt="Immagine profilo"> -->
+        <div class="profile-avatar">
+          <div class="profile-avatar-inner">
+            <span>
+              {{ authService.user?.firstName?.charAt(0) }}{{ authService.user?.lastName?.charAt(0) }}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div class="col">
