@@ -76,7 +76,7 @@ export async function POST(req: NextRequest)
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.login)
+			const rl_result = await rateLimit(ip, "/api/auth/login", RATE_LIMIT_POLICIES.login)
 
 			if (!rl_result.success)
 			{
