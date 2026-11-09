@@ -120,7 +120,7 @@ export async function POST(req: NextRequest)
 		if (!login_result.success)
 			return jsonError(login_result.message, login_result.status)
 
-		const res = NextResponse.json({login_result.user})
+		const res = NextResponse.json(login_result.user)
 
 		const client =
 		{
