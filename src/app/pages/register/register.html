@@ -1,0 +1,80 @@
+<section class="custom-register-page">
+    <div class="container py-3 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="custom-register-card">
+                    <div class="custom-register-body">
+                        <a class="navbar-brand custom-title" routerLink="/">
+                            Wiki<span class="custom-title-game">game</span>
+                        </a>
+                        <p class="custom-register-subtitle">
+                            Crea il tuo account
+                        </p>
+                        <form>
+                            <div class="custom-form-field">
+                                <label for="name">
+                                    Nome
+                                </label>
+                                <div class="custom-input-container">
+                                    <i class="bi bi-person"></i>
+                                    <input id="name" type="text" class="form-control" placeholder="Nome" autocomplete="given-name" />
+                                </div>
+                            </div>
+                            <div class="custom-form-field">
+                                <label for="surname">
+                                    Cognome
+                                </label>
+                                <div class="custom-input-container">
+                                    <i class="bi bi-person"></i>
+                                    <input id="surname" type="text" class="form-control" placeholder="Cognome" autocomplete="family-name" />
+                                </div>
+                            </div>
+                            <div class="custom-form-field">
+                                <label for="email">
+                                    Email
+                                </label>
+                                <div class="custom-input-container">
+                                    <i class="bi bi-envelope"></i>
+                                    <input id="email" type="email" class="form-control" placeholder="Email" autocomplete="email" />
+                                </div>
+                            </div>
+                            <div class="custom-form-field">
+                                <label for="username">
+                                    Username
+                                </label>
+                                <div class="custom-input-container">
+                                    <i class="bi bi-at"></i>
+                                    <input id="username" type="text" class="form-control" placeholder="Username" autocomplete="username" />
+                                </div>
+                            </div>
+                            <div class="custom-form-field">
+                                <label for="password">
+                                    Password
+                                </label>
+                                <div class="custom-input-container">
+                                    <i class="bi bi-lock"></i>
+                                    <input id="password" type="password" class="form-control" placeholder="Password" autocomplete="new-password" />
+                                </div>
+                            </div>
+                            <button class="custom-register-submit" type="submit">
+                                <i class="bi bi-person-plus"></i>
+                                <span>Registrati</span>
+                            </button>
+                        </form>
+                        <div class="custom-register-divider">
+                            <span></span>
+                            <p>oppure</p>
+                            <span></span>
+                        </div>
+                        <p class="custom-login-text">
+                            Hai già un account?
+                            <a routerLink="/login">
+                                Accedi
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
