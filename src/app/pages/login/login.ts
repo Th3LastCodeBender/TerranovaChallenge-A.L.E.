@@ -1,30 +1,56 @@
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { User } from '../../models/user.model';
 import { AuthService } from '../../services/auth/auth-service';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, ReactiveFormsModule],
   selector: 'app-login',
   styleUrl: './login.scss',
   templateUrl: './login.html',
 })
 export class Login {
-  user = inject(AuthService);
-  router = inject(Router);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private formBuilder = inject(FormBuilder);
+
+  form = this.formBuilder.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required]
+  });
   
-  login () {
-    const user: User = {
-      id: 1,
-      username: "odoacr3e",
-      email: "edoraccanello@gmail.com",
-      firstName: "Edoardo",
-      lastName: "Raccanello",
-      createdAt: new Date('2025-06-15')
+  loading = signal(false);
+  errorMessage = signal<string | null>(null);
+  
+  login(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return ;
     }
-    this.user.setUser(user);
-    this.router.navigate(['/']);
+    const { email, password } = this.form.getRawValue();
+    this.loading.set(true);
+    this.errorMessage.set(null);
+    this.authService.login(email, password).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(this.messageFor(err.status));
+      },
+    });  
+  }
+  private messageFor(status: number): string {
+    switch (status) {
+      case 401: return 'Email o password errati';
+      case 409: return 'Sei già loggato';
+      case 429: return 'Troppi tentativi, riprova tra poco';
+      default:  return 'Errore del server, riprova più tardi';
+    }
   }
 }

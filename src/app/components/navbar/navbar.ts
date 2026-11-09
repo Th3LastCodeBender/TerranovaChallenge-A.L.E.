@@ -98,9 +98,13 @@ export class Navbar {
 	}
 
 	logout(): void {
-		this.authService.logout();
+		this.authService.logout().subscribe({
+			complete: () => this.router.navigate(['/']),
+			error: () => this.router.navigate(['/'])
+		});
 		this.changeVisibility();
 	}
+
 
 	protected changeVisibility(): void {
 		this.visibile.update(v => !v);
