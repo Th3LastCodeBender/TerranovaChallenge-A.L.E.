@@ -96,7 +96,8 @@ export async function signup(body: unknown)
 			passwordHash: await hashPassword(password)
 		})
 
-		return {success: true as const, user}
+		const {passwordHash, ...safeUser} = user
+		return {success: true as const, user: safeUser}
 	}
 	catch (error)
 	{
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest)
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.signup)
+			const rl_result = await rateLimit(ip, "/api/auth/signup", RATE_LIMIT_POLICIES.signup)
 
 			if (!rl_result.success)
 			{
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest)
 		if (!signup_result.success)
 			return jsonError(signup_result.message, signup_result.status)
 
-		const res = NextResponse.json({succes:true})
+		const res = NextResponse.json({signup_result.user})
 
 		const client =
 		{
