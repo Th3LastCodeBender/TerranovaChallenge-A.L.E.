@@ -12,7 +12,7 @@ export async function POST(req: NextRequest)
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.logout)
+			const rl_result = await rateLimit(ip, "/api/auth/logout", RATE_LIMIT_POLICIES.logout)
 
 			if (!rl_result.success)
 			{
