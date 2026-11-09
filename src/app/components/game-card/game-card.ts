@@ -1,8 +1,10 @@
-import { Component, computed, input } from '@angular/core';
+
+import { Component, computed, inject, input } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { IgdbGame } from '../../models/game.model';
 import { igdbImageUrl } from '../../models/image.model';
 import { PlatformFamily, platformFamily } from '../../models/platform.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-game-card',
@@ -12,6 +14,7 @@ import { PlatformFamily, platformFamily } from '../../models/platform.model';
 })
 export class GameCard {
   game = input.required<IgdbGame>();
+  private router = inject(Router);
 
   imageUrl = computed(() => {
     const cover = this.game().cover;
@@ -46,4 +49,16 @@ export class GameCard {
     }
     return [...families];
   });
+
+  openGame(): void {
+    this.router.navigate(['/games', this.game().slug]);
+  }
+
+  onCardKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openGame();
+    }
+  }
+
 }

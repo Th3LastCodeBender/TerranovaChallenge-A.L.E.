@@ -337,3 +337,12 @@
         opacity: 0;
     }
 }
+
+.custom-card {
+    cursor: pointer;
+}
+
+.custom-card:focus-visible {
+    outline: 3px solid var(--card-glow-first);
+    outline-offset: 4px;
+}

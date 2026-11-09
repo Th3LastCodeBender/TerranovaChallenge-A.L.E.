@@ -1,11 +1,17 @@
-<div class="card custom-card text-white">
-
+<div
+  class="card custom-card text-white"
+  role="link"
+  tabindex="0"
+  [attr.aria-label]="'Apri la pagina di ' + game().name"
+  (click)="openGame()"
+  (keydown)="onCardKeydown($event)"
+>
 	@if (imageUrl()) {
-	<img [src]="imageUrl()" class="custom-game-image" [alt]="game().name" />
+		<img [src]="imageUrl()" class="custom-game-image" [alt]="game().name" />
 	} @else {
-	<div class="custom-game-image-placeholder">
-		<i class="bi bi-image fs-1"></i>
-	</div>
+		<div class="custom-game-image-placeholder">
+			<i class="bi bi-image fs-1"></i>
+		</div>
 	}
 	<div class="custom-overlay">
 
@@ -29,87 +35,52 @@
 					{{ rating() | number:'1.1-2' }}
 				</span>
 			</div>
-
-
 			<span class="custom-separator"></span>
-
-
 			<div class="custom-metacritic">
-
 				@if (criticScore() !== null) {
-				<span class="custom-metacritic-score">
-					{{ criticScore() | number:'1.0-0' }}
-				</span>
-
-				<span class="custom-metacritic-text">
-					Metacritic
-				</span>
+					<span class="custom-metacritic-score">
+						{{ criticScore() | number:'1.0-0' }}
+					</span>
+					<span class="custom-metacritic-text">
+						Metacritic
+					</span>
 				} @else {
-				<span class="custom-metacritic-score custom-metacritic-empty">
-					-
-				</span>
-
-				<span class="custom-metacritic-text">
-					Metacritic
-				</span>
+					<span class="custom-metacritic-score custom-metacritic-empty">
+						-
+					</span>
+					<span class="custom-metacritic-text">
+						Metacritic
+					</span>
 				}
-
 			</div>
-
 		</div>
-
 		<p class="custom-release">
-
 			Release on:
-
 			@if (releaseDate()) {
-
-			<b>
-				{{ releaseDate() | date:'dd MMMM yyyy' }}
-			</b>
-
+				<b>
+					{{ releaseDate() | date:'dd MMMM yyyy' }}
+				</b>
 			} @else if (isAnnounced()) {
-
-			<b>Announced</b>
-
+				<b>Announced</b>
 			} @else {
-
-			<b>Not announced</b>
-
+				<b>Not announced</b>
 			}
-
 		</p>
-
 		<div class="custom-platform-container">
-
 			@for (plat of platformFamilies(); track plat) {
-
 			<span class="custom-platform-card" [title]="plat">
-
 				@if (plat === "PlayStation") {
-
-				<i class="bi bi-playstation"></i>
-
-				} @else if (plat === "Xbox") {
-
-				<i class="bi bi-xbox"></i>
-
-				} @else if (plat === "PC") {
-
-				<i class="bi bi-laptop"></i>
-
-				} @else if (plat === "Nintendo") {
-
-				<i class="bi bi-nintendo-switch"></i>
-
+					<i class="bi bi-playstation"></i>
 				}
-
+				@else if (plat === "Xbox") {
+					<i class="bi bi-xbox"></i>
+				} @else if (plat === "PC") {
+					<i class="bi bi-laptop"></i>
+				} @else if (plat === "Nintendo") {
+					<i class="bi bi-nintendo-switch"></i>
+				}
 			</span>
-
 			}
-
 		</div>
-
 	</div>
-
 </div>
