@@ -16,7 +16,7 @@ type Filters = {
 
 function validateFilters(filters: Filters): string | null
 {
-	const { genre, platform, year, rating, sort, order } = filters
+	const { genre, platform, year, rating, sort, order, aggregate_rating } = filters
 
 	if (genre && !/^\d+$/.test(genre))
 		return "Invalid genre"
@@ -39,6 +39,9 @@ function validateFilters(filters: Filters): string | null
 	if (!Number.isInteger(filters.offset) || filters.offset < 0 || filters.offset > 9999)
 		return "Invalid offset"
 
+	if (aggregate_rating && (!/^\d+(\.\d+)?$/.test(aggregate_rating) || Number(aggregate_rating) < 0 || Number(aggregate_rating) > 100))
+		return "Invalid aggregate rating"
+
 	return null
 }
 
@@ -46,13 +49,13 @@ function buildConditions(filters: Filters): string[]
 {
 	const conditions = ["version_parent = null"]
 
-	const { genre, platform, year, rating } = filters
+	const { genre, platform, year, rating, aggregate_rating } = filters
 
 	if (genre)
-		conditions.push(`${genre} = genres`)
+		conditions.push(`${Number(genre)} = genres`)
 
 	if (platform)
-		conditions.push(`${platform} = platforms`)
+		conditions.push(`${Number(platform)} = platforms`)
 
 	if (year)
 	{
@@ -64,6 +67,9 @@ function buildConditions(filters: Filters): string[]
 
 	if (rating)
 		conditions.push(`rating >= ${Number(rating)}`)
+
+	if (aggregate_rating)
+		conditions.push(`aggregated_rating >= ${Number(aggregate_rating)}`)
 
 	return conditions
 }
@@ -117,7 +123,7 @@ function getFiltersFromRequest(request: NextRequest): Filters
 		aggregate_rating: params.get("aggregate_rating"),
 		sort: params.get("sort") ?? "name",
 		order: params.get("order") ?? "asc",
-		offset: Math.max(0, Number(params.get("offset")) || 0)
+		offset: Number(params.get("offset") ?? 0)
 	}
 }
 
@@ -140,24 +146,32 @@ export async function GET(req: NextRequest, context: { params: Promise<{ title: 
 	try
 	{
 		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
-		const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.search)
 
-		if (!rl_result.success)
+		try
 		{
-			return NextResponse.json(
-			{error: "Too many requests. Please try again later."},
+			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.search)
+
+			if (!rl_result.success)
 			{
-				status: 429,
-				headers: {
-					"Retry-After": String(rl_result.retryAfter),
-					"X-RateLimit-Limit": String(rl_result.limit),
-					"X-RateLimit-Remaining": "0"
+				return NextResponse.json(
+				{error: "Too many requests. Please try again later."},
+				{
+					status: 429,
+					headers: {
+						"Retry-After": String(rl_result.retryAfter),
+						"X-RateLimit-Limit": String(rl_result.limit),
+						"X-RateLimit-Remaining": "0"
+					}
 				}
+				)
 			}
-			)
+		}
+		catch(error)
+		{
+			console.error(error)
 		}
 
-		const { title } = await context.params
+		const {title} = await context.params
 
 		if (!title?.trim())
 			return jsonError("Missing game title", 400)
@@ -178,18 +192,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ title: 
 
 			console.error("IGDB ERROR:", {
 				status: res.status,
-				statusText: res.statusText,
 				body: errorBody
 			})
 
-			return NextResponse.json(
-				{
-					error: "IGDB request failed",
-					status: res.status,
-					details: errorBody
-				},
-				{ status: res.status }
-			)
+			return jsonError("Failed to fetch games", 502)
 		}
 
 		const games = await res.json()

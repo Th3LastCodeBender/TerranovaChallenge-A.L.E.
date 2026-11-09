@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createUser, findUserByEmail } from "@/query/users"
+import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 import { getOS, getBrowser, isString, isValidEmail, jsonError  } from "@/lib/utils"
 import { validatePassword, isPasswordCompromised, hashPassword } from "@/lib/security/password"
 import { createSession, findValidSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_DURATION_SECONDS, SESSION_COOKIE_NAME, setLoginCookie } from "@/query/sessions"
@@ -114,6 +115,32 @@ export async function POST(req: NextRequest)
 {
 	try
 	{
+		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+
+		try
+		{
+			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.signup)
+
+			if (!rl_result.success)
+			{
+				return NextResponse.json(
+				{error: "Too many requests. Please try again later."},
+				{
+					status: 429,
+					headers: {
+						"Retry-After": String(rl_result.retryAfter),
+						"X-RateLimit-Limit": String(rl_result.limit),
+						"X-RateLimit-Remaining": "0"
+					}
+				}
+				)
+			}			
+		}
+		catch(error)
+		{
+			console.error(error)
+		}
+
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
 
 		if (token && await findValidSession(hashSessionToken(token)))
@@ -138,7 +165,6 @@ export async function POST(req: NextRequest)
 
 		const res = NextResponse.json({succes:true})
 
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
 		const client =
 		{
 			os: getOS(req.headers.get("user-agent") || ""),
@@ -159,7 +185,8 @@ export async function POST(req: NextRequest)
 					device: client,
 					expiresAt: new Date(Date.now() + SESSION_COOKIE_DURATION_SECONDS * 1000)
 				}
-			)		}
+			)
+		}
 		catch (error)
 		{
 			console.error("ADD SESSION ERROR (signup):", error)

@@ -2,9 +2,13 @@ import "server-only"
 
 import { redis_pool } from "./redis-init"
 
-export const RATE_LIMIT_POLICIES = {
-	general: { limit: 100, windowSeconds: 60 },
-	search: { limit: 20, windowSeconds: 60 }
+export const RATE_LIMIT_POLICIES =
+{
+	general: {limit: 100, windowSeconds: 60},
+	search: {limit: 20, windowSeconds: 60},
+	login: {limit: 10, windowSeconds: 60 * 15},
+	signup: {limit: 5, windowSeconds: 60 * 60},
+	logout: {limit: 20, windowSeconds: 60}
 }
 
 interface RateLimitOptions {
@@ -14,7 +18,7 @@ interface RateLimitOptions {
 
 export async function rateLimit(identifier: string, endpoint: string, options: RateLimitOptions)
 {
-	const { limit, windowSeconds } = options
+	const {limit, windowSeconds} = options
 
 	const key = `rate-limit:${endpoint}:${identifier}`
 

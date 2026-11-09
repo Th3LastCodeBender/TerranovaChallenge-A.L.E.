@@ -1,12 +1,14 @@
 import { findUserByEmail } from "@/query/users"
-import { createSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_NAME, SESSION_COOKIE_DURATION_SECONDS, findValidSession, setLoginCookie } from "@/query/sessions"
 import { NextRequest, NextResponse } from "next/server"
 import { verifyPassword } from "@/lib/security/password"
+import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 import { getOS, getBrowser, isValidEmail, jsonError} from "@/lib/utils"
+import { createSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_NAME, SESSION_COOKIE_DURATION_SECONDS, findValidSession, setLoginCookie } from "@/query/sessions"
 
 const DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$ZHVtbXlzYWx0MTIzNDU2Nzg$Qm9ndXNIYXNoRm9yVGVzdGluZw"
 
-interface LoginData {
+interface LoginData
+{
 	email: string
 	password: string
 }
@@ -68,10 +70,36 @@ export async function POST(req: NextRequest)
 {
 	try
 	{
+		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+
+		try
+		{
+			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.login)
+
+			if (!rl_result.success)
+			{
+				return NextResponse.json(
+				{error: "Too many requests. Please try again later."},
+				{
+					status: 429,
+					headers: {
+						"Retry-After": String(rl_result.retryAfter),
+						"X-RateLimit-Limit": String(rl_result.limit),
+						"X-RateLimit-Remaining": "0"
+					}
+				}
+				)
+			}			
+		}
+		catch(error)
+		{
+			console.error(error)
+		}
+
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
 
 		if (token && await findValidSession(hashSessionToken(token)))
-			return jsonError("Already logged in", 409)
+				return jsonError("Already logged in", 409)
 
 		let body: unknown
 
@@ -92,12 +120,10 @@ export async function POST(req: NextRequest)
 
 		const res = NextResponse.json({success: true})
 
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
-		const userAgent = req.headers.get("user-agent") || ""
-
-		const client = {
-			os: getOS(userAgent),
-			browser: getBrowser(userAgent, req.headers.get("sec-ch-ua") || ""),
+		const client =
+		{
+			os: getOS(req.headers.get("user-agent") || ""),
+			browser: getBrowser(req.headers.get("user-agent") || "", req.headers.get("sec-ch-ua") || ""),
 			platform: req.headers.get("sec-ch-ua-platform") || "",
 			mobile: req.headers.get("sec-ch-ua-mobile") || ""
 		}
@@ -116,7 +142,8 @@ export async function POST(req: NextRequest)
 				}
 			)
 		}
-		catch (error) {
+		catch (error)
+		{
 			console.error("ADD SESSION ERROR (login):", error)
 		}
 
