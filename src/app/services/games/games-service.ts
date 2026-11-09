@@ -7,6 +7,9 @@ import { IgdbGame } from '../../models/game.model';
 interface GamesServiceSearchResponse {
 	results: IgdbGame[];
 	count: number;
+	offset: number;
+	limit: number;
+	hasMore: boolean;
 }
 
 @Injectable({
@@ -21,4 +24,11 @@ export class GamesService {
 			.get<GamesServiceSearchResponse>(`${this.baseUrl}/${encodeURIComponent(name)}`)
 			.pipe(map(res => res.results));
 	}
+
+	searchGames(name: string, page = 1): Observable<GamesServiceSearchResponse> {
+	return this.http.get<GamesServiceSearchResponse>(
+		`${this.baseUrl}/${encodeURIComponent(name)}`,
+		{ params: { offset: (page - 1) * 20 } }
+	);
+}
 }

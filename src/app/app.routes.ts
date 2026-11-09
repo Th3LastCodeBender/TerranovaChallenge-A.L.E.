@@ -3,6 +3,7 @@ import { Home } from './pages/home/home';
 import { Login } from './pages/login/login';
 import { Account } from './pages/account/account';
 import { loginCheck, authCheck } from './loggedCheck';
+import { GamesSearch } from './pages/games-search/games-search';
 
 export const routes: Routes = [
 	{
@@ -18,5 +19,9 @@ export const routes: Routes = [
 		path: 'me',
 		component: Account,
 		canActivate: [authCheck]
+	},
+	{
+		path: 'games',
+		component: GamesSearch
 	}
 ];
