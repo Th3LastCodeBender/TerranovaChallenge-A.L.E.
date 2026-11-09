@@ -1,10 +1,19 @@
 <div class="container-fluid px-4 px-xl-5 mb-4">
     @if (search()) {
-        <h4 class="mb-3">Risultati per "{{ search() }}"</h4>
+        <div class="search-results-header">
+            <div class="search-results-icon">
+                <i class="bi bi-search"></i>
+            </div>
+            <div class="search-results-heading">
+                <span class="search-results-label">Risultati per</span>
+                <h2 class="search-results-query">"{{ search() }}"</h2>
+            </div>
+        </div>
     }
-
     @if (loading()) {
-        <div class="text-center py-5"><div class="spinner-border" role="status"></div></div>
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+        </div>
     } @else {
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
             @for (game of games(); track game.id) {
@@ -17,12 +26,20 @@
                 </p>
             }
         </div>
-
         @if (games().length > 0) {
-            <div class="d-flex justify-content-center gap-2 mt-4">
-                <button class="btn btn-outline-light" [disabled]="page() === 1" (click)="goToPage(page() - 1)">Indietro</button>
-                <span class="align-self-center">Pagina {{ page() }}</span>
-                <button class="btn btn-outline-light" [disabled]="!hasMore()" (click)="goToPage(page() + 1)">Avanti</button>
+            <div class="custom-pagination">
+                <button type="button" class="custom-pagination-button" [disabled]="page() === 1" (click)="goToPage(page() - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                    <span>Indietro</span>
+                </button>
+                <div class="custom-page-indicator">
+                    <span class="custom-page-label">Pagina</span>
+                    <span class="custom-page-number">{{ page() }}</span>
+                </div>
+                <button type="button" class="custom-pagination-button" [disabled]="!hasMore()" (click)="goToPage(page() + 1)">
+                    <span>Avanti</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         }
     }

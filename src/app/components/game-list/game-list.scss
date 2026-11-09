@@ -1,0 +1,232 @@
+
+.search-results-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+
+    margin-bottom: 1.5rem;
+}
+
+.search-results-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    color: var(--offcanvas-accent);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.75rem;
+}
+
+.search-results-icon i {
+    font-size: 1rem;
+}
+
+.search-results-heading {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.1rem;
+}
+
+.search-results-label {
+    color: var(--offcanvas-muted);
+
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+}
+
+.search-results-query {
+    position: relative;
+
+    margin: 0;
+    padding-bottom: 0.45rem;
+
+    color: var(--offcanvas-text);
+
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.search-results-query::after {
+    content: "";
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 55px;
+    height: 3px;
+
+    border-radius: 999px;
+
+    background: linear-gradient(
+        90deg,
+        var(--title-game-start),
+        var(--title-game-end)
+    );
+}
+
+.custom-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.8rem;
+
+    width: 100%;
+
+    margin: 2.5rem 0 1.5rem;
+}
+
+.custom-pagination-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.45rem;
+
+    min-width: 110px;
+
+    padding: 0.65rem 1rem;
+
+    color: var(--offcanvas-text);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.75rem;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.custom-pagination-button:hover:not(:disabled) {
+    color: var(--offcanvas-accent);
+
+    background: var(--offcanvas-accent-hover);
+
+    border-color: var(--offcanvas-accent);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 5px 18px var(--offcanvas-accent-shadow);
+}
+
+.custom-pagination-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.custom-pagination-button:disabled {
+    opacity: 0.3;
+
+    cursor: not-allowed;
+}
+
+.custom-pagination-button i {
+    font-size: 0.75rem;
+
+    transition: transform 0.2s ease;
+}
+
+.custom-pagination-button:first-child:hover:not(:disabled) i {
+    transform: translateX(-3px);
+}
+
+.custom-pagination-button:last-child:hover:not(:disabled) i {
+    transform: translateX(3px);
+}
+
+.custom-page-indicator {
+    display: flex;
+    align-items: center;
+
+    gap: 0.5rem;
+
+    padding: 0.35rem 0.4rem 0.35rem 0.8rem;
+
+    color: var(--offcanvas-muted);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 999px;
+
+    font-size: 0.8rem;
+}
+
+.custom-page-label {
+    font-weight: 500;
+}
+
+.custom-page-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 32px;
+    height: 32px;
+
+    padding: 0 0.5rem;
+
+    color: #ffffff;
+
+    background: linear-gradient(
+        135deg,
+        var(--title-game-start),
+        var(--title-game-end)
+    );
+
+    border-radius: 999px;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    box-shadow:
+        0 3px 12px var(--offcanvas-accent-shadow);
+}
+
+@media (max-width: 575px) {
+    .search-results-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .search-results-query {
+        font-size: 1.2rem;
+    }
+
+    .custom-pagination {
+        gap: 0.5rem;
+    }
+
+    .custom-pagination-button {
+        min-width: auto;
+
+        padding: 0.6rem 0.75rem;
+    }
+
+    .custom-pagination-button span {
+        display: none;
+    }
+}
