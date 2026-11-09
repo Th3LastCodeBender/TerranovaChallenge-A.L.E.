@@ -42,7 +42,7 @@ export async function POST(req: NextRequest)
 			const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
 
 			if (session)
-				await deleteSession(token)
+				await deleteSession(hashSessionToken(token))
 		}
 
 		const res = NextResponse.json({success: true}, {status: 200})
