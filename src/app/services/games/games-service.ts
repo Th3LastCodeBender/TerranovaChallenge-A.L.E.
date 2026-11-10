@@ -4,6 +4,14 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
 
+interface GameDetailsResponse {
+    game: IgdbGame;
+    userData: {
+        isFavourite: boolean;
+        collectionStatus: string | null;
+    };
+}
+
 interface GamesServiceSearchResponse {
 	results: IgdbGame[];
 	count: number;
@@ -17,18 +25,25 @@ interface GamesServiceSearchResponse {
 })
 export class GamesService {
 	private http = inject(HttpClient);
-	private baseUrl = '/api/games';
+	private gamesBaseUrl = '/api/games/search';
+	private gameDetailsUrl = '/api/games/';
 
 	getGameByName(name: string): Observable<IgdbGame[]> {
 		return this.http
-			.get<GamesServiceSearchResponse>(`${this.baseUrl}/${encodeURIComponent(name)}`)
+			.get<GamesServiceSearchResponse>(`${this.gamesBaseUrl}/${encodeURIComponent(name)}`)
 			.pipe(map(res => res.results));
 	}
 
 	searchGames(name: string, page = 1): Observable<GamesServiceSearchResponse> {
-	return this.http.get<GamesServiceSearchResponse>(
-		`${this.baseUrl}/${encodeURIComponent(name)}`,
-		{ params: { offset: (page - 1) * 20 } }
-	);
-}
+		return this.http.get<GamesServiceSearchResponse>(
+			`${this.gamesBaseUrl}/${encodeURIComponent(name)}`,
+			{ params: { offset: (page - 1) * 20 } }
+		);
+	}
+
+	getGameBySlug(slug: string): Observable<GameDetailsResponse> {
+        return this.http.get<GameDetailsResponse>(
+            `${this.gameDetailsUrl}/${encodeURIComponent(slug)}`
+        );
+    }
 }
