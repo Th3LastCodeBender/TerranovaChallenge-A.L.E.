@@ -3,6 +3,7 @@ import "server-only"
 import { prisma } from "@/lib/db/db-pool"
 import type { WG_GameStatus } from "@/lib/generated/prisma/client"
 
+//Se la combinazione chiave gioco esiste fa l'update dello status, se non esiste crea la trinità di valori
 export function setGameStatus(userId: number, gameId: number, status: WG_GameStatus)
 {
 	return prisma.wG_GameUser.upsert({

@@ -20,6 +20,7 @@ model WG_User {
 	firstName		String			@map("first_name")
 	lastName		String			@map("last_name")
 	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
+	pcSpecs			Json?			@map("pc_specs")
 	sessions		WG_Session[]
 	favourites		WG_Favourite[]
 	sysCollection	WG_GameUser[]
@@ -54,7 +55,9 @@ model WG_Favourite {
 enum WG_GameStatus {
 	TO_PLAY			@map("to_play")
 	PLAYING			@map("playing")
+	FINISHED		@map("finished")
 	COMPLETED		@map("completed")
+	TO_BUY			@map("to_buy")
 
 	@@map("enum_game_status")
 }

@@ -96,8 +96,7 @@ export async function signup(body: unknown)
 			passwordHash: await hashPassword(password)
 		})
 
-		const {passwordHash, ...safeUser} = user
-		return {success: true as const, user: safeUser}
+		return {success: true as const, user}
 	}
 	catch (error)
 	{
@@ -164,7 +163,7 @@ export async function POST(req: NextRequest)
 		if (!signup_result.success)
 			return jsonError(signup_result.message, signup_result.status)
 
-		const res = NextResponse.json({signup_result.user})
+		const res = NextResponse.json({user: signup_result.user})
 
 		const client =
 		{
