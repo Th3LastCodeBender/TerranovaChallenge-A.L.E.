@@ -27,12 +27,12 @@ export const DELETE = withAuth(async (req, { session }) =>
 		if (!Number.isInteger(gameId) || gameId <= 0)
 			return jsonError("Invalid game id", 400)
 
-		const favourites = removeFavourite(session.userId, Number(gameId))
-		return NextResponse.json(favourites)
+		await removeFavourite(session.userId, gameId)
+		return NextResponse.json({success: true})
 	}
 	catch (error)
 	{
 		console.error(error)
-		return jsonError("Server error", 500)
+		return jsonError("Internal server error", 500)
 	}
 })

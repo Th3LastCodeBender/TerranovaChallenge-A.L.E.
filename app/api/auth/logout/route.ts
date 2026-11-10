@@ -32,17 +32,19 @@ export async function POST(req: NextRequest)
 		catch(error)
 		{
 			console.error(error)
+			return jsonError("Service temporarily unavailable", 503)
 		}
 		
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
 
 		if (token)
 		{
-			const session = await findValidSession(hashSessionToken(token))
+			const hashedToken = hashSessionToken(token)
+			const session = await findValidSession(hashedToken)
 			const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
 
 			if (session)
-				await deleteSession(hashSessionToken(token))
+				await deleteSession(hashedToken)
 		}
 
 		const res = NextResponse.json({success: true}, {status: 200})
@@ -54,6 +56,6 @@ export async function POST(req: NextRequest)
 	catch (error)
 	{
 		console.error(error)
-		return jsonError("Intenal server error", 500)
+		return jsonError("Internal server error", 500)
 	}
 }

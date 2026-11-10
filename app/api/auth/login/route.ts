@@ -20,7 +20,7 @@ function validateLoginBody(body: unknown): | {valid: true; data: LoginData} | {v
 
 	const {email, password} = body as Record<string, unknown>
 
-	if (typeof email !== "string" || typeof password !== "string")
+	if (typeof email !== "string" || typeof password !== "string" || password.length === 0 || password.length > 128)
 		return {valid: false, message: "Invalid credentials"}
 
 	const normalizedEmail = email.trim().toLowerCase()
@@ -96,6 +96,7 @@ export async function POST(req: NextRequest)
 		catch(error)
 		{
 			console.error(error)
+			return jsonError("Service temporarily unavailable", 503)
 		}
 
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
@@ -133,7 +134,6 @@ export async function POST(req: NextRequest)
 		try
 		{
 			const token = generateSessionToken()
-			setLoginCookie(res, token)
 			await createSession(
 				{
 					userId: login_result.user.id,
@@ -143,16 +143,18 @@ export async function POST(req: NextRequest)
 					expiresAt: new Date(Date.now() + SESSION_COOKIE_DURATION_SECONDS * 1000)
 				}
 			)
+			setLoginCookie(res, token)
 		}
 		catch (error)
 		{
 			console.error("ADD SESSION ERROR (login):", error)
+			return jsonError("Unable to create session", 500)
 		}
 
 		return res
 	}
 	catch (error) {
 		console.error(error)
-		return jsonError("Server Error", 500)
+		return jsonError("Internal server error", 500)
 	}
 }

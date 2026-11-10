@@ -139,6 +139,7 @@ export async function POST(req: NextRequest)
 		catch(error)
 		{
 			console.error(error)
+			return jsonError("Service temporarily unavailable", 503)
 		}
 
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
@@ -176,7 +177,6 @@ export async function POST(req: NextRequest)
 		try
 		{
 			const token = generateSessionToken()
-			setLoginCookie(res, token)
 			await createSession(
 				{
 					userId: signup_result.user.id,
@@ -186,10 +186,12 @@ export async function POST(req: NextRequest)
 					expiresAt: new Date(Date.now() + SESSION_COOKIE_DURATION_SECONDS * 1000)
 				}
 			)
+			setLoginCookie(res, token)
 		}
 		catch (error)
 		{
 			console.error("ADD SESSION ERROR (signup):", error)
+			return jsonError("Unable to create session", 500)
 		}
 
 		return res
@@ -197,6 +199,6 @@ export async function POST(req: NextRequest)
 	catch (error)
 	{
 		console.error(error)
-		return jsonError("Server Error", 500)
+		return jsonError("Internal server error", 500)
 	}
 }

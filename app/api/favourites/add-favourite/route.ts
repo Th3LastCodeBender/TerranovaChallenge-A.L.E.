@@ -27,12 +27,12 @@ export const POST = withAuth(async (req, { session }) =>
 		if (!Number.isInteger(gameId) || gameId <= 0)
 			return jsonError("Invalid game id", 400)
 
-		addFavourite(session.userId, Number(gameId))
+		await addFavourite(session.userId, gameId)
 		return NextResponse.json({success: true})
 	}
 	catch (error)
 	{
 		console.error(error)
-		return jsonError("Server error", 500)
+		return jsonError("Internal server error", 500)
 	}
 })

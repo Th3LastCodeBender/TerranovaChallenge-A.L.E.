@@ -1,4 +1,7 @@
+import "server-only"
+
 import { NextResponse } from "next/server"
+import { getTwitchAccessToken } from "./igdb-api/twitch-auth"
 
 export type Browser =
 	| "Chrome"
@@ -151,4 +154,40 @@ export function isValidEmail(email: string)
 export function isString(value: unknown): value is string
 {
 	return typeof value === "string" && value.trim().length > 0
+}
+
+export async function getGamesByIds(ids: number[])
+{
+	if (ids.length === 0)
+		return []
+
+	const token = await getTwitchAccessToken()
+
+	const response = await fetch(
+		"https://api.igdb.com/v4/games",
+		{
+			method: "POST",
+			headers: {
+				"Client-ID": requireEnv("TWITCH_CLIENT_ID"),
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "text/plain"
+			},
+			body: `
+				where id = (${ids.join(",")});
+				fields	name,
+						cover.url,
+						summary,
+						first_release_date,
+						rating,
+						genres.name,
+						platforms.name;
+				limit 50;
+			`
+		}
+	)
+
+	if (!response.ok)
+		throw new Error("Failed to fetch games from IGDB")
+
+	return response.json()
 }

@@ -29,3 +29,10 @@ export function listCollection(userId: number, status?: WG_GameStatus)
 		orderBy: { updatedAt: "desc" },
 	})
 }
+
+export function getGameStatus(userId: number, gameId: number) {
+	return prisma.wG_GameUser.findFirst({
+		where: { userId, gameId },
+		select: { status: true },
+	})
+}

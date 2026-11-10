@@ -3,6 +3,29 @@ import { NextRequest, NextResponse } from "next/server"
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 import { rateLimit, RATE_LIMIT_POLICIES } from "@/lib/redis/rate-limit"
 
+const IGDB_GENRES: Record<string, number> = {
+	"point-and-click": 2,
+	"fighting": 4,
+	"shooter": 5,
+	"music": 7,
+	"platform": 8,
+	"puzzle": 9,
+	"racing": 10,
+	"real-time-strategy": 11,
+	"role-playing-rpg": 12,
+	"simulator": 13,
+	"sport": 14,
+	"strategy": 15,
+	"turn-based-strategy": 16,
+	"tactical": 24,
+	"adventure": 31,
+	"indie": 32,
+	"arcade": 33,
+	"visual-novel": 34,
+	"card-and-board-game": 35,
+	"moba": 36
+}
+
 type Filters = {
 	genre: string | null
 	platform: string | null
@@ -16,9 +39,9 @@ type Filters = {
 
 function validateFilters(filters: Filters): string | null
 {
-	const { genre, platform, year, rating, sort, order, aggregate_rating } = filters
+	const {genre, platform, year, rating, sort, order, aggregate_rating} = filters
 
-	if (genre && !/^\d+$/.test(genre))
+	if (genre && !Object.hasOwn(IGDB_GENRES, genre))
 		return "Invalid genre"
 
 	if (platform && !/^\d+$/.test(platform))
@@ -49,10 +72,10 @@ function buildConditions(filters: Filters): string[]
 {
 	const conditions = ["version_parent = null"]
 
-	const { genre, platform, year, rating, aggregate_rating } = filters
+	const {genre, platform, year, rating, aggregate_rating} = filters
 
 	if (genre)
-		conditions.push(`${Number(genre)} = genres`)
+		conditions.push(`${IGDB_GENRES[genre]} = genres`)
 
 	if (platform)
 		conditions.push(`${Number(platform)} = platforms`)
@@ -149,7 +172,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ title: 
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/games/[title]", RATE_LIMIT_POLICIES.search)
+			const rl_result = await rateLimit(ip, "/api/games/search/[title]", RATE_LIMIT_POLICIES.search)
 
 			if (!rl_result.success)
 			{
@@ -169,6 +192,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ title: 
 		catch(error)
 		{
 			console.error(error)
+			return jsonError("Service temporarily unavailable", 503)
 		}
 
 		const {title} = await context.params
