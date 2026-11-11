@@ -123,17 +123,18 @@ export async function POST(req: NextRequest)
 
 		const res = NextResponse.json(login_result.user)
 
-		const client =
-		{
-			os: getOS(req.headers.get("user-agent") || ""),
-			browser: getBrowser(req.headers.get("user-agent") || "", req.headers.get("sec-ch-ua") || ""),
-			platform: req.headers.get("sec-ch-ua-platform") || "",
-			mobile: req.headers.get("sec-ch-ua-mobile") || ""
-		}
-
 		try
 		{
+			const userAgent = req.headers.get("user-agent") ?? ""
+			const client =
+			{
+				os: getOS(userAgent),
+				browser: getBrowser(userAgent, req.headers.get("sec-ch-ua") || ""),
+				platform: req.headers.get("sec-ch-ua-platform") || "",
+				mobile: req.headers.get("sec-ch-ua-mobile") || ""
+			}
 			const token = generateSessionToken()
+
 			await createSession(
 				{
 					userId: login_result.user.id,

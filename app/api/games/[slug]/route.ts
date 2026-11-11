@@ -93,7 +93,7 @@ async function getUserGameData(req: NextRequest, gameId: number)
 	}
 }
 
-export async function GET(req: NextRequest, context: { params: Promise<{ slug: string }> })
+export async function GET(req: NextRequest, context: {params: Promise<{ slug: string }>})
 {
 	try
 	{
@@ -102,12 +102,30 @@ export async function GET(req: NextRequest, context: { params: Promise<{ slug: s
 		if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
 			return jsonError("Invalid game slug", 400)
 
-		const game = await fetchGameFromIGDB(slug)
+		let game
+		try
+		{
+			game = await fetchGameFromIGDB(slug)
+		}
+		catch(error)
+		{
+			console.error(error)
+			return jsonError("Failed to fetch game", 503)
+		}
 
 		if (!game)
 			return jsonError("Game not found", 404)
 
-		const userData = await getUserGameData(req, game.id)
+		let userData
+		try
+		{
+			userData = await getUserGameData(req, game.id)
+		}
+		catch(error)
+		{
+			console.error(error)
+			return jsonError("Failed to fetch user game data", 500)
+		}
 
 		return NextResponse.json({
 			game,

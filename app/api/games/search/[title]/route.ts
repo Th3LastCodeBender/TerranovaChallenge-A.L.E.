@@ -164,7 +164,7 @@ async function fetchIGDBGames(query: string, token: string)
 	})
 }
 
-export async function GET(req: NextRequest, context: { params: Promise<{ title: string }> })
+export async function GET(req: NextRequest, context: {params: Promise<{ title: string }>})
 {
 	try
 	{

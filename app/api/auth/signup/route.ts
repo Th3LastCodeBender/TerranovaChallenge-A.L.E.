@@ -50,7 +50,7 @@ function validateSignupBody(body: unknown): | {valid: true; data: SignupData} | 
 	if (!name || name.length > 100 || !surname || surname.length > 100)
 		return {valid: false, message: "Invalid name or surname"}
 
-	if (username.length < 5 || username.length > 100)
+	if (!/^[\p{L}\p{M}\p{N}_]{5,30}$/u.test(username))
 		return {valid: false, message: "Invalid username"}
 
 	if (!isValidEmail(email))
@@ -70,10 +70,6 @@ export async function signup(body: unknown)
 		return {success: false as const, message: validation.message, status: 400}
 
 	const {name, surname, email, username, password} = validation.data
-
-	if (await findUserByEmail(email))
-		return {success: false as const, message: "Unable to create account with these details", status: 409}
-
 	const passwordValidation = validatePassword(password)
 
 	if (!passwordValidation.valid)
@@ -134,7 +130,7 @@ export async function POST(req: NextRequest)
 					}
 				}
 				)
-			}			
+			}
 		}
 		catch(error)
 		{
@@ -166,17 +162,19 @@ export async function POST(req: NextRequest)
 
 		const res = NextResponse.json({user: signup_result.user})
 
-		const client =
-		{
-			os: getOS(req.headers.get("user-agent") || ""),
-			browser: getBrowser(req.headers.get("user-agent") || "", req.headers.get("sec-ch-ua") || ""),
-			platform: req.headers.get("sec-ch-ua-platform") || "",
-			mobile: req.headers.get("sec-ch-ua-mobile") || ""
-		}
-
 		try
 		{
+			const userAgent = req.headers.get("user-agent") ?? ""
+			const client =
+			{
+				os: getOS(userAgent),
+				browser: getBrowser(userAgent, req.headers.get("sec-ch-ua") || ""),
+				platform: req.headers.get("sec-ch-ua-platform") || "",
+				mobile: req.headers.get("sec-ch-ua-mobile") || ""
+			}
+
 			const token = generateSessionToken()
+
 			await createSession(
 				{
 					userId: signup_result.user.id,

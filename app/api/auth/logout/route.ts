@@ -41,13 +41,12 @@ export async function POST(req: NextRequest)
 		{
 			const hashedToken = hashSessionToken(token)
 			const session = await findValidSession(hashedToken)
-			const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
 
 			if (session)
 				await deleteSession(hashedToken)
 		}
 
-		const res = NextResponse.json({success: true}, {status: 200})
+		const res = NextResponse.json({success: true})
 
 		res.cookies.delete(SESSION_COOKIE_NAME)
 
