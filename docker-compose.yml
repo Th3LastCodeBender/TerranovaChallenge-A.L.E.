@@ -1,18 +1,18 @@
 name: terranova
 
 services:
-  ollama:
-    image: ollama/ollama:latest
-    volumes:
-      - ollama_models:/root/.ollama
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   volumes:
+  #     - ollama_models:/root/.ollama
+  #   networks:
+  #     - backend
+  #   healthcheck:
+  #     test: ["CMD", "ollama", "list"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
+  #   restart: unless-stopped
   db:
     image: postgres:17
     environment:
