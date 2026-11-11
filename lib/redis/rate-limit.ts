@@ -8,7 +8,8 @@ export const RATE_LIMIT_POLICIES =
 	search: {limit: 20, windowSeconds: 60},
 	login: {limit: 10, windowSeconds: 60 * 15},
 	signup: {limit: 5, windowSeconds: 60 * 60},
-	logout: {limit: 20, windowSeconds: 60}
+	logout: {limit: 20, windowSeconds: 60},
+	otp_attempt: {limit: 5, windowSeconds: 60 * 15}
 }
 
 interface RateLimitOptions {
