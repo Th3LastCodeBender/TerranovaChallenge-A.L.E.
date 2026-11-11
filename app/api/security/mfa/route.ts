@@ -18,7 +18,7 @@ export async function POST(req: Request)
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/auth/login", RATE_LIMIT_POLICIES.otp_attempt)
+			const rl_result = await rateLimit(ip, "/api/security/mfa", RATE_LIMIT_POLICIES.otp_attempt)
 
 			if (!rl_result.success)
 			{
