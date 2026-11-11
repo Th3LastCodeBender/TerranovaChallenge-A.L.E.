@@ -24,6 +24,8 @@ model WG_User {
 	sessions		WG_Session[]
 	favourites		WG_Favourite[]
 	sysCollection	WG_GameUser[]
+	mfa				WG_Mfa?
+	mfaChallenges	WG_MfaChallenge[]
 
 	@@map("wgUsers")
 }
@@ -62,7 +64,7 @@ enum WG_GameStatus {
 	@@map("enum_game_status")
 }
 
-model WG_GameUser{
+model WG_GameUser {
 	userId			Int				@map("user_id")
 	gameId			Int				@map("game_id")
 	status			WG_GameStatus
@@ -74,3 +76,29 @@ model WG_GameUser{
 	@@index([userId, status])
 	@@map("wgUsersGames")
 }
+
+model WG_Mfa {
+	userId			Int				@id @map("user_id")
+	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
+	lastUsedAt		DateTime?		@db.Timestamptz(3) @map("last_used_at")
+	user			WG_User			@relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+	@@map("wgMfa")
+}
+
+model WG_MfaChallenge {
+	id				Int				@id @default(autoincrement())
+	userId			Int				@map("user_id")
+	tokenHash		String			@unique @map("token_hash")
+	codeHash		String			@map("code_hash")
+	attempts		Int				@default(0)
+	sentTo			String			@map("sent_to")
+	createdAt		DateTime		@default(now()) @db.Timestamptz(3) @map("created_at")
+	expiresAt		DateTime		@db.Timestamptz(3) @map("expires_at")
+	lastUsedAt		DateTime?		@db.Timestamptz(3) @map("last_used_at")
+	user			WG_User			@relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+	@@index([userId])
+	@@map("wgMfaChallenges")
+}
+
