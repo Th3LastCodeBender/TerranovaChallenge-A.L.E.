@@ -26,7 +26,7 @@ interface GamesServiceSearchResponse {
 export class GamesService {
 	private http = inject(HttpClient);
 	private gamesBaseUrl = '/api/games/search';
-	private gameDetailsUrl = '/api/games/';
+	private gameDetailsUrl = '/api/games';
 
 	getGameByName(name: string): Observable<IgdbGame[]> {
 		return this.http

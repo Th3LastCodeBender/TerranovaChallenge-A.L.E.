@@ -81,10 +81,13 @@ export class Navbar {
 	}
 
 	selectGame(game: IgdbGame): void {
-		console.log('Gioco selezionato:', game);
+		// console.log('Gioco selezionato:', game);
 
 		this.searchResults.set([]);
 		this.isSearchOpen.set(false);
+
+		if (game.slug)
+			this.router.navigate(['/games', game.slug]);
 	}
 
 	getGameImage(game: IgdbGame): string | null {
