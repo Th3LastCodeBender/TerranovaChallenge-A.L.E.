@@ -9,7 +9,11 @@ export const RATE_LIMIT_POLICIES =
 	login: {limit: 10, windowSeconds: 60 * 15},
 	signup: {limit: 5, windowSeconds: 60 * 60},
 	logout: {limit: 20, windowSeconds: 60},
-	otp_attempt: {limit: 5, windowSeconds: 60 * 15}
+	otp_attempt: {limit: 5, windowSeconds: 60 * 15},
+	add_item: {limit: 20, windowSeconds: 60},
+	delete_item: {limit: 30, windowSeconds: 60},
+	get_items: {limit: 10, windowSeconds: 60},
+	get_slug: {limit: 30, windowSeconds: 60}
 }
 
 interface RateLimitOptions {
