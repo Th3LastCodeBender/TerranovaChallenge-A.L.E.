@@ -36,7 +36,7 @@ export const POST = withAuth(async (req, { session }) =>
 		}
 
 		await enableMfa(session.userId)
-		return NextResponse.json({ success: true })
+		return NextResponse.json({success: true})
 	}
 	catch (error)
 	{

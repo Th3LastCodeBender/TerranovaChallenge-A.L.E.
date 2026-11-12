@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 
-export const POST = withAuth(async (req, { session }) =>
+export const DELETE = withAuth(async (req, { session }) =>
 {
 	try
 	{
@@ -36,7 +36,7 @@ export const POST = withAuth(async (req, { session }) =>
 		}
 
 		await disableMfa(session.userId)
-		return NextResponse.json({ success: true })
+		return NextResponse.json({success: true})
 	}
 	catch (error)
 	{

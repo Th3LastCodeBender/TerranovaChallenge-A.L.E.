@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyPassword } from "@/lib/security/password"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 import { getOS, getBrowser, isValidEmail, jsonError, requireEnv} from "@/lib/utils"
-import { createMfaChallenge, findMfaByUserId, generateOTP, hashOTP, MFA_COOKIE_NAME } from "@/query/mfa"
+import { createMfaChallenge, findMfaByUserId, generateOTP, hashOTP, MFA_COOKIE_DURATION_SECONDS, MFA_COOKIE_NAME } from "@/query/mfa"
 import { createSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_NAME, SESSION_COOKIE_DURATION_SECONDS, findValidSession, setLoginCookie } from "@/query/sessions"
 
 const DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$ZHVtbXlzYWx0MTIzNDU2Nzg$Qm9ndXNIYXNoRm9yVGVzdGluZw"
@@ -132,8 +132,7 @@ export async function POST(req: NextRequest)
 					userId: login_result.user.id,
 					tokenHash: hashSessionToken(mfaToken),
 					codeHash: hashOTP(otp),
-					sentTo: login_result.user.email,
-					expiresAt: new Date 
+					sentTo: login_result.user.email
 				}
 			)
 
@@ -147,7 +146,8 @@ export async function POST(req: NextRequest)
 				maxAge: 300
 			})
 
-			return res 
+			//ANDRA' AGGIUNTA FUNZIONE DI INVIO MAIL CON CODICE OTP
+			return res
 		}
 
 
