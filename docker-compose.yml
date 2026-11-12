@@ -1,18 +1,18 @@
 name: terranova
 
 services:
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   volumes:
-  #     - ollama_models:/root/.ollama
-  #   networks:
-  #     - backend
-  #   healthcheck:
-  #     test: ["CMD", "ollama", "list"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
-  #   restart: unless-stopped
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
   db:
     image: postgres:17
     environment:
@@ -68,6 +68,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080').then(() => process.exit(0), () => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
     networks:
       - backend
       - frontend
@@ -82,7 +88,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - frontend
     restart: unless-stopped
