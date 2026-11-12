@@ -10,12 +10,13 @@ export const MFA_COOKIE_NAME = "2fa_cookie"
 export const MFA_COOKIE_DURATION_SECONDS = 60 * 15
 export const MFA_MAX_ATTEMPTS = 5
 
+const	MFA_CHALLENGE_TTL_MS = 10 * 60 * 1000 // questi dovrebbero essere 10 minuti
+//expiresAt ci penso io nelle query
 export type	NewMfaChallenge = {
 	userId: number
 	tokenHash: string
 	codeHash: string
 	sentTo: string
-	expiresAt: Date
 }
 
 export function findMfaByUserId(userId: number): Promise<WG_Mfa | null>
@@ -42,9 +43,11 @@ export function disableMfa(userId: number): Promise<[Prisma.BatchPayload, Prisma
 
 export async function createMfaChallenge(data: NewMfaChallenge): Promise<WG_MfaChallenge>
 {
+	const expiresAt = new Date(Date.now() + MFA_CHALLENGE_TTL_MS)
+
 	const	[, challenge] = await prisma.$transaction([
 		prisma.wG_MfaChallenge.deleteMany({ where: { userId: data.userId }}),
-		prisma.wG_MfaChallenge.create({ data }),
+		prisma.wG_MfaChallenge.create({ data: {...data, expiresAt } }),
 	])
 
 	return challenge
