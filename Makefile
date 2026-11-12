@@ -2,6 +2,7 @@ WORKTREES := app/01_frontend:frontend app/02_backend:backend_ts app/03_db:DataBa
 DEV_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 OWNER := $(shell id -u):$(shell id -g)
 GPU_COMPOSE := $(DEV_COMPOSE) -f docker-compose.gpu.yml
+NO_LLM = $(shell $(DEV_COMPOSE) config --services 2>/dev/null | grep -vx ollama)
 
 all : setup up
 
@@ -61,17 +62,24 @@ llm_pull:
 	$(DEV_COMPOSE) exec ollama ollama pull $${OLLAMA_MODEL:-qwen3:8b}
 
 clean:
-	@echo "Stai per cancellare i volumi, questo significa dati db."
+	@echo "Stai per cancellare i volumi, questo significa dati db. (Ollama e i modelli restano)"
 	@echo "Premi Invio per continuare o Ctrl+C per annullare."
 	@read confirm
-	$(DEV_COMPOSE) down -v
+	$(DEV_COMPOSE) rm -sfv $(NO_LLM)
+	docker volume ls -q --filter label=com.docker.compose.project=terranova \
+		| grep -vx terranova_ollama_models | xargs -r docker volume rm
 
 fclean:
-	@echo "Stai per cancellare TUTTO, volumi e container"
+	@echo "Stai per cancellare TUTTO, volumi e container (tranne Ollama e i modelli)"
 	@echo "Premi Invio per continuare o Ctrl+C per annullare."
 	@read confirm
-	$(DEV_COMPOSE) down -v
-	docker system prune -af
+	$(DEV_COMPOSE) rm -sfv $(NO_LLM)
+	docker volume ls -q --filter label=com.docker.compose.project=terranova \
+		| grep -vx terranova_ollama_models | xargs -r docker volume rm
+	docker container prune -f --filter "label!=com.docker.compose.service=ollama"
+	docker image prune -af
+	docker builder prune -af
+	docker network prune -f
 
 re: down all
 
