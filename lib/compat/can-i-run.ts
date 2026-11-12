@@ -1,14 +1,15 @@
 import "server-only"
 
-import { getCachedRequirements, setCachedRequirements } from "../redis/requirements-cache"
-import { getSteamRequirements } from "../steam/requirements"
-import { extractRequirements, type GameRequirements } from "../llm/extract-requirements"
-import { checkCompatibility, type CompatResult } from "./check"
-import type { PcSpecs } from "@/query/pcSpecs"
+import { getCachedRequirements, setCachedRequirements } 	from "../redis/requirements-cache"
+import { getSteamRequirements } 							from "../steam/requirements"
+import { extractRequirements, type GameRequirements } 		from "../llm/extract-requirements"
+import { checkCompatibility, type CompatResult } 			from "./check"
+import { estimatePerf, type FpsEstimate, type Resolution }	from "./fps-estimate"
+import type { PcSpecs } 									from "@/query/pcSpecs"
 
-export type CanIRunResult =
-	| { found: false }
-	| { found: true, requirements: GameRequirements, compat: CompatResult }
+export type CanIRunResult =	
+	| { found: false } 
+	| { found: true, requirements: GameRequirements, compat: CompatResult, fps: FpsEstimate | null }
 
 export async function getGameRequirements(steamAppId: number): Promise<GameRequirements | null>
 {
@@ -39,12 +40,14 @@ export async function getGameRequirements(steamAppId: number): Promise<GameRequi
 	return requirements
 }
 
-export async function canIRun(steamAppId: number, specs: PcSpecs): Promise<CanIRunResult>
+export async function canIRun(steamAppId: number, specs: PcSpecs, resolution: Resolution = "1080p"): Promise<CanIRunResult>
 {
 	const requirements = await getGameRequirements(steamAppId)
 
 	if (requirements === null)
 		return {found: false }
 
-	return { found: true, requirements, compat: checkCompatibility(specs, requirements) }
+	const compat = checkCompatibility(specs, requirements)
+
+	return { found: true, requirements, compat, fps: estimatePerf(compat, resolution) }
 }

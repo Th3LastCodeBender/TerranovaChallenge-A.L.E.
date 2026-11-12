@@ -14,7 +14,7 @@ export type ComponentCheck = {
 	need: number | null
 }
 
-export type TierCheck = {
+export type compScore = {
 	status: CheckStatus
 	cpu: ComponentCheck
 	gpu: ComponentCheck
@@ -26,8 +26,8 @@ export type Verdict = "recommended" | "minimum" | "cannot-run" | "unknown"
 
 export type CompatResult = {
 	verdict: Verdict
-	minimum: TierCheck | null
-	recommended: TierCheck | null
+	minimum: compScore | null
+	recommended: compScore | null
 }
 
 function compareNumbers(have: number | null, need: number | null): ComponentCheck
@@ -58,7 +58,7 @@ function compareHardware(kind: HardwareKind, userModel: string, requireModels: s
 	return { status: have >= need * SCORE_TOLERANCE ? "pass" : "fail", have, need }
 }
 
-function checkTier(specs: PcSpecs, tier: RequirementTier | null): TierCheck | null
+function checkTier(specs: PcSpecs, tier: RequirementTier | null): compScore | null
 {
 	if (tier === null)
 		return null

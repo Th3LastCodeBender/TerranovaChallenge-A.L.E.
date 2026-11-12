@@ -2,7 +2,6 @@ import "server-only"
 
 import type { Prisma, WG_Mfa, WG_MfaChallenge } from "@/lib/generated/prisma/client"
 import { prisma } from "@/lib/db/db-pool"
-import { BatchPayload } from "@/lib/generated/prisma/internal/prismaNamespace"
 import { randomInt, timingSafeEqual, createHmac } from "crypto"
 import { requireEnv } from "@/lib/utils"
 
