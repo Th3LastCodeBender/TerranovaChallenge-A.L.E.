@@ -13,7 +13,9 @@ export const RATE_LIMIT_POLICIES =
 	add_item: {limit: 20, windowSeconds: 60},
 	delete_item: {limit: 30, windowSeconds: 60},
 	get_items: {limit: 10, windowSeconds: 60},
-	get_slug: {limit: 30, windowSeconds: 60}
+	get_slug: {limit: 30, windowSeconds: 60},
+	enable_2fa: {limit: 5, windowSeconds: 60 * 10},
+	disable_2fa: {limit: 5, windowSeconds: 60 * 5}
 }
 
 interface RateLimitOptions {

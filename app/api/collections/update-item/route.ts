@@ -70,7 +70,7 @@ export const POST = withAuth(async (req, { session }) =>
 		const status = collectionType as WG_GameStatus
 
 		await setGameStatus(session.userId, gameId, status)
-		return NextResponse.json({ success: true })
+		return NextResponse.json({success: true})
 	}
 	catch (error)
 	{

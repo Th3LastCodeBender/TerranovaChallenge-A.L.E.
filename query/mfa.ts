@@ -3,6 +3,12 @@ import "server-only"
 import type { Prisma, WG_Mfa, WG_MfaChallenge } from "@/lib/generated/prisma/client"
 import { prisma } from "@/lib/db/db-pool"
 import { BatchPayload } from "@/lib/generated/prisma/internal/prismaNamespace"
+import { randomInt, timingSafeEqual, createHmac } from "crypto"
+import { requireEnv } from "@/lib/utils"
+
+export const MFA_COOKIE_NAME = "2fa_cookie"
+export const MFA_COOKIE_DURATION_SECONDS = 60 * 15
+export const MFA_MAX_ATTEMPTS = 5
 
 export type	NewMfaChallenge = {
 	userId: number
@@ -101,4 +107,22 @@ export function consumeChallenge(id: number, userId: number, maxAttempts: number
 export function deleteExpiredChallenges(): Promise<Prisma.BatchPayload>
 {
 	return prisma.wG_MfaChallenge.deleteMany({ where: { expiresAt: { lte: new Date() } } })
+}
+
+export function generateOTP()
+{
+	return randomInt(100000, 1000000).toString() 
+}
+
+export function hashOTP(otp: string)
+{
+	return createHmac('sha256', requireEnv("OTP_PEPPER")).update(otp).digest('hex')
+}
+
+export function hashCmp(left: string, right: string)
+{
+	const leftBuffer = Buffer.from(left, "hex")
+	const rightBuffer = Buffer.from(right, "hex")
+
+	return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer)
 }
