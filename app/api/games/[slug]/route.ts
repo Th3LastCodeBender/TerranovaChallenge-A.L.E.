@@ -127,7 +127,7 @@ export async function GET(req: NextRequest, context: {params: Promise<{slug: str
 		
 		const {slug} = await context.params
 
-		if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
+		if (!slug || !/^[a-z0-9]+(?:-+[a-z0-9]+)*$/.test(slug))
 			return jsonError("Invalid game slug", 400)
 
 		let game
