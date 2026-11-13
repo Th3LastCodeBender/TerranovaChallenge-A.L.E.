@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server"	
-import { withAuth } from "@/lib/auth/authWrapper"
 import { jsonError, requireEnv} from "@/lib/utils"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { NextRequest,NextResponse } from "next/server"	
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
+import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 
 async function fetchIGDBGames(offset: number)
 {
@@ -30,13 +29,14 @@ async function fetchIGDBGames(offset: number)
 				platforms.id,
 				platforms.name;
 			limit 20;
+			version_parent = null;
 			offset ${offset};
 		`,
 		cache: "no-store"
 	})
 }
 
-export const GET = withAuth(async (req, { session }) =>
+export async function GET(req: NextRequest)
 {
 	try
 	{
@@ -95,4 +95,4 @@ export const GET = withAuth(async (req, { session }) =>
 		console.error(error)
 		return jsonError("Internal server error", 500)
 	}
-})
+}

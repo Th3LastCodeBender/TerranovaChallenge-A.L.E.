@@ -6,7 +6,7 @@ import { getOS, getBrowser, isValidEmail, jsonError, requireEnv} from "@/lib/uti
 import { createMfaChallenge, findMfaByUserId, generateOTP, hashOTP, MFA_COOKIE_DURATION_SECONDS, MFA_COOKIE_NAME } from "@/query/mfa"
 import { createSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_NAME, SESSION_COOKIE_DURATION_SECONDS, findValidSession, setLoginCookie } from "@/query/sessions"
 
-const DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$ZHVtbXlzYWx0MTIzNDU2Nzg$Qm9ndXNIYXNoRm9yVGVzdGluZw"
+const DUMMY_HASH = "$argon2id$v=19$m=32768,t=3,p=4$ZHVtbXlzYWx0MTIzNDU2Nzg$Qm9ndXNIYXNoRm9yVGVzdGluZw"
 
 interface LoginData
 {
@@ -143,15 +143,14 @@ export async function POST(req: NextRequest)
 				secure: requireEnv("NODE_ENV") === "production",
 				sameSite: "strict",
 				path: "/",
-				maxAge: 300
+				maxAge: MFA_COOKIE_DURATION_SECONDS
 			})
 
 			//ANDRA' AGGIUNTA FUNZIONE DI INVIO MAIL CON CODICE OTP
 			return res
 		}
 
-
-		const res = NextResponse.json(login_result.user)
+		const res = NextResponse.json({...login_result.user, mfa: false})
 
 		try
 		{

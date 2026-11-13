@@ -86,7 +86,7 @@ export async function POST(req: Request)
 		if (!user)
     		return jsonError("User not found", 404)
 
-		const res = NextResponse.json(user)
+		const res = NextResponse.json({...user, mfa: true})
 
 		res.cookies.delete(MFA_COOKIE_NAME)
 

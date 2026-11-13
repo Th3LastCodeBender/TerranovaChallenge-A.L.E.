@@ -1,5 +1,6 @@
+import { Prisma } from "@prisma/client"
+import { createUser } from "@/query/users"
 import { NextRequest, NextResponse } from "next/server"
-import { createUser, findUserByEmail } from "@/query/users"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 import { getOS, getBrowser, isString, isValidEmail, jsonError  } from "@/lib/utils"
 import { validatePassword, isPasswordCompromised, hashPassword } from "@/lib/security/password"
@@ -15,7 +16,7 @@ interface SignupData {
 
 function isUniqueConstraintViolation(err: unknown): boolean
 {
-	return typeof err === "object" && err !== null && "code" in err && (err as {code: string}).code === "23505"
+	return err instanceof Prisma.PrismaClientKnownRequestError && (err as {code: string}).code === "P2002"
 }
 
 function validateSignupBody(body: unknown): | {valid: true; data: SignupData} | {valid: false; message: string}
