@@ -11,7 +11,7 @@ COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY --chown=node:node . .
-RUN DATABASE_URL="postgresql://finto:finto@localhost/finto" pnpm exec prisma generate
+RUN pnpm exec prisma generate
 RUN REDIS_HOST=finto REDIS_PORT=6379 REDIS_PASSWORD=finto pnpm exec next build
 
 EXPOSE 8080

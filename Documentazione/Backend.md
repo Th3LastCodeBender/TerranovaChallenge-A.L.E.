@@ -201,9 +201,8 @@ Gli id vengono ordinati per `updatedAt`/`createdAt`, ma `getGamesByIds` li manda
   - richiede il login ma non usa `session` (warning del lint). Se deve essere pubblica come search e `[slug]`, togliere `withAuth`.
 - **`count-collections` (`app/api/count-collections/route.ts:39-43`):**
   - fa 5 query una dopo l'altra e carica tutte le righe solo per contarle;
-  - meglio `prisma.wG_Favourite.count` più un `groupBy({ by: ["status"], _count: true })` su `wG_GameUser`, o almeno un `Promise.all`.
-  Se servono, le query le aggiungo io in `query/`.
-- **Paginazione in memoria:** `listCollection`/`listFavourites` caricano tutte le righe e poi fanno `slice`. Meglio `skip`/`take` + `count` in Prisma.
+  - le query `countFavourites` e `countCollection` ora ci sono: resta da usarle nella route (vedi "Paginazione e conteggi" in fondo). Volendo si possono lanciare insieme con un `Promise.all`.
+- **Paginazione in memoria:** `listCollection`/`listFavourites` ora accettano `{ limit, offset }` e il taglio lo fa il DB. Resta da togliere lo `slice` nelle route `get-favourites` e `get-items` (vedi "Paginazione e conteggi" in fondo).
 - **`offset` gestito in modo diverso:** in `get-favourites` è obbligatorio, in `get-items` no (`Number(null) === 0`).
 - **Policy riusate:** `can-i-run` usa `get_items`. Visto che chiama l'LLM (fino a 120 s), conviene una policy sua, magari per `userId` invece che per IP. `get_items` a 10/min può essere stretto per un frontend che pagina.
 - **`can-i-run` senza dedupe:** due richieste insieme sullo stesso gioco non in cache chiamano l'LLM due volte. La fetch a Steam (`lib/steam/requirements.ts:53`) non ha timeout.
@@ -218,7 +217,7 @@ Gli id vengono ordinati per `updatedAt`/`createdAt`, ma `getGamesByIds` li manda
   - in `signup/route.ts`, `findUserByEmail` è importato ma non usato;
   - in `login/route.ts`, `MFA_COOKIE_DURATION_SECONDS` vedi S5;
   - in `games/route.ts`, `session` non è usato.
-- **Due configurazioni DB:** Prisma CLI usa `DATABASE_URL` (`prisma.config.ts`), il runtime usa `DB_*` (`lib/db/db-pool.ts`). Vanno tenute allineate nel `.env`.
+- **Configurazione DB unica:** sia la CLI di Prisma sia il runtime (`lib/db/db-pool.ts`) usano le variabili `DB_*` del `.env`. `prisma.config.ts` costruisce l'URL da `DB_*`, e `DATABASE_URL` non esiste più.
 
 ### Ordine consigliato
 
@@ -226,3 +225,48 @@ Gli id vengono ordinati per `updatedAt`/`createdAt`, ma `getGamesByIds` li manda
 2. S1, S2, S3: signup, timing attack, IP.
 3. S5, S6, S7: completano il flusso 2FA.
 4. Il resto, quando c'è tempo.
+
+## Paginazione e conteggi nelle query di preferiti e collection
+
+Ho aggiunto `limit`/`offset` lato DB e due funzioni di conteggio in `query/favourites.ts` e `query/collection.ts`. Il parametro `page` è opzionale, quindi le route di adesso funzionano ancora senza modifiche.
+
+### Firme
+
+```ts
+listFavourites(userId, page?: { limit: number, offset: number })
+countFavourites(userId)                      // -> number
+
+listCollection(userId, status?, page?: { limit: number, offset: number })
+countCollection(userId, status?)             // -> number
+```
+
+Per avere tutta la collezione a pagine si passa `undefined` come status: `listCollection(userId, undefined, { limit, offset })`.
+
+### Da cambiare nelle route
+
+1. **`app/api/favourites/get-favourites/route.ts`**
+   ```ts
+   // prima
+   const favourites = await listFavourites(session.userId)
+   const ids = favourites.slice(offset, offset + limit).map(...)
+   // dopo
+   const favourites = await listFavourites(session.userId, { limit, offset })
+   const ids = favourites.map(...)
+   ```
+2. **`app/api/collections/get-items/route.ts`**
+   ```ts
+   const entries = await listCollection(session.userId, status, { limit, offset })
+   const ids = entries.map(...)
+   ```
+3. **`app/api/count-collections/route.ts`:** adesso scarica tutte le righe cinque volte solo per contarle. Va sostituito con:
+   ```ts
+   const favourites = await countFavourites(session.userId)
+   const to_play = await countCollection(session.userId, "TO_PLAY")
+   const playing = await countCollection(session.userId, "PLAYING")
+   const finished = await countCollection(session.userId, "FINISHED")
+   const to_buy = await countCollection(session.userId, "TO_BUY")
+   ```
+   Questi sono già numeri: dove adesso c'è `.length` va tolto.
+4. **Facoltativo:** in get-favourites e get-items si può aggiungere `total` alla risposta, con la count corrispondente. Così il frontend sa quante pagine ci sono o se mostrare "carica altri".
+
+**Nota:** l'ordinamento adesso ha `gameId` come secondo criterio, dopo `createdAt` per i preferiti e `updatedAt` per la collection. Così, se due righe hanno lo stesso timestamp, le pagine non ripetono e non saltano giochi.
