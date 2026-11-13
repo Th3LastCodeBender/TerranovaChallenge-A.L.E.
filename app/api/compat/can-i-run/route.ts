@@ -22,7 +22,7 @@ export const GET = withAuth(async (request, { session }) =>
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/compact/can-i-run", RATE_LIMIT_POLICIES.get_items)
+			const rl_result = await rateLimit(ip, "/api/compat/can-i-run", RATE_LIMIT_POLICIES.get_items)
 
 			if (!rl_result.success)
 			{

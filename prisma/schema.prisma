@@ -58,7 +58,6 @@ enum WG_GameStatus {
 	TO_PLAY			@map("to_play")
 	PLAYING			@map("playing")
 	FINISHED		@map("finished")
-	COMPLETED		@map("completed")
 	TO_BUY			@map("to_buy")
 
 	@@map("enum_game_status")

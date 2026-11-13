@@ -13,7 +13,7 @@ export type estimateCell = {
 	resolution: Resolution
 	fps: number
 	band: FpsBand
-	limitedBy: "gpu" | "cpu"
+	limitedBy: "gpu" | "cpu" | "cap"
 }
 
 export type FpsSummary = {
@@ -87,7 +87,15 @@ function toBand(fps: number): FpsBand
 	return "144+"
 }
 
-function computeEstimateCells(score: compScore, baseEstimate: Anchor): estimateCell[] | null
+function limitedBy(gpuFps: number, cpuCap: number): estimateCell["limitedBy"]
+{
+	if (MAX_FPS < Math.min(gpuFps, cpuCap))
+		return "cap"
+
+	return cpuCap < gpuFps ? "cpu" : "gpu"
+}
+
+function computeEstimateCells(score: compScore, baseEstimate: Anchor, ramBelowMinimum: boolean): estimateCell[] | null
 {
 	const gpuRatio = scoreRatio(score.gpu)
 
@@ -97,7 +105,7 @@ function computeEstimateCells(score: compScore, baseEstimate: Anchor): estimateC
 	const cpuRatio = scoreRatio(score.cpu)
 	const highFps = baseEstimate.fps / QPRESET_PERF_SCALING[baseEstimate.preset] * gpuRatio
 	const cpuCap = cpuRatio === null ? Infinity : baseEstimate.fps * CPU_HEADROOM * cpuRatio
-	const ramFactor = score.ramGb.status === "fail" ? RAM_PENALTY : 1
+	const ramFactor = ramBelowMinimum ? RAM_PENALTY : 1
 
 	return RESOLUTIONS.flatMap((resolution) => 
 		Q_PRESETS.map((preset): estimateCell => 
@@ -105,7 +113,7 @@ function computeEstimateCells(score: compScore, baseEstimate: Anchor): estimateC
 			const gpuFps = highFps * QPRESET_PERF_SCALING[preset] * RESOLUTION_PERF_SCALING[resolution]
 			const fps = Math.round(Math.min(gpuFps, cpuCap, MAX_FPS) * ramFactor)
 
-			return { preset, resolution, fps, band: toBand(fps), limitedBy: cpuCap < gpuFps ? "cpu" : "gpu" }
+			return { preset, resolution, fps, band: toBand(fps), limitedBy: limitedBy(gpuFps, cpuCap) }
 		}))
 }
 
@@ -131,12 +139,14 @@ export function estimatePerf(compact: CompatResult, resolution: Resolution = "10
 		{ tier: compact.minimum, basedOn: "minimum" },
 	] as const
 
+	const ramBelowMinimum = compact.minimum?.ramGb.status === "fail"
+
 	for (const {tier, basedOn } of tiers)
 	{
 		if (tier === null)
 			continue
 
-		const cells = computeEstimateCells(tier, BASE_ESTIMATES[basedOn])
+		const cells = computeEstimateCells(tier, BASE_ESTIMATES[basedOn], ramBelowMinimum)
 
 		if (cells !== null)
 			return { basedOn, cells, summary: summarize(cells, resolution)}

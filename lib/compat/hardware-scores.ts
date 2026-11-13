@@ -28,11 +28,45 @@ export function normalizeHardwareName(name: string): string
 			.replace(/[^a-z0-9]/g, "")
 }
 
+function splitVariants(name: string): string[]
+{
+	const parts = name
+					.split("/")
+					.map(part => part.trim().split(/\s+/))
+					.filter(words => words[0] !== "")
+
+	let base = parts[0]
+	const names = [base.join(" ")]
+
+	for (const words of parts.slice(1))
+	{
+		base = [...base.slice(0, Math.max(0, base.length - words.length)), ...words]
+		names.push(base.join(" "))
+	}
+
+	return names
+}
+
 function buildIndex(table: Record<string, number>): Map<string, number>
 {
-	return new Map(
-		Object.entries(table).map(([name, score]) => [normalizeHardwareName(name), score])
-	)
+	const index = new Map<string, number>()
+	const entries = Object.entries(table)
+
+	for (const [name, score] of entries)
+		if (!name.includes("/"))
+			index.set(normalizeHardwareName(name), score)
+	
+	for (const [name, score] of entries)
+		if (name.includes("/"))
+			for (const variant of splitVariants(name))
+			{
+				const key = normalizeHardwareName(variant)
+
+				if (/\d/.test(key) && !index.has(key))
+					index.set(key, score)
+			}
+	
+	return index
 }
 
 const GPU_INDEX = buildIndex(GPU_SCORES)
@@ -53,7 +87,7 @@ function lookup(index: Map<string, number>, key: string): number | null
 	let lowest: number | null = null
 
 	for (const [name, score] of index)
-		if (name.startsWith(key) && (lowest === null || score < lowest))
+		if (name.startsWith(key) && !/^\d/.test(name.slice(key.length)) && (lowest === null || score < lowest))
 			lowest = score
 
 	return lowest
