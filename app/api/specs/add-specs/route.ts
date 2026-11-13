@@ -57,7 +57,7 @@ export const POST = withAuth(async (req, { session }) =>
 
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/specs/add-specs", RATE_LIMIT_POLICIES.add_item)
+			const rl_result = await rateLimit(ip, "/api/specs/add-specs", RATE_LIMIT_POLICIES.add_specs)
 
 			if (!rl_result.success)
 			{
