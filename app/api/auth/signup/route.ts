@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/lib/generated/prisma/client"
 import { createUser } from "@/query/users"
 import { NextRequest, NextResponse } from "next/server"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
