@@ -31,29 +31,35 @@
       </div>
     </div>
   </section>
-  <section class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+  <section class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+    <div class="col">
+      <div class="stat-card text-center">
+        <span>Finished</span>
+        <h3>{{ counts()?.finished_length}}</h3>
+      </div>
+    </div>
+    <div class="col">
+      <div class="stat-card text-center">
+        <span>Playing </span>
+        <h3>{{ counts()?.playing_length }}</h3>
+      </div>
+    </div>
+    <div class="col">
       <div class="stat-card text-center">
         <span>To play</span>
-        <h3>Games to play ...</h3>
+        <h3>{{ counts()?.to_play_length }}</h3>
       </div>
     </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-card text-center">
-        <span>Played</span>
-        <h3>Games played ...</h3>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
+    <div class="col">
       <div class="stat-card text-center">
         <span>Wishlist</span>
-        <h3>Games to buy ...</h3>
+        <h3>{{ counts()?.to_buy_length }}</h3>
       </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col">
       <div class="stat-card text-center">
         <span>Favourites</span>
-        <h3>Favourites</h3>
+        <h3>{{ counts()?.favourites_length }}</h3>
       </div>
     </div>
   </section>
