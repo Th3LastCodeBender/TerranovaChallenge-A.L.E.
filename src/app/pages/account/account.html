@@ -73,6 +73,43 @@
           <span>Email</span>
           <p>{{ authService.user?.email }}</p>
         </div>
+        <div class="profile-info">
+          <span>Sicurezza</span>
+          <div class="mfa-setting" [class.is-active]="mfaEnabled()">
+            <div class="mfa-icon">
+              <i class="bi" [class.bi-shield-lock-fill]="mfaEnabled()" [class.bi-shield]="!mfaEnabled()"></i>
+            </div>
+            <div class="mfa-text">
+              <strong>
+                Autenticazione a due fattori
+                <span class="mfa-badge">{{ mfaEnabled() ? 'Attiva' : 'Disattiva' }}</span>
+              </strong>
+              <small>
+                {{ mfaEnabled() ? 'A ogni accesso ti chiederemo un codice di verifica' : 'Aggiungi un codice di verifica al login' }}
+              </small>
+            </div>
+            <label class="mfa-switch" for="mfa-toggle" [class.is-loading]="mfaLoading()">
+              <input
+                class="mfa-switch-input"
+                type="checkbox"
+                role="switch"
+                id="mfa-toggle"
+                aria-label="Autenticazione a due fattori"
+                [checked]="mfaEnabled()"
+                [disabled]="mfaLoading()"
+                (change)="toggle2fa($event)" />
+              <span class="mfa-switch-track">
+                <span class="mfa-switch-thumb"></span>
+              </span>
+            </label>
+          </div>
+          @if (mfaError()) {
+            <div class="mfa-error" role="alert">
+              <i class="bi bi-exclamation-circle"></i>
+              {{ mfaError() }}
+            </div>
+          }
+        </div>
       </div>
     </div>
     <div class="col-12 col-lg-6">

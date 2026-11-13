@@ -42,7 +42,8 @@ export class AuthService {
 			email: u.email,
 			firstName: u.firstName,
 			lastName: u.lastName,
-			createdAt: new Date(u.createdAt)
+			createdAt: new Date(u.createdAt),
+			mfa: u.mfa ?? false
 		};
 	}
 
@@ -62,7 +63,7 @@ export class AuthService {
 	logout(): Observable<unknown> {
 		return this.http
 			.post('/api/auth/logout', {})
-			.pipe(finalize(() => {          // pulisce il browser sia se va bene sia se va male
+			.pipe(finalize(() => {
 				this.user = null;
 				sessionStorage.removeItem('user');
 			}));
@@ -73,5 +74,23 @@ export class AuthService {
 		if (!user)
 			return null;
 		return JSON.parse(user);
+	}
+
+	activate2fa(): Observable<unknown> {
+		return this.http.post('/api/security/mfa/enable', {}).pipe(
+			tap(() => this.setMfa(true))
+		);
+	}
+
+	disable2fa(): Observable<unknown> {
+		return this.http.delete('/api/security/mfa/disable').pipe(
+			tap(() => this.setMfa(false))
+		);
+	}
+
+	// Aggiorna lo stato 2FA dell'utente salvato (memoria + sessionStorage)
+	private setMfa(enabled: boolean): void {
+		if (this.user)
+			this.setUser({ ...this.user, mfa: enabled });
 	}
 }

@@ -5,5 +5,6 @@ export interface User {
 	firstName: string,
 	lastName: string,
 	email: string,
-	createdAt: Date
+	createdAt: Date,
+	mfa?: boolean
 }
