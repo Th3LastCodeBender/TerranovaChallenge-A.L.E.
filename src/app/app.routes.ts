@@ -6,7 +6,8 @@ import { Account } from './pages/account/account';
 import { GameDetails } from './pages/game-details/game-details';
 import { GamesSearch } from './pages/games-search/games-search';
 import { Register } from './pages/register/register';
-import { loginCheck, authCheck } from './loggedCheck';
+import { loginCheck, authCheck, mfaPendingCheck } from './loggedCheck';
+import { VerifyOtp } from './pages/verify-otp/verify-otp';
 
 export const routes: Routes = [
 	{
@@ -18,6 +19,11 @@ export const routes: Routes = [
 	{
 		path: '',
 		component: Home
+	},
+	{
+		path: 'login/verify',
+		component: VerifyOtp,
+		canActivate: [mfaPendingCheck]
 	},
 	{
 		path: 'login',

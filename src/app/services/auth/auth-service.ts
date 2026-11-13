@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { User } from '../../models/user.model';
 import { map, tap, Observable, finalize } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { UrlSegment } from '@angular/router';
 
 // Campi che il backend si aspetta in POST /api/auth/signup
 export interface RegisterData {
@@ -13,6 +14,10 @@ export interface RegisterData {
 	password: string;
 }
 
+export type LoginResult = | { status: 'logged'; user: User } | { status: 'mfa-required' };
+type LoginResponse = User | { requires2fa: true };
+const MFA_PENDING = 'mfaPending';
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -20,11 +25,36 @@ export class AuthService {
 	private http = inject(HttpClient);
 	user: User | null = this.loadUser();
 
-	login(email: string, password: string): Observable<User> {
-		return (this.http.post<User>('/api/auth/login', { email, password }).pipe(
-			map(res => this.toUser(res)),
-			tap(user => this.setUser(user))
+	login(email: string, password: string): Observable<LoginResult> {
+		return (this.http.post<LoginResponse>('/api/auth/login', { email, password }).pipe(
+			map((res): LoginResult => {
+				if ('requires2fa' in res && res.requires2fa) {
+					sessionStorage.setItem(MFA_PENDING, '1');
+					return { status: 'mfa-required' };
+				}
+				const user = this.toUser(res as User);
+				this.setUser(user);
+				return { status: 'logged', user };
+			})
 		));
+	}
+
+	verifyOtp(otp: string): Observable<User> {
+		return this.http.post<User>('/api/security/mfa', { otp }).pipe(
+			map(res => this.toUser(res)),
+			tap(user => {
+				this.setUser(user);
+				this.clearMfaPending()
+			})
+		)
+	}
+
+	isMfaPending(): boolean {
+		return sessionStorage.getItem(MFA_PENDING) === '1';
+	}
+
+	clearMfaPending(): void {
+		sessionStorage.removeItem(MFA_PENDING);
 	}
 
 	// Dopo la registrazione il backend imposta già il cookie: l'utente è loggato

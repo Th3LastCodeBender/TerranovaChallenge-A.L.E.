@@ -21,3 +21,14 @@ export const authCheck: CanActivateFn = () => {
 		return router.createUrlTree(['/login']);
 	return true;
 }
+
+export const mfaPendingCheck: CanActivateFn = () => {
+	const auth = inject(AuthService);
+	const router = inject(Router);
+
+	if (auth.isLoggedIn())
+		return router.createUrlTree(['/']);
+	if (!auth.isMfaPending())
+		return router.createUrlTree(['/login']);
+	return true;
+}
