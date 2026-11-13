@@ -3,6 +3,16 @@
 // $gradient-light: linear-gradient(160deg, #f4f7fb 0%, #dbe4f0 100%);
 // $gradient-dark:  linear-gradient( 145deg, rgb(76, 105, 172) 11.3%, rgba(24,40,72,1) 99.3% );
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+}
+
 $gradient-light:
   // Vignettatura leggera ai bordi
   radial-gradient(
@@ -95,6 +105,14 @@ $gradient-dark:
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 :root, [data-bs-theme="light"] {
+
+position: relative;
+    z-index: 1000;
+
+    display: block;
+
+    margin: 0;
+    padding: 0;
 
   --bg-gradient: #{$gradient-light};
   

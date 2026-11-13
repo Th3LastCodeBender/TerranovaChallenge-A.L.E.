@@ -14,9 +14,10 @@ import {
 } from '../../models/platform.model';
 import { GameCard } from '../../components/game-card/game-card';
 import { GamesService } from '../../services/games/games-service';
+import { Navbar } from '../../components/navbar/navbar';
 
 @Component({
-    imports: [GameCard, DatePipe, DecimalPipe],
+    imports: [GameCard, DatePipe, DecimalPipe, Navbar],
     selector: 'app-game-details',
     styleUrl: './game-details.scss',
     templateUrl: './game-details.html',

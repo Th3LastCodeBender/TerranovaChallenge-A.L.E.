@@ -352,6 +352,11 @@
     justify-content: center;
 }
 
+.navbar {
+    position: relative;
+    z-index: 1000;
+}
+
 .navbar,
 .navbar .navbar-brand,
 .navbar .nav-link,
