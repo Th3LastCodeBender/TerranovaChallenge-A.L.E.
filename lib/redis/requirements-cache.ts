@@ -3,7 +3,7 @@ import "server-only"
 import { redis_pool } from "./redis-init"
 import type { GameRequirements} from "../llm/extract-requirements"
 
-const CACHE_VERSION = "v3"
+const CACHE_VERSION = "v4"
 const FOUND_TTL_SECONDS = 60 * 60 * 24 * 30
 const NOT_FOUND_TTL_SECONDS = 60 * 60 * 24 * 7
 

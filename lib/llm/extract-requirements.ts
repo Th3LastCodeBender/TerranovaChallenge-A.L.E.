@@ -147,24 +147,37 @@ function cleanString(value: unknown): string | null
 
 function hasSameNumbers(original: string, model: string): boolean
 {
-	const numbers = model.match(/\d+/g) ?? []
+	const inOriginal = new Set(original.match(/\d+/g) ?? [])
 
-	return numbers.every((number) => original.includes(number))
+	return (model.match(/\d+/g) ?? []).every((number) => inOriginal.has(number))
 }
-
+	
 function hasModelNumber(original: string): boolean
 {
 	const withoutSizes = original.replace(/\d+(\.\d+)?\s*(mhz|ghz|mb|gb)\b/gi, "")
-
+	
 	return /\d{3,}/.test(withoutSizes)
 }
+	
+const FILLER_WORDS = /\b(graphics|video)\s+card\b|\bprocessor\b|\bor\s+(better|higher|equivalent)\b/gi
 
 function modelFromOriginal(kind: HardwareKind, original: string): string | null
 {
-	const head = original.split(/\s+(?:or|-)\s+|,|\(/i)[0].trim()
+	for (const part of original.split(/\s+(?:or|-)\s+|\s*[\/,(]\s*/i))
+	{
+		const head = part
+			.replace(/\d+(\.\d+)?\s*(mhz|ghz|mb|gb)\b/gi, "")
+			.replace(FILLER_WORDS, "")
+			.replace(/\s+/g, " ")
+			.trim()
 
-	return hasModelNumber(head) && getHardwareScore(kind, head) !== null ? head : null
+		if (hasModelNumber(head) && getHardwareScore(kind, head) !== null)
+			return head
+	}
+
+	return null
 }
+
 
 function coreCountModel(cores: number | null, ghz: number | null): string | null
 {
@@ -208,7 +221,16 @@ function genericFromOriginal(kind: HardwareKind, original: string): string | nul
 		if (tier !== null)
 			return GENERIC_MODELS.cpu[`Intel Core i${tier[1]}`]
 		
-		if (/^\s*\d+(\.\d+)?\s*ghz\b/.test(text))
+		const ghz = text.match(/(\d+(?:\.\d+)?)\s*ghz/)
+		const clock = ghz === null ? null : Number(ghz[1])
+
+		if (/dual|core 2 duo/.test(text))
+			return coreCountModel(2, clock)
+
+		if (/quad/.test(text))
+			return coreCountModel(4, clock)
+
+		if (/^\s*\d+(\.\d+)?\s*ghz\b/.test(text) && !/core/.test(text))
 			return GENERIC_MODELS.cpu["Pentium, Single Core, or only a clock speed"]
 
 		return null
@@ -224,6 +246,8 @@ function genericFromOriginal(kind: HardwareKind, original: string): string | nul
 
 	return match ? GENERIC_MODELS.gpu[match[1]] : null
 }
+
+const HARDWARE_HINT = /ghz|mhz|dual|quad|core|pentium|athlon|celeron|\bi[357]\b|\d+\s*(mb|gb)\b|integrated|intel hd/i
 
 function sanitizeHardware(kind: HardwareKind, value: unknown): HardwareModel[]
 {
@@ -249,9 +273,11 @@ function sanitizeHardware(kind: HardwareKind, value: unknown): HardwareModel[]
 			items.push({ original, model, estimated: false })
 		else if (!hasModelNumber(original))
 		{
-			const generic = known && GENERIC_KEYS[kind].has(normalizeHardwareName(model))
-							? model
-							: genericFromOriginal(kind, original)
+			const llmGeneric = known && GENERIC_KEYS[kind].has(normalizeHardwareName(model)) && HARDWARE_HINT.test(original)
+				? model
+				: null
+			const generic = genericFromOriginal(kind, original) ?? llmGeneric
+
 
 			if (generic !== null)
 				items.push({ original, model: generic, estimated: true })
