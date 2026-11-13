@@ -1,14 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, map, of, switchMap, tap } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
 import { GameCard } from '../../components/game-card/game-card';
-import { Navbar } from '../../components/navbar/navbar';
 import { COLLECTIONS, CollectionSlug, CollectionsService } from '../../services/collections/collections-service';
 
 @Component({
-  imports: [GameCard, Navbar, RouterLink],
+  imports: [GameCard],
   selector: 'app-collections',
   styleUrl: './collections.scss',
   templateUrl: './collections.html',
@@ -17,9 +16,6 @@ export class Collections {
 	private collectionsService = inject(CollectionsService);
 	private route = inject(ActivatedRoute);
 	private router = inject(Router);
-
-	readonly collections = COLLECTIONS;
-	readonly slugs = Object.keys(COLLECTIONS) as CollectionSlug[];
 
 	slug = signal<CollectionSlug>('finished');
 	page = signal(1);

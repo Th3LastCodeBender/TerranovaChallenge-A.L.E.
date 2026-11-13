@@ -1,25 +1,8 @@
-<app-navbar></app-navbar>
-
-<div class="container-fluid px-4 px-xl-5 my-4">
 	<h2 class="mb-3">{{ title() }} <small class="text-secondary">({{ total() }})</small></h2>
-	<ul class="nav nav-pills mb-4">
-		@for (s of slugs; track s) {
-		<li class="nav-item">
-			<a class="nav-link" [class.active]="s === slug()" [routerLink]="['/collections', s]">
-				{{ collections[s].title }}
-			</a>
-		</li>
-		}
-	</ul>
-
-	@if (loading()) {
-		<div class="text-center py-5">
-			<div class="spinner-border" role="status"></div>
-		</div>
-	} @else if (error()) {
+	@if (error()) {
 		<div class="alert alert-danger">{{ error() }}</div>
 	} @else {
-		<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+		<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3" [class.opacity-50]="loading()" [attr.aria-busy]="loading()">
 			@for (game of games(); track game.id) {
 			<div class="col"><app-game-card [game]="game"></app-game-card></div>
 			} @empty {
@@ -43,4 +26,3 @@
 		</div>
 	}
 	}
-</div>

@@ -9,6 +9,7 @@ import { Register } from './pages/register/register';
 import { loginCheck, authCheck, mfaPendingCheck, collectionTypeCheck } from './loggedCheck';
 import { VerifyOtp } from './pages/verify-otp/verify-otp';
 import { Collections } from './pages/collections/collections';
+import { CollectionsLayout } from './pages/collections-layout/collections-layout';
 
 export const routes: Routes = [
 	{
@@ -46,10 +47,18 @@ export const routes: Routes = [
 		canActivate: [loginCheck]
 	},
 	{
-		path: 'collections/:type',
-		component: Collections,
-		canActivate: [authCheck, collectionTypeCheck],
-		// children: {}
-	}
-
+		path: 'collections',
+		component: CollectionsLayout,
+		canActivate: [authCheck],
+		children: [
+			{
+				path: '', redirectTo: 'finished', pathMatch: 'full'
+			},
+			{
+				path: ':type',
+				component: Collections,
+				canActivate: [collectionTypeCheck],
+			},
+		],
+	},
 ];
