@@ -174,20 +174,28 @@ export async function getGamesByIds(ids: number[])
 			},
 			body: `
 				where id = (${ids.join(",")});
-				fields	name,
-						cover.url,
-						summary,
-						first_release_date,
-						rating,
-						genres.name,
-						platforms.name;
+				fields
+					id,
+					name,
+					slug,
+					summary,
+					first_release_date,
+					rating,
+					rating_count,
+					aggregated_rating,
+					aggregated_rating_count,
+					cover.image_id,
+					genres.id,
+					genres.name,
+					platforms.id,
+					platforms.name;
 				limit 50;
 			`
 		}
 	)
 
 	if (!response.ok)
-		throw new Error("Failed to fetch games from IGDB")
+		return response
 
 	return response.json()
 }

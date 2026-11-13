@@ -53,6 +53,18 @@ export const GET = withAuth(async (req, { session }) =>
 		const ids = entries.slice(offset, offset + limit).map((fav: {gameId: number}) => fav.gameId)	
 		const games = await getGamesByIds(ids)
 
+		if (!games.ok)
+		{
+			const errorBody = await games.text()
+
+			console.error("IGDB ERROR:", {
+				status: games.status,
+				body: errorBody
+			})
+
+			return jsonError("Failed to fetch games", 502)
+		}
+
 		return NextResponse.json({games: games, total: entries.length})
 	}
 	catch (error)
