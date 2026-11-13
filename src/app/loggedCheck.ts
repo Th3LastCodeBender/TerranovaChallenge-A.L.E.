@@ -1,6 +1,7 @@
 
 import { inject } from "@angular/core";
 import { CanActivateFn, Router } from "@angular/router";
+import { isCollectionSlug } from './services/collections/collections-service';
 import { AuthService } from "./services/auth/auth-service";
 
 export const loginCheck: CanActivateFn = () => {
@@ -31,4 +32,11 @@ export const mfaPendingCheck: CanActivateFn = () => {
 	if (!auth.isMfaPending())
 		return router.createUrlTree(['/login']);
 	return true;
+}
+
+export const collectionTypeCheck: CanActivateFn = (route) => {
+	const router = inject(Router);
+	return isCollectionSlug(route.paramMap.get('type'))
+		? true
+		: router.createUrlTree(['/me']);
 }

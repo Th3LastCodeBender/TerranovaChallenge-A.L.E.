@@ -32,35 +32,43 @@
     </div>
   </section>
   <section class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+      <a class="col text-decoration-none" routerLink="/collections/finished">
+        <div class="stat-card text-center">
+          <span>Finished</span>
+          <h3>{{ counts()?.finished_length}}</h3>
+        </div>
+      </a>
     <div class="col">
-      <div class="stat-card text-center">
-        <span>Finished</span>
-        <h3>{{ counts()?.finished_length}}</h3>
-      </div>
+      <a class="col text-decoration-none" routerLink="/collections/playing">
+        <div class="stat-card text-center">
+          <span>Playing </span>
+          <h3>{{ counts()?.playing_length }}</h3>
+        </div>
+      </a>
     </div>
     <div class="col">
-      <div class="stat-card text-center">
-        <span>Playing </span>
-        <h3>{{ counts()?.playing_length }}</h3>
-      </div>
+      <a class="col text-decoration-none" routerLink="/collections/to-play">
+        <div class="stat-card text-center">
+          <span>To play</span>
+          <h3>{{ counts()?.to_play_length }}</h3>
+        </div>
+      </a>
     </div>
     <div class="col">
-      <div class="stat-card text-center">
-        <span>To play</span>
-        <h3>{{ counts()?.to_play_length }}</h3>
-      </div>
+      <a class="col text-decoration-none" routerLink="/collections/finished">
+        <div class="stat-card text-center">
+          <span>Wishlist</span>
+          <h3>{{ counts()?.to_buy_length }}</h3>
+        </div>
+      </a>
     </div>
     <div class="col">
-      <div class="stat-card text-center">
-        <span>Wishlist</span>
-        <h3>{{ counts()?.to_buy_length }}</h3>
-      </div>
-    </div>
-    <div class="col">
-      <div class="stat-card text-center">
-        <span>Favourites</span>
-        <h3>{{ counts()?.favourites_length }}</h3>
-      </div>
+      <a class="col text-decoration-none" routerLink="/collections/finished">
+        <div class="stat-card text-center">
+          <span>Favourites</span>
+          <h3>{{ counts()?.favourites_length }}</h3>
+        </div>
+      </a>
     </div>
   </section>
   <section class="row g-4">

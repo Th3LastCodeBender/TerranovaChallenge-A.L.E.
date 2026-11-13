@@ -5,9 +5,10 @@ import { Navbar } from '../../components/navbar/navbar';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CollectionCounts, FavoritesService } from '../../services/favorites/favorites-service';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  imports: [Navbar, DatePipe],
+  imports: [Navbar, DatePipe, RouterLink],
   selector: 'app-account',
   styleUrl: './account.scss',
   templateUrl: './account.html',
