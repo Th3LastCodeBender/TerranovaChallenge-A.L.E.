@@ -43,7 +43,7 @@ export async function POST(req: Request)
 		if (!pending2FA)
 			return jsonError("Expired or absent 2fa cookie", 401)
 
-		const challenge = await findValidChallenge(hashSessionToken(pending2FA), MFA_MAX_ATTEMPTS)
+		const challenge = await findValidChallenge(hashSessionToken(pending2FA.value), MFA_MAX_ATTEMPTS)
 
 		if (!challenge)
 			return jsonError("Expired or absent 2fa cookie", 401)	
@@ -86,8 +86,7 @@ export async function POST(req: Request)
 		if (!user)
     		return jsonError("User not found", 404)
 
-		const {passwordHash, ...safeUser} = user
-		const res = NextResponse.json(safeUser)
+		const res = NextResponse.json(user)
 
 		res.cookies.delete(MFA_COOKIE_NAME)
 

@@ -44,21 +44,19 @@ export const GET = withAuth(async (req, { session }) =>
 		const limit = 20
 		const favourites = await listFavourites(session.userId)
 		const ids = favourites.slice(offset, offset + limit).map((fav: {gameId: number}) => fav.gameId)	
-		const games = await getGamesByIds(ids)
+		const fetched_games = await getGamesByIds(ids)
 
-		if (!games.ok)
+		if (!fetched_games.ok)
 		{
-			const errorBody = await games.text()
-
 			console.error("IGDB ERROR:", {
-				status: games.status,
-				body: errorBody
+				status: fetched_games.status,
+				body: fetched_games.error
 			})
 
 			return jsonError("Failed to fetch games", 502)
 		}
 
-		return NextResponse.json({games: games, total: favourites.length})
+		return NextResponse.json({games: fetched_games.games, total: favourites.length})
 	}
 	catch (error)
 	{

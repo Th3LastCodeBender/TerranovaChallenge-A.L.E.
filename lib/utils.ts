@@ -159,7 +159,10 @@ export function isString(value: unknown): value is string
 export async function getGamesByIds(ids: number[])
 {
 	if (ids.length === 0)
-		return []
+        return {
+            ok: true as const,
+            games: []
+        }
 
 	const token = await getTwitchAccessToken()
 
@@ -195,7 +198,14 @@ export async function getGamesByIds(ids: number[])
 	)
 
 	if (!response.ok)
-		return response
+		return {
+			ok: false as const,
+			error: await response.text(),
+			status: response.status
+		}
 
-	return response.json()
+	return {
+		ok: true as const,
+		games: await response.json()
+	}
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { jsonError, requireEnv} from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 
 async function fetchIGDBGames(offset: number)
 {
@@ -9,7 +10,7 @@ async function fetchIGDBGames(offset: number)
 		method: "POST",
 		headers: {
 			"Client-ID": requireEnv("TWITCH_CLIENT_ID"),
-			Authorization: `Bearer ${requireEnv("TWITCH_CLIENT_SECRET")}`,
+			Authorization: `Bearer ${await getTwitchAccessToken()}`,
 			"Content-Type": "text/plain"
 		},
 		body: `

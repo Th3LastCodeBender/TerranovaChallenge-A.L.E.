@@ -39,7 +39,7 @@ export const GET = withAuth(async (req, { session }) =>
 		const offsetParam = req.nextUrl.searchParams.get("offset")
 		const offset = Number(offsetParam)
 
-		if (!Number.isInteger(offset) || offset < 0)
+		if (offsetParam === null || !Number.isInteger(offset) || offset < 0)
 			return jsonError("Invalid offset", 400)
 
 		const collectionType = req.nextUrl.searchParams.get("collection_type")
@@ -51,21 +51,19 @@ export const GET = withAuth(async (req, { session }) =>
 		const limit = 20
 		const entries = await listCollection(session.userId, status)
 		const ids = entries.slice(offset, offset + limit).map((fav: {gameId: number}) => fav.gameId)	
-		const games = await getGamesByIds(ids)
+		const fetched_games = await getGamesByIds(ids)
 
-		if (!games.ok)
+		if (!fetched_games.ok)
 		{
-			const errorBody = await games.text()
-
 			console.error("IGDB ERROR:", {
-				status: games.status,
-				body: errorBody
+				status: fetched_games.status,
+				body: fetched_games.error
 			})
 
 			return jsonError("Failed to fetch games", 502)
 		}
 
-		return NextResponse.json({games: games, total: entries.length})
+		return NextResponse.json({games: fetched_games.games, total: entries.length})
 	}
 	catch (error)
 	{

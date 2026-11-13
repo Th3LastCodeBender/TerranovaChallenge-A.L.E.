@@ -6,7 +6,7 @@ import { randomInt, timingSafeEqual, createHmac } from "crypto"
 import { requireEnv } from "@/lib/utils"
 
 export const MFA_COOKIE_NAME = "2fa_cookie"
-export const MFA_COOKIE_DURATION_SECONDS = 60 * 15
+export const MFA_COOKIE_DURATION_SECONDS = 60 * 15 * 1000
 export const MFA_MAX_ATTEMPTS = 5
 
 export type	NewMfaChallenge = {
