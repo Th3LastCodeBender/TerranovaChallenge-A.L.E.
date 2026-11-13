@@ -45,7 +45,7 @@ export class Account implements OnInit {
 	  },
 	  error: (err: HttpErrorResponse) => {
 		this.mfaLoading.set(false);
-		input.checked = this.mfaEnabled(); // riporta lo switch com'era
+		input.checked = this.mfaEnabled();
 		this.mfaError.set(
 		  err.status === 429
 			? 'Troppi tentativi, riprova tra qualche minuto'
