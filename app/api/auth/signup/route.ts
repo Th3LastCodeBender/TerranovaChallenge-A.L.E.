@@ -161,7 +161,7 @@ export async function POST(req: NextRequest)
 		if (!signup_result.success)
 			return jsonError(signup_result.message, signup_result.status)
 
-		const res = NextResponse.json({user: signup_result.user})
+		const res = NextResponse.json(signup_result.user)
 
 		try
 		{
