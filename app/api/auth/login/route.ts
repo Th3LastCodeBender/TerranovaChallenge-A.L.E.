@@ -5,6 +5,7 @@ import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 import { getOS, getBrowser, isValidEmail, jsonError, requireEnv} from "@/lib/utils"
 import { createMfaChallenge, findMfaByUserId, generateOTP, hashOTP, MFA_COOKIE_DURATION_SECONDS, MFA_COOKIE_NAME } from "@/query/mfa"
 import { createSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_NAME, SESSION_COOKIE_DURATION_SECONDS, findValidSession, setLoginCookie } from "@/query/sessions"
+import { sendOtpEmail } from "@/lib/mails"
 
 const DUMMY_HASH = "$argon2id$v=19$m=32768,t=3,p=4$ZHVtbXlzYWx0MTIzNDU2Nzg$Qm9ndXNIYXNoRm9yVGVzdGluZw"
 
@@ -146,7 +147,16 @@ export async function POST(req: NextRequest)
 				maxAge: MFA_COOKIE_DURATION_SECONDS
 			})
 
-			//ANDRA' AGGIUNTA FUNZIONE DI INVIO MAIL CON CODICE OTP
+			try
+			{
+				await sendOtpEmail(login_result.user.email, otp)
+			}
+			catch(error)
+			{
+				console.error(error)
+				return jsonError("Email service temporary unavailable", 503)
+			}
+
 			return res
 		}
 
@@ -183,7 +193,8 @@ export async function POST(req: NextRequest)
 
 		return res
 	}
-	catch (error) {
+	catch (error)
+	{
 		console.error(error)
 		return jsonError("Internal server error", 500)
 	}

@@ -192,7 +192,7 @@ export async function getGamesByIds(ids: number[])
 					genres.name,
 					platforms.id,
 					platforms.name;
-				limit 50;
+				limit ${ids.length};
 			`
 		}
 	)
