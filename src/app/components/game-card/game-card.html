@@ -13,6 +13,12 @@
 			<i class="bi bi-image fs-1"></i>
 		</div>
 	}
+	<app-favourite-button
+		class="custom-favourite"
+		variant="icon"
+		[gameId]="game().id"
+		[isFavourite]="isFavourite()"
+	/>
 	<div class="custom-overlay">
 
 		<h5 class="card-title">

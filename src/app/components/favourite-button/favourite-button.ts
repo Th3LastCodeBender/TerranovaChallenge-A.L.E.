@@ -15,10 +15,14 @@ export class FavouriteButton {
 
 	gameId = input.required<number>();
 	isFavourite = model(false);   // two-way: [(isFavourite)]
+	variant = input<'full' | 'icon'>('full');   // 'icon' = solo quadrato con cuore (game-card)
 
 	pending = signal(false);
 
-	toggle(): void {
+	toggle(event?: Event): void {
+		// Evita che il click arrivi alla game-card (che aprirebbe la pagina del gioco)
+		event?.stopPropagation();
+		event?.preventDefault();
 		if (!this.auth.isLoggedIn()) {
 			this.router.navigate(['/login']);
 			return;

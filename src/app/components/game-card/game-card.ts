@@ -5,16 +5,29 @@ import { IgdbGame } from '../../models/game.model';
 import { igdbImageUrl } from '../../models/image.model';
 import { PlatformFamily, platformFamily } from '../../models/platform.model';
 import { Router } from '@angular/router';
+import { FavouriteButton } from '../favourite-button/favourite-button';
+import { FavoritesService } from '../../services/favorites/favorites-service';
+import { AuthService } from '../../services/auth/auth-service';
 
 @Component({
   selector: 'app-game-card',
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, FavouriteButton],
   styleUrl: './game-card.scss',
   templateUrl: './game-card.html',
 })
 export class GameCard {
   game = input.required<IgdbGame>();
   private router = inject(Router);
+  private favoritesService = inject(FavoritesService);
+
+  isFavourite = computed(() => this.favoritesService.isFavourite(this.game().id));
+
+  constructor() {
+    // Il service carica gli id una sola volta per utente, anche con tante card
+    const user = inject(AuthService).getUser();
+    if (user)
+      this.favoritesService.loadIds(user.id);
+  }
 
   imageUrl = computed(() => {
     const cover = this.game().cover;

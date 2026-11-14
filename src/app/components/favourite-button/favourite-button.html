@@ -1,11 +1,18 @@
 <button
 	type="button"
 	class="favourite-button"
+	[class.icon]="variant() === 'icon'"
 	[class.active]="isFavourite()"
 	[disabled]="pending()"
 	[attr.aria-pressed]="isFavourite()"
-	(click)="toggle()"
+	[attr.aria-label]="variant() === 'icon' ? (isFavourite() ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti') : null"
+	[attr.title]="variant() === 'icon' ? (isFavourite() ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti') : null"
+	(click)="toggle($event)"
+	(keydown.enter)="$event.stopPropagation()"
+	(keydown.space)="$event.stopPropagation()"
 >
 	<i class="bi" [class.bi-heart]="!isFavourite()" [class.bi-heart-fill]="isFavourite()"></i>
-	Favourite
+	@if (variant() === 'full') {
+		Favourite
+	}
 </button>
