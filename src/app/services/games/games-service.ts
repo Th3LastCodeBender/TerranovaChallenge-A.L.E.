@@ -21,6 +21,9 @@ interface GamesServiceSearchResponse {
 	hasMore: boolean;
 }
 
+// Una lista di giochi per ogni categoria restituita da /api/games/home
+export type HomeGamesResponse = Record<string, IgdbGame[]>;
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -28,6 +31,11 @@ export class GamesService {
 	private http = inject(HttpClient);
 	private gamesBaseUrl = '/api/games/search';
 	private gameDetailsUrl = '/api/games';
+	private homeGamesUrl = '/api/games/home';
+
+	getHomeGames(): Observable<HomeGamesResponse> {
+		return this.http.get<HomeGamesResponse>(this.homeGamesUrl);
+	}
 
 	getGameByName(name: string): Observable<IgdbGame[]> {
 		return this.http

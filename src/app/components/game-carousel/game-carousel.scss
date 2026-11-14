@@ -1,0 +1,156 @@
+.gc {
+    margin-bottom: 2.5rem;
+}
+
+.gc-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+
+    margin-bottom: 1rem;
+}
+
+.gc-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    color: var(--offcanvas-accent);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.75rem;
+}
+
+.gc-title {
+    position: relative;
+
+    margin: 0;
+    padding-bottom: 0.45rem;
+
+    color: var(--offcanvas-text);
+
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    &::after {
+        content: "";
+
+        position: absolute;
+        bottom: 0;
+        left: 0;
+
+        width: 55px;
+        height: 3px;
+
+        border-radius: 999px;
+
+        background: linear-gradient(
+            90deg,
+            var(--title-game-start),
+            var(--title-game-end)
+        );
+    }
+}
+
+.gc-arrows {
+    display: flex;
+    gap: 0.5rem;
+
+    margin-left: auto;
+}
+
+.gc-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    color: var(--offcanvas-text);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.75rem;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+        color: var(--offcanvas-accent);
+
+        background: var(--offcanvas-accent-hover);
+
+        border-color: var(--offcanvas-accent);
+    }
+
+    &:disabled {
+        opacity: 0.3;
+
+        cursor: not-allowed;
+    }
+}
+
+.gc-track {
+    display: flex;
+    gap: 1rem;
+
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+
+    // spazio per l'hover/ombra della card
+    padding: 0.5rem 0.25rem 1rem;
+
+    scrollbar-width: thin;
+}
+
+.gc-item {
+    flex: 0 0 clamp(180px, 22vw, 260px);
+
+    scroll-snap-align: start;
+}
+
+// la card ha width:90% + margin auto: nel carosello deve occupare tutto l'item
+.gc-item app-game-card ::ng-deep .custom-card {
+    width: 100%;
+}
+
+@media (max-width: 575px) {
+    // su mobile si scorre col dito
+    .gc-arrows {
+        display: none;
+    }
+
+    .gc-item {
+        flex-basis: 70vw;
+    }
+}
+
+// Home: overlay leggermente più scuro per leggere il titolo anche su cover chiare
+.gc-item app-game-card ::ng-deep .custom-overlay {
+    background: linear-gradient(
+        to top,
+        rgba(7, 7, 18, 0.98) 0%,
+        rgba(7, 7, 18, 0.93) 22%,
+        rgba(7, 7, 18, 0.80) 40%,
+        rgba(7, 7, 18, 0.45) 62%,
+        rgba(7, 7, 18, 0.15) 100%
+    );
+}
+
+.gc-item app-game-card ::ng-deep .card-title {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
