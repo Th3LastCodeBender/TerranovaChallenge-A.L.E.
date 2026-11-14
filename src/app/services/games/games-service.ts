@@ -3,12 +3,13 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
+import { CollectionStatus } from '../collections/collections-service';
 
 interface GameDetailsResponse {
     game: IgdbGame;
     userData: {
         isFavourite: boolean;
-        collectionStatus: string | null;
+        collectionStatus: CollectionStatus | null;
     };
 }
 

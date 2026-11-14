@@ -1,0 +1,53 @@
+<button
+	#trigger
+	type="button"
+	class="collection-button"
+	[class.active]="status() !== null"
+	[disabled]="pending()"
+	aria-haspopup="menu"
+	[attr.aria-expanded]="open()"
+	(click)="toggleMenu()"
+>
+	@if (currentTitle(); as title) {
+		<i class="bi bi-check-lg"></i>
+		{{ title }}
+	} @else {
+		<i class="bi bi-plus-lg"></i>
+		Add to collection
+	}
+	<i class="bi bi-chevron-down collection-chevron" [class.open]="open()"></i>
+</button>
+
+@if (open()) {
+	<ul class="collection-menu" role="menu" [style]="menuPosition()">
+		@for (option of options; track option.status) {
+			<li role="none">
+				<button
+					type="button"
+					role="menuitemradio"
+					class="collection-item"
+					[class.selected]="status() === option.status"
+					[attr.aria-checked]="status() === option.status"
+					(click)="select(option.status)"
+				>
+					<i class="bi bi-check-lg collection-check"></i>
+					{{ option.title }}
+				</button>
+			</li>
+		}
+		@if (status() !== null) {
+			<li role="separator" class="collection-separator"></li>
+			<li role="none">
+				<button
+					type="button"
+					role="menuitem"
+					class="collection-item collection-remove"
+					(click)="select(null)"
+				>
+					<i class="bi bi-trash3"></i>
+					Remove from collection
+				</button>
+			</li>
+		}
+	</ul>
+}

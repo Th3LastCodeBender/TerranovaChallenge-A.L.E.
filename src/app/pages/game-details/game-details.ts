@@ -16,9 +16,11 @@ import { GameCard } from '../../components/game-card/game-card';
 import { GamesService } from '../../services/games/games-service';
 import { Navbar } from '../../components/navbar/navbar';
 import { FavouriteButton } from '../../components/favourite-button/favourite-button';
+import { CollectionButton } from '../../components/collection-button/collection-button';
+import { CollectionStatus } from '../../services/collections/collections-service';
 
 @Component({
-    imports: [GameCard, DatePipe, DecimalPipe, Navbar, FavouriteButton],
+    imports: [GameCard, DatePipe, DecimalPipe, Navbar, FavouriteButton, CollectionButton],
     selector: 'app-game-details',
     styleUrl: './game-details.scss',
     templateUrl: './game-details.html',
@@ -30,7 +32,7 @@ export class GameDetails {
     game = signal<IgdbGame | null>(null);
 
     isFavourite = signal(false);
-    collectionStatus = signal<string | null>(null);
+    collectionStatus = signal<CollectionStatus | null>(null);
 
     isLoading = signal(true);
     errorMessage = signal<string | null>(null);

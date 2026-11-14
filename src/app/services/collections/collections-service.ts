@@ -18,6 +18,9 @@ export const COLLECTIONS = {
 
 export type CollectionSlug = keyof typeof COLLECTIONS;
 
+// Stati validi per /api/collections/* (enum WG_GameStatus del backend)
+export type CollectionStatus = NonNullable<(typeof COLLECTIONS)[CollectionSlug]['status']>;
+
 export function isCollectionSlug(value: string | null): value is CollectionSlug {
 	return value !== null && value in COLLECTIONS;
 }
@@ -38,5 +41,14 @@ export class CollectionsService {
 		return this.http.get<CollectionResponse>('/api/collections/get-items', {
 			params: { collection_type: status, offset }
 		});
+	}
+
+	// Upsert: un gioco ha un solo stato, quindi questo sposta anche da una collection all'altra
+	setStatus(gameId: number, collectionType: CollectionStatus): Observable<unknown> {
+		return this.http.post('/api/collections/update-item', { gameId, collectionType });
+	}
+
+	removeFromCollection(gameId: number): Observable<unknown> {
+		return this.http.delete('/api/collections/delete-item', { body: { gameId } });
 	}
 }

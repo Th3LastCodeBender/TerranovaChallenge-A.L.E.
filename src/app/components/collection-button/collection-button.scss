@@ -1,0 +1,98 @@
+:host {
+	position: relative;
+	display: inline-flex;
+}
+
+// Stesso aspetto di .game-action-collection in game-details
+.collection-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: 2.7rem;
+	padding: 0.65rem 1rem;
+	border-radius: 0.5rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	cursor: pointer;
+
+	background-color: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: white;
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+
+	transition: transform 0.2s ease, background-color 0.2s ease,
+		border-color 0.2s ease, box-shadow 0.2s ease;
+
+	&:hover:not(:disabled) {
+		transform: translateY(-2px);
+		background-color: rgba(255, 255, 255, 0.13);
+		border-color: rgba(255, 255, 255, 0.35);
+	}
+
+	&:disabled { opacity: 0.7; cursor: wait; }
+
+	&.active {
+		border-color: var(--tag-border);
+		color: var(--tag-color);
+	}
+}
+
+.collection-chevron {
+	font-size: 0.75rem;
+	transition: transform 0.2s ease;
+
+	&.open { transform: rotate(180deg); }
+}
+
+// fixed: top/bottom/left/min-width arrivano da menuPosition() nel componente
+.collection-menu {
+	position: fixed;
+	z-index: 1050;
+
+	margin: 0;
+	padding: 0.35rem;
+	list-style: none;
+
+	background-color: rgba(16, 16, 32, 0.96);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 0.5rem;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.collection-item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: none;
+	border-radius: 0.35rem;
+	background: transparent;
+	color: white;
+	font-size: 0.9rem;
+	text-align: left;
+	white-space: nowrap;
+	cursor: pointer;
+
+	&:hover { background-color: rgba(255, 255, 255, 0.1); }
+
+	.collection-check { visibility: hidden; }
+
+	&.selected {
+		color: var(--tag-color);
+
+		.collection-check { visibility: visible; }
+	}
+}
+
+.collection-separator {
+	height: 1px;
+	margin: 0.35rem 0;
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.collection-remove { color: #e25563; }

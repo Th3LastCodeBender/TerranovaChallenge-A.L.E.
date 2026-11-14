@@ -159,11 +159,8 @@
 
                     @if (game(); as g) {
                         <app-favourite-button [gameId]="g.id" [(isFavourite)]="isFavourite" />
+                        <app-collection-button [gameId]="g.id" [(status)]="collectionStatus" />
                     }
-                    <button type="button" class="game-action game-action-collection">
-                        <i class="bi bi-plus-lg"></i>
-                        Add to collection
-                    </button>
 
                 </div>
 
