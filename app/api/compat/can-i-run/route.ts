@@ -1,10 +1,10 @@
 import { jsonError } from "@/lib/utils"
 import { NextResponse } from "next/server"
 import { getPcSpecs } from "@/query/pcSpecs"
-import { canIRun } from "@/lib/compat/can-i-run"
+import { canIRun } from "@/lib/can-i-run/can-i-run"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { getSteamAppId } from "@/lib/igdb-api/steam-app"
-import type { Resolution } from "@/lib/compat/fps-estimate"
+import type { Resolution } from "@/lib/can-i-run/fps-estimate"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 
 const RESOLUTIONS: Resolution[] = ["1080p", "1440p", "4k"]

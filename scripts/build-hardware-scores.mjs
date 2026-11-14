@@ -25,6 +25,6 @@ const output = {
 	cpu: parseChart("data/hardware/CPU-Desktop-Laptop.md"),
 }
 
-writeFileSync("lib/compat/hardware-scores.json", JSON.stringify(output, null, "\t"))
+writeFileSync("lib/can-i-run/hardware-scores.json", JSON.stringify(output, null, "\t"))
 
 console.log(`GPU: ${Object.keys(output.gpu).length}, CPU: ${Object.keys(output.cpu).length}`)

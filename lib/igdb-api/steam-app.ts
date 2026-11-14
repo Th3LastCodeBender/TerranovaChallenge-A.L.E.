@@ -5,12 +5,13 @@ import { redis_pool } from "../redis/redis-init"
 import { getTwitchAccessToken } from "./twitch-auth"
 
 const STEAM_SOURCE_ID = 1
-const CACHE_VERSION = "v1"
+const CACHE_VERSION = "v2"
 const FOUND_TTL_SECONDS = 60 * 60 * 24 * 30
 const NOT_FOUND_TTL_SECONDS = 60 * 60 * 24 * 7
 
 type ExternalGame = {
 	uid?: string
+	game?: { id: number }
 }
 
 type CachedAppId =
@@ -33,7 +34,7 @@ async function fetchSteamAppId(igdbId: number): Promise<number | null>
 			Authorization: `Bearer ${token}`,
 			"Content-Type": "text/plain"
 		},
-		body: `fields uid; where game = ${igdbId} & external_game_source = ${STEAM_SOURCE_ID}; sort id asc; limit 10;`,
+		body: `fields uid, game.id; where (game = ${igdbId} | game.version_parent = ${igdbId}) & external_game_source = ${STEAM_SOURCE_ID}; sort id asc; limit 10;`,
 		cache: "no-store"
 	})
 
@@ -41,6 +42,8 @@ async function fetchSteamAppId(igdbId: number): Promise<number | null>
 		throw new Error(`IGDB external_games failed: ${resp.status}`)
 
 	const rows = await resp.json() as ExternalGame[]
+
+	rows.sort((a, b) => Number(b.game?.id === igdbId) - Number(a.game?.id === igdbId))
 
 	for (const row of rows)
 	{

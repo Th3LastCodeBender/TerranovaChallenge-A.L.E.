@@ -41,8 +41,8 @@ type Anchor = {
 //recommended: tarato con scripts/calibrate-fps.ts su 11 giochi (2026-11-14)
 //minimum: ipotesi, non tarabile senza catture da un PC sotto i consigliati
 const BASE_ESTIMATES: Record<FpsEstimate["basedOn"], Anchor> = {
-	recommended: { preset: "high", gpuFps: 97, cpuFps: 91 },
-	minimum: { preset: "low", gpuFps: 30, cpuFps: 45 },
+	recommended: { preset: "high", gpuFps: 100, cpuFps: 100 },
+	minimum: { preset: "low", gpuFps: 60, cpuFps: 60 },
 }
 
 const Q_PRESETS: QualityPreset[] = [ "low", "medium", "high", "ultra" ]

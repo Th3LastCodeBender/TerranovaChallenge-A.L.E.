@@ -1,7 +1,7 @@
 import { jsonError } from "@/lib/utils"
 import { NextRequest, NextResponse } from "next/server"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
-import { deleteSession, findValidSession, hashSessionToken, SESSION_COOKIE_NAME } from "@/query/sessions"
+import { deleteSession, hashSessionToken, SESSION_COOKIE_NAME } from "@/query/sessions"
 
 
 export async function POST(req: NextRequest)
@@ -38,13 +38,7 @@ export async function POST(req: NextRequest)
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
 
 		if (token)
-		{
-			const hashedToken = hashSessionToken(token)
-			const session = await findValidSession(hashedToken)
-
-			if (session)
-				await deleteSession(hashedToken)
-		}
+			await deleteSession(hashSessionToken(token))
 
 		const res = NextResponse.json({success: true})
 

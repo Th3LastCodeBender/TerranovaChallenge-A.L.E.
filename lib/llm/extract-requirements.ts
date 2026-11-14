@@ -1,7 +1,7 @@
 import "server-only"
 
 import { ollamaJson } from "./ollama"
-import { getHardwareScore, normalizeHardwareName, type HardwareKind } from "../compat/hardware-scores"
+import { getHardwareScore, normalizeHardwareName, type HardwareKind } from "../can-i-run/hardware-scores"
 import type { SteamRequirementsText } from "../steam/requirements"
 
 export type HardwareModel = {

@@ -57,7 +57,7 @@ export function findValidSession(tokenHash: string)
 
 export function deleteSession(tokenHash: string)
 {
-	return prisma.wG_Session.delete({ where: { tokenHash } })
+	return prisma.wG_Session.deleteMany({ where: { tokenHash } })
 }
 
 // export function deleteExpiredSessions()

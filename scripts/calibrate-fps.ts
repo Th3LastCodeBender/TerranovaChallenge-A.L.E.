@@ -1,9 +1,9 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs"
 import path from "node:path"
 
-import { getGameRequirements } from "@/lib/compat/can-i-run"
-import { checkCompatibility } from "@/lib/compat/check"
-import { estimatePerf, type QualityPreset } from "@/lib/compat/fps-estimate"
+import { getGameRequirements } from "@/lib/can-i-run/can-i-run"
+import { checkCompatibility } from "@/lib/can-i-run/check"
+import { estimatePerf, type QualityPreset } from "@/lib/can-i-run/fps-estimate"
 import { redis_pool } from "@/lib/redis/redis-init"
 import type { PcSpecs } from "@/query/pcSpecs"
 

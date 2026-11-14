@@ -2,7 +2,7 @@ import { jsonError } from "@/lib/utils"
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { PcSpecs, setPcSpecs } from "@/query/pcSpecs"
-import { getHardwareScore } from "@/lib/compat/hardware-scores"
+import { getHardwareScore } from "@/lib/can-i-run/hardware-scores"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 
 const MAX_NAME_LENGTH = 100
