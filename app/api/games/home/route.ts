@@ -184,16 +184,13 @@ export async function GET(req: NextRequest)
 			return jsonError("Service temporarily unavailable", 503)
 		}
 
-		const trending = await getIgdbMostTrendingGames()
-		if (!trending)
-			return jsonError("Service temporarily unavailable", 503)
+		const [trending, most_played, most_recent] = await Promise.all([
+			getIgdbMostTrendingGames(),
+			getIgdbMostPlayedGames(),
+			getIgdbMostRecentGames()
+		])
 
-		const most_played = await getIgdbMostPlayedGames()
-		if (!most_played)
-			return jsonError("Service temporarily unavailable", 503)
-
-		const most_recent = await getIgdbMostRecentGames()
-		if (!most_recent)
+		if (!trending || !most_played || !most_recent)
 			return jsonError("Service temporarily unavailable", 503)
 
 		return NextResponse.json({trending_games: trending, most_played: most_played, most_recent: most_recent})
