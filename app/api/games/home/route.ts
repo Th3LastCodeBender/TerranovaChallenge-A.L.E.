@@ -36,10 +36,10 @@ async function getIgdbMostTrendingGames()
 	const fetched_popularity = await igdbRequest(
 		"popularity_primitives",
 		`
-			fields game_id, value, popularity_type
-			where popularity_type = 1
-			sort value desc
-			limit 10
+			fields game_id, value, popularity_type;
+			where popularity_type = 1;
+			sort value desc;
+			limit 10;
 		`
 	)
 
@@ -80,10 +80,10 @@ async function getIgdbMostPlayedGames()
 	const fetched_popularity = await igdbRequest(
 		"popularity_primitives",
 		`
-			fields game_id, value, popularity_type
-			where popularity_type = 4
-			sort value desc
-			limit 10
+			fields game_id, value, popularity_type;
+			where popularity_type = 4;
+			sort value desc;
+			limit 10;
 		`
 	)
 
