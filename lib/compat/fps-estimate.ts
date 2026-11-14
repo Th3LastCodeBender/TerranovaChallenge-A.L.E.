@@ -14,6 +14,8 @@ export type estimateCell = {
 	fps: number
 	band: FpsBand
 	limitedBy: "gpu" | "cpu" | "cap"
+	gpuFps: number
+	cpuFps: number | null
 }
 
 export type FpsSummary = {
@@ -30,22 +32,29 @@ export type FpsEstimate = {
 }
 
 type Anchor = {
-	fps: number
 	preset: QualityPreset
+	gpuFps: number
+	cpuFps: number
 }
 
-//Queste sono ipotesi che ho scelto io:
-//Con hardware recommended si fanno 60fps in high
-//Con hardware minimo si fanno 30fps in low
-//Tutto questo a 1080p
+//Quanti fps fanno GPU e CPU richieste, al preset indicato, a 1080p
+//recommended: tarato con scripts/calibrate-fps.ts su 11 giochi (2026-11-14)
+//minimum: ipotesi, non tarabile senza catture da un PC sotto i consigliati
 const BASE_ESTIMATES: Record<FpsEstimate["basedOn"], Anchor> = {
-	recommended: { fps: 60, preset: "high" },
-	minimum: { fps: 30, preset: "low" },
+	recommended: { preset: "high", gpuFps: 97, cpuFps: 91 },
+	minimum: { preset: "low", gpuFps: 30, cpuFps: 45 },
 }
 
 const Q_PRESETS: QualityPreset[] = [ "low", "medium", "high", "ultra" ]
 
 const RESOLUTIONS: Resolution[] = [ "1080p", "1440p", "4k" ]
+
+const CPU_PRESET_SCALING: Record<QualityPreset, number> = {
+	low: 1.25,
+	medium: 1.07,
+	high: 1.0,
+	ultra: 0.9,
+}
 
 const QPRESET_PERF_SCALING: Record<QualityPreset, number> = {
 	low: 1.6,
@@ -59,8 +68,6 @@ const RESOLUTION_PERF_SCALING: Record<Resolution, number> = {
 	"1440p": 0.7,
 	"4k": 0.45,
 }
-
-const CPU_HEADROOM = 1.5
 
 const RAM_PENALTY = 0.75
 
@@ -103,17 +110,27 @@ function computeEstimateCells(score: compScore, baseEstimate: Anchor, ramBelowMi
 		return null
 
 	const cpuRatio = scoreRatio(score.cpu)
-	const highFps = baseEstimate.fps / QPRESET_PERF_SCALING[baseEstimate.preset] * gpuRatio
-	const cpuCap = cpuRatio === null ? Infinity : baseEstimate.fps * CPU_HEADROOM * cpuRatio
+	const gpuHighFps = baseEstimate.gpuFps / QPRESET_PERF_SCALING[baseEstimate.preset] * gpuRatio
+	const cpuHighFps = cpuRatio === null ? Infinity : baseEstimate.cpuFps / CPU_PRESET_SCALING[baseEstimate.preset] * cpuRatio
 	const ramFactor = ramBelowMinimum ? RAM_PENALTY : 1
 
 	return RESOLUTIONS.flatMap((resolution) => 
 		Q_PRESETS.map((preset): estimateCell => 
 		{
-			const gpuFps = highFps * QPRESET_PERF_SCALING[preset] * RESOLUTION_PERF_SCALING[resolution]
-			const fps = Math.round(Math.min(gpuFps, cpuCap, MAX_FPS) * ramFactor)
+			const gpuFps = gpuHighFps * QPRESET_PERF_SCALING[preset] * RESOLUTION_PERF_SCALING[resolution]
+			const presetCpuCap = cpuHighFps * CPU_PRESET_SCALING[preset]
 
-			return { preset, resolution, fps, band: toBand(fps), limitedBy: limitedBy(gpuFps, cpuCap) }
+			const fps = Math.round(Math.min(gpuFps, presetCpuCap, MAX_FPS) * ramFactor)
+
+			return {
+				preset,
+				resolution,
+				fps,
+				band: toBand(fps),
+				limitedBy: limitedBy(gpuFps, presetCpuCap),
+				gpuFps: Math.round(gpuFps),
+				cpuFps: Number.isFinite(presetCpuCap) ? Math.round(presetCpuCap) : null,
+			}
 		}))
 }
 

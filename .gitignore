@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# catture CapFrameX per la calibrazione FPS (pesanti, restano solo in locale)
+/lib/game_sessions_stats/
