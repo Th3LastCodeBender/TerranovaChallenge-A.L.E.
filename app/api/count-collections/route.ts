@@ -36,27 +36,21 @@ export const GET = withAuth(async (req, { session }) =>
 			return jsonError("Service temporarily unavailable", 503)
 		}
 
-		const [
-			favourites,
-			toPlay,
-			playing,
-			finished,
-			toBuy
-		] = await Promise.all([
-			countFavourites(session.userId),
-			countCollection(session.userId, "TO_PLAY"),
-			countCollection(session.userId, "PLAYING"),
-			countCollection(session.userId, "FINISHED"),
-			countCollection(session.userId, "TO_BUY")
-		])
+		const favourites = await countFavourites(session.userId)
+		const to_play = await countCollection(session.userId, "TO_PLAY")
+		const playing = await countCollection(session.userId, "PLAYING")
+		const finished = await countCollection(session.userId, "FINISHED")
+		const to_buy = await countCollection(session.userId, "TO_BUY")
 
-		return NextResponse.json({
-			favourites_length: favourites.length,
-			to_play_length: toPlay.length,
-			playing_length: playing.length,
-			finished_length: finished.length,
-			to_buy_length: toBuy.length
-		})
+		return NextResponse.json(
+			{
+				favourites_length: favourites.length,
+				to_play_length: to_play.length,
+				playing_length: playing.length,
+				finished_length: finished.length,
+				to_buy_length: to_buy.length
+			}
+		)
 	}
 	catch (error)
 	{
