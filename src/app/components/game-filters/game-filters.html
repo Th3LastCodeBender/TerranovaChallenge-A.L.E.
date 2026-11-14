@@ -1,0 +1,94 @@
+<div class="game-filters">
+    <div class="filter-field">
+        <label for="filter-genre" class="filter-label">Genere</label>
+        <select id="filter-genre" class="filter-control"
+                [class.active]="filters().genre"
+                (change)="setFilter('genre', $any($event.target).value)">
+            <option value="" [selected]="!filters().genre">Tutti</option>
+            @for (g of genres; track g.value) {
+                <option [value]="g.value" [selected]="filters().genre === g.value">{{ g.label }}</option>
+            }
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label for="filter-platform" class="filter-label">Piattaforma</label>
+        <select id="filter-platform" class="filter-control"
+                [class.active]="filters().platform"
+                (change)="setFilter('platform', $any($event.target).value)">
+            <option value="" [selected]="!filters().platform">Tutte</option>
+            @for (p of platforms; track p.value) {
+                <option [value]="p.value" [selected]="filters().platform === p.value">{{ p.label }}</option>
+            }
+        </select>
+    </div>
+
+    <div class="filter-field filter-field-small">
+        <label for="filter-year" class="filter-label">Anno</label>
+        <input #yearInput id="filter-year" type="number" class="filter-control"
+               placeholder="Es. 2023" min="1950" [max]="maxYear"
+               [class.active]="filters().year"
+               [value]="filters().year ?? ''"
+               (change)="setYear(yearInput)"
+               (keydown.enter)="yearInput.blur()">
+    </div>
+
+    <div class="filter-field filter-field-small">
+        <span id="filter-rating-label" class="filter-label">Voto giocatori</span>
+        <div class="filter-control filter-stars" role="group" aria-labelledby="filter-rating-label"
+             [class.active]="selectedStars()"
+             (mouseleave)="hoveredStars.set(0)">
+            @for (n of stars; track n) {
+                <button type="button" class="filter-star"
+                        [class.filled]="n <= shownStars()"
+                        [attr.aria-label]="n + (n === 1 ? ' stella' : ' stelle') + ' e più'"
+                        [attr.aria-pressed]="n === selectedStars()"
+                        [title]="n + (n === 1 ? ' stella' : ' stelle') + ' e più'"
+                        (mouseenter)="hoveredStars.set(n)"
+                        (click)="setStars(n)">
+                    <i class="bi" [class.bi-star-fill]="n <= shownStars()" [class.bi-star]="n > shownStars()"></i>
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="filter-field filter-field-small">
+        <label for="filter-aggregate-rating" class="filter-label">Voto critica</label>
+        <select id="filter-aggregate-rating" class="filter-control"
+                [class.active]="filters().aggregate_rating"
+                (change)="setFilter('aggregate_rating', $any($event.target).value)">
+            <option value="" [selected]="!filters().aggregate_rating">Qualsiasi</option>
+            @for (r of ratings; track r.value) {
+                <option [value]="r.value" [selected]="filters().aggregate_rating === r.value">{{ r.label }}</option>
+            }
+        </select>
+    </div>
+
+    <div class="filter-field">
+        <label for="filter-sort" class="filter-label">Ordina per</label>
+        <div class="filter-sort">
+            <select id="filter-sort" class="filter-control"
+                    [class.active]="filters().sort"
+                    (change)="setFilter('sort', $any($event.target).value)">
+                <option value="" [selected]="!filters().sort">Predefinito</option>
+                @for (s of sorts; track s.value) {
+                    <option [value]="s.value" [selected]="filters().sort === s.value">{{ s.label }}</option>
+                }
+            </select>
+            @if (filters().sort) {
+                <button type="button" class="filter-order"
+                        [title]="filters().order === 'asc' ? 'Crescente' : 'Decrescente'"
+                        (click)="toggleOrder()">
+                    <i class="bi" [class.bi-sort-up]="filters().order !== 'asc'" [class.bi-sort-down-alt]="filters().order === 'asc'"></i>
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (hasActiveFilters()) {
+        <button type="button" class="filter-reset" (click)="reset()">
+            <i class="bi bi-x-lg"></i>
+            <span>Reset</span>
+        </button>
+    }
+</div>

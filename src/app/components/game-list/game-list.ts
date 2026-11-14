@@ -5,9 +5,11 @@ import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
 import { GameCard } from '../game-card/game-card';
 import { GamesService } from '../../services/games/games-service';
+import { GameFiltersBar } from '../game-filters/game-filters';
+import { FILTER_KEYS, GameFilters } from '../../models/game-filters.model';
 
 @Component({
-  imports: [GameCard],
+  imports: [GameCard, GameFiltersBar],
   selector: 'app-game-list',
   styleUrl: './game-list.scss',
   templateUrl: './game-list.html',
@@ -28,17 +30,20 @@ export class GameList {
       map(p => ({
         search: p.get('search')?.trim() ?? '',
         page: Math.max(1, Number(p.get('page')) || 1),
+        filters: Object.fromEntries(
+          FILTER_KEYS.map(key => [key, p.get(key) ?? undefined])
+        ) as GameFilters,
       })),
       tap(({ search, page }) => {
         this.search.set(search);
         this.page.set(page);
         this.loading.set(true);
       }),
-      switchMap(({ search, page }) =>
+      switchMap(({ search, page, filters }) =>
         // senza ricerca mostriamo tutti i giochi, paginati dal backend
         (search
-          ? this.gameService.searchGames(search, page)
-          : this.gameService.getAllGames(page)
+          ? this.gameService.searchGames(search, page, filters)
+          : this.gameService.getAllGames(page, filters)
         ).pipe(
           catchError(err => {
             console.error('Errore nel recupero dei games:', err);

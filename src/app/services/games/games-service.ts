@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
+import { GameFilters } from '../../models/game-filters.model';
 import { CollectionStatus } from '../collections/collections-service';
 
 interface GameDetailsResponse {
@@ -11,6 +12,15 @@ interface GameDetailsResponse {
         isFavourite: boolean;
         collectionStatus: CollectionStatus | null;
     };
+}
+
+// Solo i filtri valorizzati finiscono nella query string
+function buildParams(page: number, filters: GameFilters): Record<string, string | number> {
+	const params: Record<string, string | number> = { offset: (page - 1) * 20 };
+	for (const [key, value] of Object.entries(filters))
+		if (value)
+			params[key] = value;
+	return params;
 }
 
 interface GamesServiceSearchResponse {
@@ -70,18 +80,18 @@ export class GamesService {
 			.pipe(map(res => res.results));
 	}
 
-	searchGames(name: string, page = 1): Observable<GamesServiceSearchResponse> {
+	searchGames(name: string, page = 1, filters: GameFilters = {}): Observable<GamesServiceSearchResponse> {
 		return this.http.get<GamesServiceSearchResponse>(
 			`${this.gamesBaseUrl}/${encodeURIComponent(name)}`,
-			{ params: { offset: (page - 1) * 20 } }
+			{ params: buildParams(page, filters) }
 		);
 	}
 
 	// Tutti i giochi, 20 per pagina (stessa paginazione della ricerca)
-	getAllGames(page = 1): Observable<GamesServiceSearchResponse> {
+	getAllGames(page = 1, filters: GameFilters = {}): Observable<GamesServiceSearchResponse> {
 		return this.http.get<GamesServiceSearchResponse>(
 			this.allGamesUrl,
-			{ params: { offset: (page - 1) * 20 } }
+			{ params: buildParams(page, filters) }
 		);
 	}
 
