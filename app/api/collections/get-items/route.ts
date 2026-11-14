@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"	
 import { withAuth } from "@/lib/auth/authWrapper"
-import { listCollection } from "@/query/collection"
+import { countCollection, listCollection } from "@/query/collection"
 import { getGamesByIds, jsonError } from "@/lib/utils"
 import { WG_GameStatus } from "@/lib/generated/prisma/enums"
 
@@ -21,7 +21,10 @@ export const GET = withAuth(async (req, { session }) =>
 
 		const status = collectionType as WG_GameStatus
 		const limit = 20
-		const entries = await listCollection(session.userId, status, {limit: limit, offset})
+		const [entries, total] = await Promise.all([
+			listCollection(session.userId, status, { limit, offset }),
+			countCollection(session.userId, status)
+		])
 		const ids = entries.map((entry) => entry.gameId)
 		const fetched_games = await getGamesByIds(ids)
 
@@ -35,7 +38,7 @@ export const GET = withAuth(async (req, { session }) =>
 			return jsonError("Failed to fetch games", 502)
 		}
 
-		return NextResponse.json({games: fetched_games.games, total: entries.length})
+		return NextResponse.json({games: fetched_games.games, total})
 	}
 	catch (error)
 	{

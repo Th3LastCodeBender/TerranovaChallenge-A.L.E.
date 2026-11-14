@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
-import { listFavourites } from "@/query/favourites"
+import { countFavourites, listFavourites } from "@/query/favourites"
 import { getGamesByIds, jsonError} from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 
@@ -42,7 +42,10 @@ export const GET = withAuth(async (req, { session }) =>
 			return jsonError("Invalid offset", 400)
 
 		const limit = 20
-		const favourites = await listFavourites(session.userId, {limit: limit, offset})
+		const [favourites, total] = await Promise.all([
+			listFavourites(session.userId, { limit, offset }),
+			countFavourites(session.userId)
+		])
 		const ids = favourites.map((fav) => fav.gameId)	
 		const fetched_games = await getGamesByIds(ids)
 
@@ -56,7 +59,7 @@ export const GET = withAuth(async (req, { session }) =>
 			return jsonError("Failed to fetch games", 502)
 		}
 
-		return NextResponse.json({games: fetched_games.games, total: favourites.length})
+		return NextResponse.json({games: fetched_games.games, total})
 	}
 	catch (error)
 	{
