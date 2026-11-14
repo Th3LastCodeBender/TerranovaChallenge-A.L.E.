@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server"	
-import { withAuth } from "@/lib/auth/authWrapper"
+import { NextRequest, NextResponse } from "next/server"	
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 import { getGamesByIds, jsonError, requireEnv } from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
@@ -82,7 +81,7 @@ async function getIgdbMostPlayedGames()
 		"popularity_primitives",
 		`
 			fields game_id, value, popularity_type
-			where popularity_type = 1
+			where popularity_type = 4
 			sort value desc
 			limit 10
 		`
@@ -121,6 +120,8 @@ async function getIgdbMostPlayedGames()
 
 async function getIgdbMostRecentGames()
 {
+	const today = Math.floor(Date.now() / 1000)
+
 	const fetched_games = await igdbRequest(
 		"games",
 		`
@@ -140,18 +141,19 @@ async function getIgdbMostRecentGames()
 				platforms.id,
 				platforms.name;
 			where first_release_date != null
-			sort first_release_date desc
+				& first_release_date < ${today};
+			sort first_release_date desc;
 			limit 10;
 		`
-	)
+	);
 
 	if (!fetched_games.ok)
 		return null
 
-	return fetched_games.popularity
+	return fetched_games
 }
 
-export const GET = withAuth(async (req, { session }) =>
+export async function GET(req: NextRequest)
 {
 	try
 	{
@@ -186,11 +188,11 @@ export const GET = withAuth(async (req, { session }) =>
 		if (!trending)
 			return jsonError("Service temporarily unavailable", 503)
 
-		const most_played = getIgdbMostPlayedGames()
+		const most_played = await getIgdbMostPlayedGames()
 		if (!most_played)
 			return jsonError("Service temporarily unavailable", 503)
 
-		const most_recent = getIgdbMostRecentGames()
+		const most_recent = await getIgdbMostRecentGames()
 		if (!most_recent)
 			return jsonError("Service temporarily unavailable", 503)
 
@@ -201,4 +203,4 @@ export const GET = withAuth(async (req, { session }) =>
 		console.error(error)
 		return jsonError("Internal server error", 500)
 	}
-})
+}
