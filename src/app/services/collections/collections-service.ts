@@ -34,6 +34,9 @@ export class CollectionsService {
 	private statusesLoadedFor: number | null = null;   // userId per cui sono stati caricati
 	private statusesLoading = false;
 
+	// Aumenta a ogni modifica andata a buon fine: le pagine possono ascoltarlo per ricaricarsi
+	readonly version = signal(0);
+
 	statusOf(gameId: number): CollectionStatus | null {
 		return this.statuses().get(gameId) ?? null;
 	}
@@ -65,6 +68,7 @@ export class CollectionsService {
 				next.set(gameId, status);
 			return next;
 		});
+		this.version.update(v => v + 1);
 	}
 
 	getCollection(slug: CollectionSlug, page = 1): Observable<CollectionResponse> {

@@ -1,10 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, combineLatest, map, of, switchMap, tap } from 'rxjs';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { catchError, combineLatest, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
 import { GameCard } from '../../components/game-card/game-card';
 import { COLLECTIONS, CollectionSlug, CollectionsService } from '../../services/collections/collections-service';
+import { FavoritesService } from '../../services/favorites/favorites-service';
 
 @Component({
   imports: [GameCard],
@@ -14,6 +15,7 @@ import { COLLECTIONS, CollectionSlug, CollectionsService } from '../../services/
 })
 export class Collections {
 	private collectionsService = inject(CollectionsService);
+	private favoritesService = inject(FavoritesService);
 	private route = inject(ActivatedRoute);
 	private router = inject(Router);
 
@@ -28,11 +30,26 @@ export class Collections {
 	totalPages = computed(() => Math.max(1, Math.ceil(this.total() / 20)));
 
 	constructor() {
-		combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
-		map(([params, query]) => ({
-			slug: params.get('type') as CollectionSlug, // già validato dal guard
-			page: Math.max(1, Number(query.get('page')) || 1),
-		})),
+		combineLatest([
+			this.route.paramMap,
+			this.route.queryParamMap,
+			// Ricarica quando un gioco cambia collection o preferito (es. dalle game-card)
+			toObservable(this.favoritesService.version),
+			toObservable(this.collectionsService.version),
+		]).pipe(
+		map(([params, query, favouritesVersion, collectionsVersion]) => {
+			const slug = params.get('type') as CollectionSlug; // già validato dal guard
+			return {
+				slug,
+				page: Math.max(1, Number(query.get('page')) || 1),
+				// Conta solo il tipo di modifica che riguarda questa pagina: togliere un
+				// cuore da "Playing" non deve ricaricare (get-favourites ha un rate limit)
+				version: COLLECTIONS[slug].status === null ? favouritesVersion : collectionsVersion,
+			};
+		}),
+		distinctUntilChanged((a, b) =>
+			a.slug === b.slug && a.page === b.page && a.version === b.version
+		),
 		tap(({ slug, page }) => {
 			this.slug.set(slug);
 			this.page.set(page);
@@ -55,6 +72,11 @@ export class Collections {
 		this.games.set(res.games);
 		this.total.set(res.total);
 		this.loading.set(false);
+
+		// Tolto l'ultimo gioco dell'ultima pagina: torna all'ultima pagina con giochi
+		const lastPage = Math.max(1, Math.ceil(res.total / 20));
+		if (!this.error() && res.games.length === 0 && this.page() > lastPage)
+			this.goToPage(lastPage);
 		});
 	}
 

@@ -29,6 +29,9 @@ export class FavoritesService {
 	private idsLoadedFor: number | null = null;   // userId per cui sono stati caricati
 	private idsLoading = false;
 
+	// Aumenta a ogni modifica andata a buon fine: le pagine possono ascoltarlo per ricaricarsi
+	readonly version = signal(0);
+
 	isFavourite(gameId: number): boolean {
 		return this.ids().has(gameId);
 	}
@@ -58,6 +61,7 @@ export class FavoritesService {
 				next.delete(gameId);
 			return next;
 		});
+		this.version.update(v => v + 1);
 	}
 
 	getFavourites(page = 1): Observable<FavouritesResponse> {
