@@ -76,3 +76,11 @@ Tipo: `IgdbMultiqueryResult<IgdbGame>[]`.
 
 I modelli attuali in `models/` (`game.model.ts`, `genre.model.ts`, ecc.) hanno la forma
 di RAWG e verranno sostituiti da `igdb.model.ts`.
+
+## DA FARE
+- [x] Display collection da pagina utente
+- Display giochi <piu recenti>, <piu giocati>, <suggeriti>, <di tendenza> sulla Home
+- [x]Aggiunta ai preferiti
+- [x]Aggiunta alla collezione
+- Modifica specs proprio pc
+- filtri pagina games

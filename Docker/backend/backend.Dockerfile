@@ -12,7 +12,11 @@ RUN pnpm install --frozen-lockfile
 
 COPY --chown=node:node . .
 RUN pnpm exec prisma generate
-RUN REDIS_HOST=finto REDIS_PORT=6379 REDIS_PASSWORD=finto pnpm exec next build
+# next build importa i moduli delle route: db-pool e redis-init leggono le env all'import, quindi servono valori finti
+RUN REDIS_HOST=finto REDIS_PORT=6379 REDIS_PASSWORD=finto \
+    DB_USER=finto DB_PASSWORD=finto DB_NAME=finto DB_HOST=localhost DB_PORT=5432 \
+    pnpm exec next build
+
 
 EXPOSE 8080
 CMD ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm exec next start -H 0.0.0.0 -p 8080"]
