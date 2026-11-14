@@ -2,9 +2,15 @@ import { jsonError, requireEnv} from "@/lib/utils"
 import { NextRequest,NextResponse } from "next/server"	
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { Filters, buildConditions, buildSort, getFiltersFromRequest, validateFilters } from "@/lib/igdb-api/filters"
 
-async function fetchIGDBGames(offset: number)
+const PAGE_SIZE = 20
+
+async function fetchIGDBGames(filters: Filters)
 {
+	// rating_count > 0 esclude i giochi quasi sconosciuti dal catalogo
+	const conditions = [...buildConditions(filters), "rating_count > 0"]
+
 	return fetch("https://api.igdb.com/v4/games", {
 		method: "POST",
 		headers: {
@@ -28,9 +34,10 @@ async function fetchIGDBGames(offset: number)
 				genres.name,
 				platforms.id,
 				platforms.name;
-			limit 20;
-			version_parent = null;
-			offset ${offset};
+			where ${conditions.join(" & ")};
+			${buildSort(filters)}
+			limit ${PAGE_SIZE};
+			offset ${filters.offset};
 		`,
 		cache: "no-store"
 	})
@@ -67,13 +74,13 @@ export async function GET(req: NextRequest)
 			return jsonError("Service temporarily unavailable", 503)
 		}
 
-		const offsetParam = req.nextUrl.searchParams.get("offset")
-		const offset = Number(offsetParam)
+		const filters = getFiltersFromRequest(req, {sort: "popularity", order: "desc"})
+		const validationError = validateFilters(filters)
 
-		if (offsetParam === null || !Number.isInteger(offset) || offset < 0)
-			return jsonError("Invalid offset", 400)
+		if (validationError)
+			return jsonError(validationError, 400)
 
-		const res = await fetchIGDBGames(offset)
+		const res = await fetchIGDBGames(filters)
 
 		if (!res.ok)
 		{
@@ -88,7 +95,14 @@ export async function GET(req: NextRequest)
 		}
 		const games = await res.json()
 		
-		return NextResponse.json({results: games})
+		// stessa forma di /api/games/search, cosi il frontend usa un solo tipo
+		return NextResponse.json({
+			results: games,
+			count: games.length,
+			offset: filters.offset,
+			limit: PAGE_SIZE,
+			hasMore: games.length === PAGE_SIZE
+		})
 	}
 	catch (error)
 	{
