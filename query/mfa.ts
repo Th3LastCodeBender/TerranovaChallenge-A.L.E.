@@ -6,7 +6,7 @@ import { randomInt, timingSafeEqual, createHmac } from "crypto"
 import { requireEnv } from "@/lib/utils"
 
 export const MFA_COOKIE_NAME = "2fa_cookie"
-export const MFA_COOKIE_DURATION_SECONDS = 60 * 15 * 1000
+export const MFA_COOKIE_DURATION_SECONDS = 60 * 15
 export const MFA_MAX_ATTEMPTS = 5
 
 export type	NewMfaChallenge = {
@@ -40,7 +40,7 @@ export function disableMfa(userId: number): Promise<[Prisma.BatchPayload, Prisma
 
 export async function createMfaChallenge(data: NewMfaChallenge): Promise<WG_MfaChallenge>
 {
-	const expiresAt = new Date(Date.now() + MFA_COOKIE_DURATION_SECONDS)
+	const expiresAt = new Date(Date.now() + MFA_COOKIE_DURATION_SECONDS * 1000)
 
 	const	[, challenge] = await prisma.$transaction([
 		prisma.wG_MfaChallenge.deleteMany({ where: { userId: data.userId }}),
