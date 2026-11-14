@@ -154,3 +154,57 @@
 .gc-item app-game-card ::ng-deep .card-title {
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
+
+// Home: a riposo solo titolo, valutazioni e data; il resto compare all'hover
+@media (hover: hover) {
+    .gc-item app-game-card ::ng-deep {
+        .custom-genres,
+        .custom-platform-container {
+            max-height: 0;
+            min-height: 0;
+            margin-bottom: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition:
+                max-height 0.3s ease,
+                opacity 0.25s ease,
+                margin-bottom 0.3s ease;
+        }
+
+        // senza le piattaforme sotto, la data non deve lasciare spazio vuoto
+        .custom-release {
+            margin-bottom: 0;
+            transition: margin-bottom 0.3s ease;
+        }
+
+        .custom-card:hover,
+        .custom-card:focus-visible {
+            .custom-genres {
+                max-height: 4rem;
+                margin-bottom: 0.6rem;
+                opacity: 1;
+            }
+
+            .custom-platform-container {
+                max-height: 2.2rem;
+                opacity: 1;
+            }
+
+            .custom-release {
+                margin-bottom: 1rem;
+            }
+
+            // in hover lo sfondo si scurisce un po' di più (cambio istantaneo)
+            .custom-overlay {
+                background: linear-gradient(
+                    to top,
+                    rgba(7, 7, 18, 0.98) 0%,
+                    rgba(7, 7, 18, 0.95) 25%,
+                    rgba(7, 7, 18, 0.86) 45%,
+                    rgba(7, 7, 18, 0.60) 68%,
+                    rgba(7, 7, 18, 0.30) 100%
+                );
+            }
+        }
+    }
+}

@@ -1,9 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { Navbar } from '../../components/navbar/navbar';
 import { GameCarousel } from '../../components/game-carousel/game-carousel';
 import { GamesService, HomeGamesResponse } from '../../services/games/games-service';
+import { AuthService } from '../../services/auth/auth-service';
 import { IgdbGame } from '../../models/game.model';
 
 interface HomeSection {
@@ -15,9 +16,10 @@ interface HomeSection {
 
 // Titolo e icona delle categorie note; le altre usano la chiave come titolo
 const SECTION_META: Record<string, { title: string; icon: string }> = {
-  trending_games: { title: 'Di tendenza',   icon: 'bi-fire' },
-  most_played:    { title: 'Più giocati',   icon: 'bi-controller' },
-  most_recent:    { title: 'Ultime uscite', icon: 'bi-calendar-event' },
+  suggested:      { title: 'Consigliati per te', icon: 'bi-stars' },
+  trending_games: { title: 'Di tendenza',        icon: 'bi-fire' },
+  most_played:    { title: 'Più giocati',        icon: 'bi-controller' },
+  most_recent:    { title: 'Ultime uscite',      icon: 'bi-calendar-event' },
 };
 
 @Component({
@@ -28,20 +30,36 @@ const SECTION_META: Record<string, { title: string; icon: string }> = {
 })
 export class Home {
   private gamesService = inject(GamesService);
+  private authService = inject(AuthService);
 
   sections = signal<HomeSection[]>([]);
   loading = signal(true);
   error = signal(false);
 
   constructor() {
-    this.gamesService.getHomeGames().pipe(
+    const home$ = this.gamesService.getHomeGames().pipe(
       catchError(err => {
         console.error('Errore nel recupero dei giochi della home:', err);
         this.error.set(true);
         return of({} as HomeGamesResponse);
-      }),
+      })
+    );
+
+    // I consigliati richiedono il login; se falliscono la sezione viene solo nascosta
+    const suggested$ = this.authService.isLoggedIn()
+      ? this.gamesService.getSuggestedGames().pipe(
+          catchError(err => {
+            console.error('Errore nel recupero dei giochi consigliati:', err);
+            return of([] as IgdbGame[]);
+          })
+        )
+      : of([] as IgdbGame[]);
+
+    forkJoin([home$, suggested$]).pipe(
       takeUntilDestroyed()
-    ).subscribe(res => {
+    ).subscribe(([home, suggested]) => {
+      // "suggested" per primo, così la sezione compare in cima
+      const res: HomeGamesResponse = { suggested, ...home };
       this.sections.set(
         Object.entries(res)
           .filter(([, games]) => Array.isArray(games) && games.length > 0)

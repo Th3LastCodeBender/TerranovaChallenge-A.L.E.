@@ -24,6 +24,25 @@ interface GamesServiceSearchResponse {
 // Una lista di giochi per ogni categoria restituita da /api/games/home
 export type HomeGamesResponse = Record<string, IgdbGame[]>;
 
+// /api/games/suggested per ora restituisce genres e platforms come string[]:
+// li convertiamo in oggetti { id, name } come si aspetta la card.
+// Quando il backend restituirà IgdbGame completi, questa conversione non avrà effetto.
+function toNamed<T>(items: unknown): T[] | undefined {
+	if (!Array.isArray(items))
+		return undefined;
+	return items.map((item, i) =>
+		typeof item === 'string' ? { id: i, name: item } : item
+	) as T[];
+}
+
+function toIgdbGame(game: any): IgdbGame {
+	return {
+		...game,
+		genres: toNamed(game.genres),
+		platforms: toNamed(game.platforms),
+	};
+}
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -32,9 +51,16 @@ export class GamesService {
 	private gamesBaseUrl = '/api/games/search';
 	private gameDetailsUrl = '/api/games';
 	private homeGamesUrl = '/api/games/home';
+	private suggestedGamesUrl = '/api/games/suggested';
 
 	getHomeGames(): Observable<HomeGamesResponse> {
 		return this.http.get<HomeGamesResponse>(this.homeGamesUrl);
+	}
+
+	getSuggestedGames(): Observable<IgdbGame[]> {
+		return this.http
+			.get<any[]>(this.suggestedGamesUrl)
+			.pipe(map(games => games.map(toIgdbGame)));
 	}
 
 	getGameByName(name: string): Observable<IgdbGame[]> {
