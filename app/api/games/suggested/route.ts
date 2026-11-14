@@ -1,166 +1,9 @@
-
-
-export const mockGames = [
-	{
-		id: "1",
-		name: "The Witcher 3",
-		genres: ["RPG", "Adventure"],
-		themes: ["Fantasy", "Medieval"],
-		keywords: ["Open World", "Story Rich", "Magic"],
-		gameModes: ["Single Player"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["CD Projekt Red"],
-		rating: 95,
-	},
-	{
-		id: "2",
-		name: "Elden Ring",
-		genres: ["RPG", "Action"],
-		themes: ["Fantasy", "Dark Fantasy"],
-		keywords: ["Open World", "Soulslike", "Exploration"],
-		gameModes: ["Single Player", "Multiplayer"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["FromSoftware"],
-		rating: 96,
-	},
-	{
-		id: "3",
-		name: "Skyrim",
-		genres: ["RPG", "Adventure"],
-		themes: ["Fantasy", "Medieval"],
-		keywords: ["Open World", "Magic", "Exploration"],
-		gameModes: ["Single Player"],
-		platforms: ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
-		companies: ["Bethesda"],
-		rating: 94,
-	},
-	{
-		id: "4",
-		name: "Baldur's Gate 3",
-		genres: ["RPG", "Strategy"],
-		themes: ["Fantasy", "Medieval"],
-		keywords: ["Turn Based", "Story Rich", "Magic"],
-		gameModes: ["Single Player", "Co-op"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["Larian Studios"],
-		rating: 96,
-	},
-	{
-		id: "5",
-		name: "Cyberpunk 2077",
-		genres: ["RPG", "Shooter"],
-		themes: ["Science Fiction", "Cyberpunk"],
-		keywords: ["Open World", "Story Rich", "Futuristic"],
-		gameModes: ["Single Player"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["CD Projekt Red"],
-		rating: 86,
-	},
-	{
-		id: "6",
-		name: "Dark Souls III",
-		genres: ["RPG", "Action"],
-		themes: ["Dark Fantasy", "Medieval"],
-		keywords: ["Soulslike", "Difficult", "Exploration"],
-		gameModes: ["Single Player", "Multiplayer"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["FromSoftware"],
-		rating: 89,
-	},
-	{
-		id: "7",
-		name: "Hogwarts Legacy",
-		genres: ["RPG", "Adventure"],
-		themes: ["Fantasy", "Magic"],
-		keywords: ["Open World", "Exploration", "Magic"],
-		gameModes: ["Single Player"],
-		platforms: ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
-		companies: ["Avalanche Software"],
-		rating: 84,
-	},
-	{
-		id: "8",
-		name: "Red Dead Redemption 2",
-		genres: ["Adventure", "Action"],
-		themes: ["Western", "Historical"],
-		keywords: ["Open World", "Story Rich", "Exploration"],
-		gameModes: ["Single Player", "Multiplayer"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["Rockstar Games"],
-		rating: 97,
-	},
-	{
-		id: "9",
-		name: "Final Fantasy XVI",
-		genres: ["RPG", "Action"],
-		themes: ["Fantasy", "Medieval"],
-		keywords: ["Story Rich", "Magic", "Combat"],
-		gameModes: ["Single Player"],
-		platforms: ["PC", "PlayStation"],
-		companies: ["Square Enix"],
-		rating: 88,
-	},
-	{
-		id: "10",
-		name: "Minecraft",
-		genres: ["Sandbox", "Adventure"],
-		themes: ["Fantasy"],
-		keywords: ["Building", "Exploration", "Survival"],
-		gameModes: ["Single Player", "Multiplayer", "Co-op"],
-		platforms: ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
-		companies: ["Mojang"],
-		rating: 93,
-	},
-	{
-		id: "11",
-		name: "Assassin's Creed Valhalla",
-		genres: ["RPG", "Action", "Adventure"],
-		themes: ["Historical", "Medieval"],
-		keywords: ["Open World", "Exploration", "Combat"],
-		gameModes: ["Single Player"],
-		platforms: ["PC", "PlayStation", "Xbox"],
-		companies: ["Ubisoft"],
-		rating: 82,
-	},
-	{
-		id: "12",
-		name: "Stardew Valley",
-		genres: ["RPG", "Simulation"],
-		themes: ["Fantasy", "Rural"],
-		keywords: ["Farming", "Building", "Relaxing"],
-		gameModes: ["Single Player", "Multiplayer"],
-		platforms: ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
-		companies: ["ConcernedApe"],
-		rating: 91,
-	},
-];
-
-export const mockInteractions = [
-	{
-		userId: "user-1",
-		gameId: "1",
-		interactionWeight: 4,
-		interactionType: "favorite",
-	},
-	{
-		userId: "user-1",
-		gameId: "2",
-		interactionWeight: 5,
-		interactionType: "completed",
-	},
-	{
-		userId: "user-1",
-		gameId: "3",
-		interactionWeight: 4,
-		interactionType: "favorite",
-	},
-	{
-		userId: "user-1",
-		gameId: "4",
-		interactionWeight: 3,
-		interactionType: "rating",
-	},
-];
+import { jsonError, requireEnv } from "@/lib/utils"
+import { NextResponse } from "next/server"
+import { withAuth } from "@/lib/auth/authWrapper"
+import { listFavourites } from "@/query/favourites"
+import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
+import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
 
 const weights = {
 	genres: 0.30,
@@ -170,78 +13,215 @@ const weights = {
 	platforms: 0.10,
 	companies: 0.10,
 	rating: 0.05,
-};
-
-export function jaccardSimilarity(
-	a: string[],
-	b: string[]
-): number {
-	const setA = new Set(a);
-	const setB = new Set(b);
-
-	if (setA.size === 0 || setB.size === 0)
-		return 0;
-
-	const intersection = [...setA].filter(
-		item => setB.has(item)
-	).length;
-
-	const union = new Set([...setA, ...setB]).size;
-
-	return intersection / union;
 }
 
-export function getRecommendations(
-	userId: string,
-	limit = 20
-) {
-	const interactions = mockInteractions.filter(
-		interaction =>
-			interaction.userId === userId &&
-			interaction.interactionWeight > 0
-	);
+type Game = {
+	id: number
+	name: string
+	genres: string[]
+	themes: string[]
+	keywords: string[]
+	gameModes: string[]
+	platforms: string[]
+	companies: string[]
+	rating: number
+}
 
-	if (interactions.length === 0)
-		return [];
+type Favourite = {
+	gameId: number
+}
 
-	const profile = {
+async function getGamesByIds(ids: number[], limit = 20)
+{
+	if (ids.length === 0)
+		return {
+			ok: true as const,
+			games: []
+		}
+
+	const token = await getTwitchAccessToken()
+
+	const response = await fetch(
+		"https://api.igdb.com/v4/games",
+		{
+			method: "POST",
+			headers: {
+				"Client-ID": requireEnv("TWITCH_CLIENT_ID"),
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "text/plain"
+			},
+			body: `
+				where id = (${ids.join(",")});
+				fields
+					id,
+					name,
+					rating,
+					genres.name,
+					themes.name,
+					keywords.name,
+					game_modes.name,
+					platforms.name,
+					involved_companies.company.name;
+				sort rating_count desc;
+				limit ${limit};
+			`
+		}
+	)
+
+	if (!response.ok)
+		return {
+			ok: false as const,
+			error: await response.text(),
+			status: response.status
+		}
+
+	return {
+		ok: true as const,
+		games: await response.json()
+	}
+}
+
+async function getRecommendationCandidates(limit = 10)
+{
+	const token = await getTwitchAccessToken()
+
+	const response = await fetch(
+		"https://api.igdb.com/v4/games",
+		{
+			method: "POST",
+			headers: {
+				"Client-ID": requireEnv("TWITCH_CLIENT_ID"),
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "text/plain"
+			},
+			body: `
+				where rating_count > 20
+					& rating != null;
+				fields
+					id,
+					name,
+					rating,
+					genres.name,
+					themes.name,
+					keywords.name,
+					game_modes.name,
+					platforms.name,
+					involved_companies.company.name;
+				sort rating_count desc;
+				limit ${limit};
+			`
+		}
+	)
+
+	if (!response.ok)
+		return {
+			ok: false as const,
+			error: await response.text(),
+			status: response.status
+		}
+
+	return {
+		ok: true as const,
+		games: await response.json()
+	}
+}
+
+export function jaccardSimilarity(a: string[], b: string[]): number
+{
+	const setA = new Set(a)
+	const setB = new Set(b)
+
+	if (setA.size === 0 || setB.size === 0)
+		return 0
+
+	const intersection = [...setA].filter(item => setB.has(item)).length
+
+	const union = new Set([...setA, ...setB]).size
+
+	return intersection / union
+}
+
+function normalizeGame(game: any): Game
+{
+	return {
+		id: game.id,
+		name: game.name ?? "Unknown",
+
+		genres: game.genres?.map((item: any) => item.name) ?? [],
+		themes: game.themes?.map((item: any) => item.name) ?? [],
+		keywords: game.keywords?.map((item: any) => item.name) ?? [],
+		gameModes: game.game_modes?.map((item: any) => item.name) ?? [],
+		platforms: game.platforms?.map((item: any) => item.name) ?? [],
+		companies: game.involved_companies?.map((item: any) => item.company?.name).filter(Boolean) ?? [],
+		rating: game.rating ?? 0,
+	}
+}
+
+async function getRecommendations(userId: number, limit: number = 5)
+{
+	const favs: Favourite[] = await listFavourites(userId, {limit: limit, offset: 0})
+
+	if (favs.length < 2)
+	{
+		const candidates = await getRecommendationCandidates(2)
+
+		if (!candidates.ok)
+			return candidates
+
+		return {
+			ok: true as const,
+			data: candidates.games.map(normalizeGame)
+		}
+	}
+
+	const favouriteIds = favs.map(fav => fav.gameId)
+	const favouriteResponse = await getGamesByIds(favouriteIds, limit)
+
+	if (!favouriteResponse.ok)
+		return favouriteResponse
+
+	const favouriteGames: Game[] = favouriteResponse.games.map(normalizeGame)
+
+	if (favouriteGames.length === 0)
+		return {
+			ok: true as const,
+			data: []
+		}
+
+	const profile =
+	{
 		genres: [] as string[],
 		themes: [] as string[],
 		keywords: [] as string[],
 		gameModes: [] as string[],
 		platforms: [] as string[],
 		companies: [] as string[],
-	};
-
-	for (const interaction of interactions) {
-		const game = mockGames.find(
-			game => game.id === interaction.gameId
-		);
-
-		if (!game) continue;
-
-		profile.genres.push(...game.genres);
-		profile.themes.push(...game.themes);
-		profile.keywords.push(...game.keywords);
-		profile.gameModes.push(...game.gameModes);
-		profile.platforms.push(...game.platforms);
-		profile.companies.push(...game.companies);
 	}
 
-	for (const key of Object.keys(profile) as
-		(keyof typeof profile)[]) {
-		profile[key] = [...new Set(profile[key])];
+	for (const game of favouriteGames)
+	{
+		profile.genres.push(...game.genres)
+		profile.themes.push(...game.themes)
+		profile.keywords.push(...game.keywords)
+		profile.gameModes.push(...game.gameModes)
+		profile.platforms.push(...game.platforms)
+		profile.companies.push(...game.companies)
 	}
 
-	const seenGameIds = interactions.map(
-		interaction => interaction.gameId
-	);
+	for (const key of Object.keys(profile) as (keyof typeof profile)[])
+		profile[key] = [...new Set(profile[key])]
 
-	const candidates = mockGames.filter(
-		game => !seenGameIds.includes(game.id)
-	);
+	const candidatesResponse = await getRecommendationCandidates(limit)
 
-	const recommendations = candidates.map(game => {
+	if (!candidatesResponse.ok)
+			return candidatesResponse
+
+	const seenGameIds = new Set(favouriteIds)
+
+	const candidates: Game[] = candidatesResponse.games.filter((game: any) => !seenGameIds.has(game.id)).map(normalizeGame)
+
+	const recommendations = candidates.map(game =>
+	{
 		const score =
 			jaccardSimilarity(profile.genres, game.genres)
 				* weights.genres +
@@ -261,30 +241,67 @@ export function getRecommendations(
 			jaccardSimilarity(profile.companies, game.companies)
 				* weights.companies +
 
-			((game.rating ?? 0) / 100) * weights.rating;
+			(game.rating / 100) * weights.rating
 
 		return {
 			...game,
-			recommendationScore:
-				Math.round(score * 10000) / 100,
-		};
-	});
+			recommendationScore: Math.round(score * 10000) / 100
+		}
+	})
 
-	return recommendations
-		.sort(
-			(a, b) =>
-				b.recommendationScore - a.recommendationScore
-		)
-		.slice(0, limit);
+	return {
+		ok: true as const,
+		data: recommendations.sort((a, b) => b.recommendationScore - a.recommendationScore).slice(0, limit)
+	}
 }
 
-const recommendations = getRecommendations("user-1", 10);
+export const GET = withAuth(async (req, { session }) =>
+{
+	try
+	{
+		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
 
-console.log("Giochi consigliati:");
+		try
+		{
+			const rl_result = await rateLimit(ip, "/api/games/suggested", RATE_LIMIT_POLICIES.suggest)
 
-console.table(
-	recommendations.map(game => ({
-		name: game.name,
-		score: game.recommendationScore
-	}))
-);
+			if (!rl_result.success)
+			{
+				return NextResponse.json(
+				{error: "Too many requests. Please try again later."},
+				{
+					status: 429,
+					headers: {
+						"Retry-After": String(rl_result.retryAfter),
+						"X-RateLimit-Limit": String(rl_result.limit),
+						"X-RateLimit-Remaining": "0"
+					}
+				}
+				)
+			}			
+		}
+		catch(error)
+		{
+			console.error(error)
+			return jsonError("Service temporarily unavailable", 503)
+		}
+
+		const recommended = await getRecommendations(session.userId)		
+		if (!recommended.ok)
+		{
+			console.error("IGDB ERROR:", {
+				status: recommended.status,
+				body: recommended.error
+			})
+
+			return jsonError("Failed to fetch games", 502)
+		}
+
+		return NextResponse.json(recommended.data)
+	}
+	catch (error)
+	{
+		console.error(error)
+		return jsonError("Internal server error", 500)
+	}
+})

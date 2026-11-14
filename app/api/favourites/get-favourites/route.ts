@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"	
+import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { listFavourites } from "@/query/favourites"
 import { getGamesByIds, jsonError} from "@/lib/utils"
@@ -42,7 +42,7 @@ export const GET = withAuth(async (req, { session }) =>
 			return jsonError("Invalid offset", 400)
 
 		const limit = 20
-		const favourites = await listFavourites(session.userId)
+		const favourites = await listFavourites(session.userId, {limit: limit, offset})
 		const ids = favourites.slice(offset, offset + limit).map((fav: {gameId: number}) => fav.gameId)	
 		const fetched_games = await getGamesByIds(ids)
 

@@ -10,9 +10,9 @@ export const RATE_LIMIT_POLICIES =
 	signup: {limit: 5, windowSeconds: 60 * 60},
 	logout: {limit: 20, windowSeconds: 60},
 	otp_attempt: {limit: 5, windowSeconds: 60 * 15},
-	add_item: {limit: 20, windowSeconds: 60},
-	delete_item: {limit: 30, windowSeconds: 60},
-	get_items: {limit: 10, windowSeconds: 60},
+	add_item: {limit: 50, windowSeconds: 60},
+	delete_item: {limit: 50, windowSeconds: 60},
+	get_items: {limit: 30, windowSeconds: 60},
 	get_slug: {limit: 30, windowSeconds: 60},
 	enable_2fa: {limit: 5, windowSeconds: 60 * 10},
 	disable_2fa: {limit: 5, windowSeconds: 60 * 5},
@@ -21,7 +21,8 @@ export const RATE_LIMIT_POLICIES =
 	add_specs: {limit: 5, windowSeconds: 60},
 	delete_specs: {limit: 5, windowSeconds: 60},
 	get_specs: {limit: 10, windowSeconds: 60},
-	home_fetch: {limit: 10, windowSeconds: 60}
+	home_fetch: {limit: 10, windowSeconds: 60},
+	suggest: {limit: 5, windowSeconds: 60}
 }
 
 interface RateLimitOptions {

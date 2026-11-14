@@ -40,7 +40,7 @@ export const GET = withAuth(async (req, { session }) =>
 		const favourites = await listFavourites(session.userId)
 		const ids = favourites.map((fav: {gameId: number}) => fav.gameId)
 
-		return NextResponse.json({ ids })
+		return NextResponse.json({ids})
 	}
 	catch (error)
 	{

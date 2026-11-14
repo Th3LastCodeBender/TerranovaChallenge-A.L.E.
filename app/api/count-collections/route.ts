@@ -1,9 +1,9 @@
 import { jsonError} from "@/lib/utils"
 import { NextResponse } from "next/server"	
 import { withAuth } from "@/lib/auth/authWrapper"
-import { listFavourites } from "@/query/favourites"
+import { countCollection } from "@/query/collection"
+import { countFavourites } from "@/query/favourites"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
-import { listCollection } from "@/query/collection"
 
 export const GET = withAuth(async (req, { session }) =>
 {
@@ -36,21 +36,27 @@ export const GET = withAuth(async (req, { session }) =>
 			return jsonError("Service temporarily unavailable", 503)
 		}
 
-		const favourites = await listFavourites(session.userId)
-		const to_play = await listCollection(session.userId, "TO_PLAY")
-		const playing = await listCollection(session.userId, "PLAYING")
-		const finished = await listCollection(session.userId, "FINISHED")
-		const to_buy = await listCollection(session.userId, "TO_BUY")
+		const [
+			favourites,
+			toPlay,
+			playing,
+			finished,
+			toBuy
+		] = await Promise.all([
+			countFavourites(session.userId),
+			countCollection(session.userId, "TO_PLAY"),
+			countCollection(session.userId, "PLAYING"),
+			countCollection(session.userId, "FINISHED"),
+			countCollection(session.userId, "TO_BUY")
+		])
 
-		return NextResponse.json(
-			{
-				favourites_length: favourites.length,
-				to_play_length: to_play.length,
-				playing_length: playing.length,
-				finished_length: finished.length,
-				to_buy_length: to_buy.length
-			}
-		)
+		return NextResponse.json({
+			favourites_length: favourites.length,
+			to_play_length: toPlay.length,
+			playing_length: playing.length,
+			finished_length: finished.length,
+			to_buy_length: toBuy.length
+		})
 	}
 	catch (error)
 	{
