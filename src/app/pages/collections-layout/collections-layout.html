@@ -1,16 +1,29 @@
 
 <app-navbar></app-navbar>
 
-<div class="container-fluid px-4 px-xl-5 my-4">
-	<ul class="nav nav-pills mb-4">
-		@for (s of slugs; track s) {
-		<li class="nav-item">
-			<a class="nav-link" [routerLink]="['/collections', s]" routerLinkActive="active" [replaceUrl]="true">
-				{{ collections[s].title }}
-			</a>
-		</li>
-		}
-	</ul>
+<main class="collections-page">
+    <div class="container-fluid px-4 px-xl-5">
 
-	<router-outlet />
-</div>
+        <nav class="collections-nav">
+            <ul class="nav nav-pills">
+                @for (s of slugs; track s) {
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            [routerLink]="['/collections', s]"
+                            routerLinkActive="active"
+                            [replaceUrl]="true"
+                        >
+                            {{ collections[s].title }}
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <section class="collections-content">
+            <router-outlet />
+        </section>
+
+    </div>
+</main>
