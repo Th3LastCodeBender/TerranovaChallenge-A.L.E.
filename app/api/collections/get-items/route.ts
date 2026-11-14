@@ -22,7 +22,7 @@ export const GET = withAuth(async (req, { session }) =>
 		const status = collectionType as WG_GameStatus
 		const limit = 20
 		const entries = await listCollection(session.userId, status, {limit: limit, offset})
-		const ids = entries.slice(offset, offset + limit).map((fav: {gameId: number}) => fav.gameId)	
+		const ids = entries.map((entry) => entry.gameId)
 		const fetched_games = await getGamesByIds(ids)
 
 		if (!fetched_games.ok)

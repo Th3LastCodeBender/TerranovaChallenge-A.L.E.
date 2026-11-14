@@ -43,7 +43,7 @@ export const GET = withAuth(async (req, { session }) =>
 
 		const limit = 20
 		const favourites = await listFavourites(session.userId, {limit: limit, offset})
-		const ids = favourites.slice(offset, offset + limit).map((fav: {gameId: number}) => fav.gameId)	
+		const ids = favourites.map((fav) => fav.gameId)	
 		const fetched_games = await getGamesByIds(ids)
 
 		if (!fetched_games.ok)
