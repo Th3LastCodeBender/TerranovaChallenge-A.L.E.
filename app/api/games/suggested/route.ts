@@ -27,6 +27,8 @@ type Game = {
 	rating: number
 }
 
+const CANDIDATE_POOL_SIZE = 100
+
 type Favourite = {
 	gameId: number
 }
@@ -55,12 +57,20 @@ async function getGamesByIds(ids: number[], limit = 20)
 				fields
 					id,
 					name,
+					slug,
+					cover.image_id,
+					first_release_date,
 					rating,
+					total_rating,
+					aggregated_rating,
+					genres.id,
 					genres.name,
 					themes.name,
 					keywords.name,
 					game_modes.name,
+					platforms.id,
 					platforms.name,
+					platforms.abbreviation,
 					involved_companies.company.name;
 				sort rating_count desc;
 				limit ${limit};
@@ -100,12 +110,20 @@ async function getRecommendationCandidates(limit = 10)
 				fields
 					id,
 					name,
+					slug,
+					cover.image_id,
+					first_release_date,
 					rating,
+					total_rating,
+					aggregated_rating,
+					genres.id,
 					genres.name,
 					themes.name,
 					keywords.name,
 					game_modes.name,
+					platforms.id,
 					platforms.name,
+					platforms.abbreviation,
 					involved_companies.company.name;
 				sort rating_count desc;
 				limit ${limit};
@@ -170,7 +188,7 @@ async function getRecommendations(userId: number, limit: number = 5)
 
 		return {
 			ok: true as const,
-			data: candidates.games.map(normalizeGame)
+			data: candidates.games
 		}
 	}
 
@@ -211,17 +229,22 @@ async function getRecommendations(userId: number, limit: number = 5)
 	for (const key of Object.keys(profile) as (keyof typeof profile)[])
 		profile[key] = [...new Set(profile[key])]
 
-	const candidatesResponse = await getRecommendationCandidates(limit)
+	// Il pool di candidati è più ampio del risultato, così lo score sceglie davvero
+	const candidatesResponse = await getRecommendationCandidates(CANDIDATE_POOL_SIZE)
 
 	if (!candidatesResponse.ok)
 			return candidatesResponse
 
 	const seenGameIds = new Set(favouriteIds)
 
-	const candidates: Game[] = candidatesResponse.games.filter((game: any) => !seenGameIds.has(game.id)).map(normalizeGame)
+	// Lo score si calcola sul gioco normalizzato, ma si restituisce l'oggetto IGDB originale
+	// (con cover, slug, genres {id, name}...) così il frontend lo usa come gli altri IgdbGame
+	const candidates: any[] = candidatesResponse.games.filter((game: any) => !seenGameIds.has(game.id))
 
-	const recommendations = candidates.map(game =>
+	const recommendations = candidates.map(rawGame =>
 	{
+		const game = normalizeGame(rawGame)
+
 		const score =
 			jaccardSimilarity(profile.genres, game.genres)
 				* weights.genres +
@@ -244,7 +267,7 @@ async function getRecommendations(userId: number, limit: number = 5)
 			(game.rating / 100) * weights.rating
 
 		return {
-			...game,
+			...rawGame,
 			recommendationScore: Math.round(score * 10000) / 100
 		}
 	})
