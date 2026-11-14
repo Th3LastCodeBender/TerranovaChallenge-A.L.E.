@@ -163,7 +163,7 @@ async function getRecommendations(userId: number, limit: number = 5)
 
 	if (favs.length < 2)
 	{
-		const candidates = await getRecommendationCandidates(2)
+		const candidates = await getRecommendationCandidates(5)
 
 		if (!candidates.ok)
 			return candidates
