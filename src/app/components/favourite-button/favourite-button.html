@@ -1,0 +1,11 @@
+<button
+	type="button"
+	class="favourite-button"
+	[class.active]="isFavourite()"
+	[disabled]="pending()"
+	[attr.aria-pressed]="isFavourite()"
+	(click)="toggle()"
+>
+	<i class="bi" [class.bi-heart]="!isFavourite()" [class.bi-heart-fill]="isFavourite()"></i>
+	Favourite
+</button>

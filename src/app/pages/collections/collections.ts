@@ -60,9 +60,10 @@ export class Collections {
 
 	goToPage(page: number): void {
 		this.router.navigate([], {
-		relativeTo: this.route,
-		queryParams: { page },
-		queryParamsHandling: 'merge',
+			relativeTo: this.route,
+			queryParams: { page },
+			queryParamsHandling: 'merge',
+			replaceUrl: true
 		});
 	}
 }

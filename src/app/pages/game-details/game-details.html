@@ -1,615 +1,586 @@
-
-<app-navbar/>
+<app-navbar />
 @if (isLoading()) {
 
-    <main class="game-state-page">
-        <div class="game-state-content">
+<main class="game-state-page">
+    <div class="game-state-content">
 
-            <div class="spinner-border text-light" role="status">
-                <span class="visually-hidden">
-                    Loading game
-                </span>
-            </div>
-
-            <p>Loading game...</p>
-
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">
+                Loading game
+            </span>
         </div>
-    </main>
+
+        <p>Loading game...</p>
+
+    </div>
+</main>
 
 } @else if (errorMessage()) {
 
-    <main class="game-state-page">
+<main class="game-state-page">
 
-        <div class="game-state-content game-error">
+    <div class="game-state-content game-error">
 
-            <i class="bi bi-exclamation-circle"></i>
+        <i class="bi bi-exclamation-circle"></i>
 
-            <h1>
-                {{ errorMessage() }}
-            </h1>
+        <h1>
+            {{ errorMessage() }}
+        </h1>
 
-            <a href="/games" class="game-back-button">
-                <i class="bi bi-arrow-left"></i>
-                Back to games
-            </a>
+        <a href="/games" class="game-back-button">
+            <i class="bi bi-arrow-left"></i>
+            Back to games
+        </a>
 
-        </div>
+    </div>
 
-    </main>
+</main>
 
 } @else if (game(); as currentGame) {
 
-    <main class="game-details-page">
+<main class="game-details-page">
 
-        <section
-            class="game-hero"
-            [style.background-image]="
+    <section class="game-hero" [style.background-image]="
                 backgroundUrl()
                     ? 'url(' + backgroundUrl() + ')'
                     : 'none'
-            "
-        >
+            ">
 
-            <div class="game-hero-overlay"></div>
+        <div class="game-hero-overlay"></div>
 
-            <div class="container game-hero-content">
+        <div class="container game-hero-content">
 
-                <div class="game-cover-container">
+            <div class="game-cover-container">
 
-                    @if (coverUrl()) {
+                @if (coverUrl()) {
 
-                        <img
-                            [src]="coverUrl()"
-                            class="game-cover"
-                            [alt]="currentGame.name"
-                        />
+                <img [src]="coverUrl()" class="game-cover" [alt]="currentGame.name" />
 
-                    } @else {
+                } @else {
 
-                        <div class="game-cover-placeholder">
-                            <i class="bi bi-image"></i>
-                        </div>
+                <div class="game-cover-placeholder">
+                    <i class="bi bi-image"></i>
+                </div>
+
+                }
+
+            </div>
+
+
+            <div class="game-main-info">
+
+                <h1 class="game-title">
+                    {{ currentGame.name }}
+                </h1>
+
+
+                @if (currentGame.genres?.length) {
+
+                <div class="game-genres">
+
+                    @for (genre of currentGame.genres; track genre.id) {
+
+                    <span class="game-genre">
+                        #{{ genre.name }}
+                    </span>
 
                     }
 
                 </div>
 
-
-                <div class="game-main-info">
-
-                    <h1 class="game-title">
-                        {{ currentGame.name }}
-                    </h1>
+                }
 
 
-                    @if (currentGame.genres?.length) {
+                @if (releaseDate()) {
 
-                        <div class="game-genres">
+                <p class="game-release">
 
-                            @for (genre of currentGame.genres; track genre.id) {
+                    Released on
 
-                                <span class="game-genre">
-                                    #{{ genre.name }}
-                                </span>
+                    <strong>
+                        {{ releaseDate() | date:'dd MMMM yyyy' }}
+                    </strong>
 
-                            }
+                </p>
 
-                        </div>
+                } @else if (isAnnounced()) {
 
-                    }
+                <p class="game-release">
 
+                    Release date
 
-                    @if (releaseDate()) {
+                    <strong>
+                        Announced
+                    </strong>
 
-                        <p class="game-release">
+                </p>
 
-                            Released on
-
-                            <strong>
-                                {{ releaseDate() | date:'dd MMMM yyyy' }}
-                            </strong>
-
-                        </p>
-
-                    } @else if (isAnnounced()) {
-
-                        <p class="game-release">
-
-                            Release date
-
-                            <strong>
-                                Announced
-                            </strong>
-
-                        </p>
-
-                    }
+                }
 
 
-                    @if (platformFamilies().length) {
+                @if (platformFamilies().length) {
 
-                        <div class="game-platforms">
+                <div class="game-platforms">
 
-                            @for (platform of platformFamilies(); track platform) {
+                    @for (platform of platformFamilies(); track platform) {
 
-                                <span
-                                    class="game-platform"
-                                    [title]="platform"
-                                >
+                    <span class="game-platform" [title]="platform">
 
-                                    @if (platform === 'PlayStation') {
+                        @if (platform === 'PlayStation') {
 
-                                        <i class="bi bi-playstation"></i>
+                        <i class="bi bi-playstation"></i>
 
-                                    } @else if (platform === 'Xbox') {
+                        } @else if (platform === 'Xbox') {
 
-                                        <i class="bi bi-xbox"></i>
+                        <i class="bi bi-xbox"></i>
 
-                                    } @else if (platform === 'PC') {
+                        } @else if (platform === 'PC') {
 
-                                        <i class="bi bi-laptop"></i>
+                        <i class="bi bi-laptop"></i>
 
-                                    } @else if (platform === 'Nintendo') {
+                        } @else if (platform === 'Nintendo') {
 
-                                        <i class="bi bi-nintendo-switch"></i>
-
-                                    }
-
-                                    {{ platform }}
-
-                                </span>
-
-                            }
-
-                        </div>
-
-                    }
-
-
-                    <div class="game-actions">
-
-                        <button
-                            type="button"
-                            class="game-action game-action-favourite"
-                        >
-                            <i class="bi bi-heart"></i>
-                            Favourite
-                        </button>
-
-                        <button
-                            type="button"
-                            class="game-action game-action-collection"
-                        >
-                            <i class="bi bi-plus-lg"></i>
-                            Add to collection
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <div class="game-ratings">
-
-                    @if (rating() !== null) {
-
-                        <div class="game-rating">
-
-                            <i class="bi bi-star-fill"></i>
-
-                            <span class="game-rating-value">
-                                {{ rating() | number:'1.1-2' }}
-                            </span>
-
-                            <span class="game-rating-max">
-                                / 5
-                            </span>
-
-                        </div>
-
-                    }
-
-
-                    <div class="game-metacritic">
-
-                        @if (criticScore() !== null) {
-
-                            <span class="game-metacritic-score">
-                                {{ criticScore() | number:'1.0-0' }}
-                            </span>
-
-                        } @else {
-
-                            <span class="game-metacritic-score">
-                                -
-                            </span>
+                        <i class="bi bi-nintendo-switch"></i>
 
                         }
 
-                        <span class="game-metacritic-label">
-                            Metacritic
+                        {{ platform }}
+
+                    </span>
+
+                    }
+
+                </div>
+
+                }
+
+
+                <div class="game-actions">
+
+                    @if (game(); as g) {
+                        <app-favourite-button [gameId]="g.id" [(isFavourite)]="isFavourite" />
+                    }
+                    <button type="button" class="game-action game-action-collection">
+                        <i class="bi bi-plus-lg"></i>
+                        Add to collection
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="game-ratings">
+
+                @if (rating() !== null) {
+
+                <div class="game-rating">
+
+                    <i class="bi bi-star-fill"></i>
+
+                    <span class="game-rating-value">
+                        {{ rating() | number:'1.1-2' }}
+                    </span>
+
+                    <span class="game-rating-max">
+                        / 5
+                    </span>
+
+                </div>
+
+                }
+
+
+                <div class="game-metacritic">
+
+                    @if (criticScore() !== null) {
+
+                    <span class="game-metacritic-score">
+                        {{ criticScore() | number:'1.0-0' }}
+                    </span>
+
+                    } @else {
+
+                    <span class="game-metacritic-score">
+                        -
+                    </span>
+
+                    }
+
+                    <span class="game-metacritic-label">
+                        Metacritic
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="container game-content">
+
+        @if (currentGame.summary) {
+
+        <section class="game-section">
+
+            <div class="section-title">
+                <h2>About</h2>
+            </div>
+
+            <p class="game-description">
+                {{ currentGame.summary }}
+            </p>
+
+        </section>
+
+        }
+
+
+        <section class="game-section">
+
+            <div class="section-title">
+                <h2>Game details</h2>
+            </div>
+
+            <div class="game-info-grid">
+
+                @if (currentGame.genres?.length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Genres
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (genre of currentGame.genres; track genre.id) {
+
+                        <span>
+                            {{ genre.name }}
                         </span>
+
+                        }
 
                     </div>
 
                 </div>
+
+                }
+
+
+                @if (currentGame.themes?.length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Themes
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (theme of currentGame.themes; track theme.id) {
+
+                        <span>
+                            {{ theme.name }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
+
+
+                @if (currentGame.game_modes?.length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Game modes
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (mode of currentGame.game_modes; track mode.id) {
+
+                        <span>
+                            {{ mode.name }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
+
+
+                @if (currentGame.player_perspectives?.length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Perspective
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (
+                        perspective of currentGame.player_perspectives;
+                        track perspective.id
+                        ) {
+
+                        <span>
+                            {{ perspective.name }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
+
+
+                @if (releaseDate()) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Release date
+                    </span>
+
+                    <span class="game-info-value">
+                        {{ releaseDate() | date:'dd MMMM yyyy' }}
+                    </span>
+
+                </div>
+
+                }
+
+
+                @if (currentGame.franchises?.length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Franchise
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (
+                        franchise of currentGame.franchises;
+                        track franchise.id
+                        ) {
+
+                        <span>
+                            {{ franchise.name }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
+
+
+                @if (currentGame.collections?.length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Collection
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (
+                        collection of currentGame.collections;
+                        track collection.id
+                        ) {
+
+                        <span>
+                            {{ collection.name }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
 
             </div>
 
         </section>
 
 
-        <div class="container game-content">
+        @if (currentGame.platforms?.length) {
 
-            @if (currentGame.summary) {
+        <section class="game-section">
 
-                <section class="game-section">
+            <div class="section-title">
+                <h2>Platforms</h2>
+            </div>
 
-                    <div class="section-title">
-                        <h2>About</h2>
-                    </div>
+            <div class="platform-list">
 
-                    <p class="game-description">
-                        {{ currentGame.summary }}
-                    </p>
+                @for (
+                platform of currentGame.platforms;
+                track platform.id
+                ) {
 
-                </section>
-
-            }
-
-
-            <section class="game-section">
-
-                <div class="section-title">
-                    <h2>Game details</h2>
+                <div class="platform-card">
+                    {{ platform.name }}
                 </div>
 
-                <div class="game-info-grid">
+                }
 
-                    @if (currentGame.genres?.length) {
+            </div>
 
-                        <div class="game-info-item">
+        </section>
 
-                            <span class="game-info-label">
-                                Genres
-                            </span>
+        }
 
-                            <div class="game-info-values">
 
-                                @for (genre of currentGame.genres; track genre.id) {
+        @if (currentGame.storyline) {
 
-                                    <span>
-                                        {{ genre.name }}
-                                    </span>
+        <section class="game-section">
 
-                                }
+            <div class="section-title">
+                <h2>Storyline</h2>
+            </div>
 
-                            </div>
+            <p class="game-description">
+                {{ currentGame.storyline }}
+            </p>
 
-                        </div>
+        </section>
 
-                    }
+        }
 
 
-                    @if (currentGame.themes?.length) {
+        @if (screenshotUrls().length) {
 
-                        <div class="game-info-item">
+        <section class="game-section">
 
-                            <span class="game-info-label">
-                                Themes
-                            </span>
+            <div class="section-title">
+                <h2>Screenshots</h2>
+            </div>
 
-                            <div class="game-info-values">
+            <div class="screenshots-grid">
 
-                                @for (theme of currentGame.themes; track theme.id) {
+                @for (
+                screenshot of screenshotUrls();
+                track screenshot
+                ) {
 
-                                    <span>
-                                        {{ theme.name }}
-                                    </span>
+                <div class="screenshot-card">
 
-                                }
-
-                            </div>
-
-                        </div>
-
-                    }
-
-
-                    @if (currentGame.game_modes?.length) {
-
-                        <div class="game-info-item">
-
-                            <span class="game-info-label">
-                                Game modes
-                            </span>
-
-                            <div class="game-info-values">
-
-                                @for (mode of currentGame.game_modes; track mode.id) {
-
-                                    <span>
-                                        {{ mode.name }}
-                                    </span>
-
-                                }
-
-                            </div>
-
-                        </div>
-
-                    }
-
-
-                    @if (currentGame.player_perspectives?.length) {
-
-                        <div class="game-info-item">
-
-                            <span class="game-info-label">
-                                Perspective
-                            </span>
-
-                            <div class="game-info-values">
-
-                                @for (
-                                    perspective of currentGame.player_perspectives;
-                                    track perspective.id
-                                ) {
-
-                                    <span>
-                                        {{ perspective.name }}
-                                    </span>
-
-                                }
-
-                            </div>
-
-                        </div>
-
-                    }
-
-
-                    @if (releaseDate()) {
-
-                        <div class="game-info-item">
-
-                            <span class="game-info-label">
-                                Release date
-                            </span>
-
-                            <span class="game-info-value">
-                                {{ releaseDate() | date:'dd MMMM yyyy' }}
-                            </span>
-
-                        </div>
-
-                    }
-
-
-                    @if (currentGame.franchises?.length) {
-
-                        <div class="game-info-item">
-
-                            <span class="game-info-label">
-                                Franchise
-                            </span>
-
-                            <div class="game-info-values">
-
-                                @for (
-                                    franchise of currentGame.franchises;
-                                    track franchise.id
-                                ) {
-
-                                    <span>
-                                        {{ franchise.name }}
-                                    </span>
-
-                                }
-
-                            </div>
-
-                        </div>
-
-                    }
-
-
-                    @if (currentGame.collections?.length) {
-
-                        <div class="game-info-item">
-
-                            <span class="game-info-label">
-                                Collection
-                            </span>
-
-                            <div class="game-info-values">
-
-                                @for (
-                                    collection of currentGame.collections;
-                                    track collection.id
-                                ) {
-
-                                    <span>
-                                        {{ collection.name }}
-                                    </span>
-
-                                }
-
-                            </div>
-
-                        </div>
-
-                    }
+                    <img [src]="screenshot" [alt]="currentGame.name + ' screenshot'" loading="lazy" />
 
                 </div>
 
-            </section>
+                }
 
+            </div>
 
-            @if (currentGame.platforms?.length) {
+        </section>
 
-                <section class="game-section">
+        }
 
-                    <div class="section-title">
-                        <h2>Platforms</h2>
-                    </div>
 
-                    <div class="platform-list">
+        @if (currentGame.expansions?.length) {
 
-                        @for (
-                            platform of currentGame.platforms;
-                            track platform.id
-                        ) {
+        <section class="game-section">
 
-                            <div class="platform-card">
-                                {{ platform.name }}
-                            </div>
+            <div class="section-title">
+                <h2>Expansions</h2>
+            </div>
 
-                        }
+            <div class="related-games">
 
-                    </div>
+                @for (
+                expansion of currentGame.expansions;
+                track expansion.id
+                ) {
 
-                </section>
+                <app-game-card [game]="expansion" />
 
-            }
+                }
 
+            </div>
 
-            @if (currentGame.storyline) {
+        </section>
 
-                <section class="game-section">
+        }
 
-                    <div class="section-title">
-                        <h2>Storyline</h2>
-                    </div>
 
-                    <p class="game-description">
-                        {{ currentGame.storyline }}
-                    </p>
+        @if (currentGame.dlcs?.length) {
 
-                </section>
+        <section class="game-section">
 
-            }
+            <div class="section-title">
+                <h2>DLCs</h2>
+            </div>
 
+            <div class="related-games">
 
-            @if (screenshotUrls().length) {
+                @for (
+                dlc of currentGame.dlcs;
+                track dlc.id
+                ) {
 
-                <section class="game-section">
+                <app-game-card [game]="dlc" />
 
-                    <div class="section-title">
-                        <h2>Screenshots</h2>
-                    </div>
+                }
 
-                    <div class="screenshots-grid">
+            </div>
 
-                        @for (
-                            screenshot of screenshotUrls();
-                            track screenshot
-                        ) {
+        </section>
 
-                            <div class="screenshot-card">
+        }
 
-                                <img
-                                    [src]="screenshot"
-                                    [alt]="currentGame.name + ' screenshot'"
-                                    loading="lazy"
-                                />
 
-                            </div>
+        @if (currentGame.similar_games?.length) {
 
-                        }
+        <section class="game-section">
 
-                    </div>
+            <div class="section-title">
+                <h2>Similar games</h2>
+            </div>
 
-                </section>
+            <div class="related-games">
 
-            }
+                @for (
+                similarGame of currentGame.similar_games;
+                track similarGame.id
+                ) {
 
+                <app-game-card [game]="similarGame" />
 
-            @if (currentGame.expansions?.length) {
+                }
 
-                <section class="game-section">
+            </div>
 
-                    <div class="section-title">
-                        <h2>Expansions</h2>
-                    </div>
+        </section>
 
-                    <div class="related-games">
+        }
 
-                        @for (
-                            expansion of currentGame.expansions;
-                            track expansion.id
-                        ) {
+    </div>
 
-                            <app-game-card
-                                [game]="expansion"
-                            />
-
-                        }
-
-                    </div>
-
-                </section>
-
-            }
-
-
-            @if (currentGame.dlcs?.length) {
-
-                <section class="game-section">
-
-                    <div class="section-title">
-                        <h2>DLCs</h2>
-                    </div>
-
-                    <div class="related-games">
-
-                        @for (
-                            dlc of currentGame.dlcs;
-                            track dlc.id
-                        ) {
-
-                            <app-game-card
-                                [game]="dlc"
-                            />
-
-                        }
-
-                    </div>
-
-                </section>
-
-            }
-
-
-            @if (currentGame.similar_games?.length) {
-
-                <section class="game-section">
-
-                    <div class="section-title">
-                        <h2>Similar games</h2>
-                    </div>
-
-                    <div class="related-games">
-
-                        @for (
-                            similarGame of currentGame.similar_games;
-                            track similarGame.id
-                        ) {
-
-                            <app-game-card
-                                [game]="similarGame"
-                            />
-
-                        }
-
-                    </div>
-
-                </section>
-
-            }
-
-        </div>
-
-    </main>
+</main>
 
 }

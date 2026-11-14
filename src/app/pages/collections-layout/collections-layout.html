@@ -5,7 +5,7 @@
 	<ul class="nav nav-pills mb-4">
 		@for (s of slugs; track s) {
 		<li class="nav-item">
-			<a class="nav-link" [routerLink]="['/collections', s]" routerLinkActive="active">
+			<a class="nav-link" [routerLink]="['/collections', s]" routerLinkActive="active" [replaceUrl]="true">
 				{{ collections[s].title }}
 			</a>
 		</li>

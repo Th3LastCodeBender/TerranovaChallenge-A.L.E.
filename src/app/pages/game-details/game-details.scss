@@ -244,23 +244,6 @@
     transform: translateY(-2px);
 }
 
-.game-action-favourite {
-    background-color: var(--tag-bg);
-
-    border: 1px solid var(--tag-border);
-
-    color: var(--tag-color);
-}
-
-.game-action-favourite:hover {
-    box-shadow:
-        0 0 18px color-mix(
-            in srgb,
-            var(--card-glow-first) 20%,
-            transparent
-        );
-}
-
 .game-action-collection {
     background-color: rgba(255, 255, 255, 0.08);
 
@@ -777,6 +760,10 @@
     }
 
     .game-action {
+        flex: 1;
+    }
+
+    app-favourite-button {
         flex: 1;
     }
 

@@ -15,9 +15,10 @@ import {
 import { GameCard } from '../../components/game-card/game-card';
 import { GamesService } from '../../services/games/games-service';
 import { Navbar } from '../../components/navbar/navbar';
+import { FavouriteButton } from '../../components/favourite-button/favourite-button';
 
 @Component({
-    imports: [GameCard, DatePipe, DecimalPipe, Navbar],
+    imports: [GameCard, DatePipe, DecimalPipe, Navbar, FavouriteButton],
     selector: 'app-game-details',
     styleUrl: './game-details.scss',
     templateUrl: './game-details.html',
