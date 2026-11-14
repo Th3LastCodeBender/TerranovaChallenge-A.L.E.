@@ -114,7 +114,37 @@
     // spazio per l'hover/ombra della card
     padding: 0.5rem 0.25rem 1rem;
 
-    scrollbar-width: thin;
+    // Chrome / Edge / Safari: thumb sfumato con i colori del tema
+    &::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        margin: 0 0.5rem;
+
+        background: var(--offcanvas-accent-bg);
+        border: 1px solid var(--offcanvas-accent-border);
+        border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+            90deg,
+            var(--register-start),
+            var(--register-end)
+        );
+        border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        box-shadow: 0 0 8px var(--offcanvas-accent-shadow);
+    }
+
+    // Firefox: niente sfumature, colore pieno dell'accento
+    @supports not selector(::-webkit-scrollbar) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--offcanvas-accent) var(--offcanvas-accent-bg);
+    }
 }
 
 .gc-item {

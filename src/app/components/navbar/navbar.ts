@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import {
@@ -18,7 +18,7 @@ import { IgdbGame } from '../../models/game.model';
 import { igdbImageUrl } from '../../models/image.model';
 
 @Component({
-	imports: [RouterLink],
+	imports: [RouterLink, RouterLinkActive],
 	selector: 'app-navbar',
 	styleUrl: './navbar.scss',
 	templateUrl: './navbar.html',

@@ -50,6 +50,7 @@ export class GamesService {
 	private http = inject(HttpClient);
 	private gamesBaseUrl = '/api/games/search';
 	private gameDetailsUrl = '/api/games';
+	private allGamesUrl = '/api/games';
 	private homeGamesUrl = '/api/games/home';
 	private suggestedGamesUrl = '/api/games/suggested';
 
@@ -72,6 +73,14 @@ export class GamesService {
 	searchGames(name: string, page = 1): Observable<GamesServiceSearchResponse> {
 		return this.http.get<GamesServiceSearchResponse>(
 			`${this.gamesBaseUrl}/${encodeURIComponent(name)}`,
+			{ params: { offset: (page - 1) * 20 } }
+		);
+	}
+
+	// Tutti i giochi, 20 per pagina (stessa paginazione della ricerca)
+	getAllGames(page = 1): Observable<GamesServiceSearchResponse> {
+		return this.http.get<GamesServiceSearchResponse>(
+			this.allGamesUrl,
 			{ params: { offset: (page - 1) * 20 } }
 		);
 	}

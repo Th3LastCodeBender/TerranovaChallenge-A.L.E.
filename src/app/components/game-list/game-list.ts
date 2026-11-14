@@ -35,14 +35,16 @@ export class GameList {
         this.loading.set(true);
       }),
       switchMap(({ search, page }) =>
-        !search
-          ? of({ results: [], hasMore: false })
-          : this.gameService.searchGames(search, page).pipe(
-              catchError(err => {
-                console.error('Errore nel recupero dei games:', err);
-                return of({ results: [], hasMore: false });
-              })
-            )
+        // senza ricerca mostriamo tutti i giochi, paginati dal backend
+        (search
+          ? this.gameService.searchGames(search, page)
+          : this.gameService.getAllGames(page)
+        ).pipe(
+          catchError(err => {
+            console.error('Errore nel recupero dei games:', err);
+            return of({ results: [], hasMore: false });
+          })
+        )
       ),
       takeUntilDestroyed()
     ).subscribe(res => {

@@ -1,15 +1,18 @@
 <div class="container-fluid px-4 px-xl-5 mb-4">
-    @if (search()) {
-        <div class="search-results-header mt-3">
-            <div class="search-results-icon">
-                <i class="bi bi-search"></i>
-            </div>
-            <div class="search-results-heading">
+    <div class="search-results-header mt-3">
+        <div class="search-results-icon">
+            <i class="bi" [class.bi-search]="search()" [class.bi-controller]="!search()"></i>
+        </div>
+        <div class="search-results-heading">
+            @if (search()) {
                 <span class="search-results-label">Risultati per</span>
                 <h2 class="search-results-query">"{{ search() }}"</h2>
-            </div>
+            } @else {
+                <span class="search-results-label">Catalogo</span>
+                <h2 class="search-results-query">Tutti i giochi</h2>
+            }
         </div>
-    }
+    </div>
     @if (loading()) {
         <div class="text-center py-5">
             <div class="spinner-border" role="status"></div>
@@ -22,7 +25,7 @@
                 </div>
             } @empty {
                 <p class="text-center py-5">
-                    {{ search() ? 'Nessun gioco trovato' : 'Cerca un gioco dalla barra in alto' }}
+                    {{ search() ? 'Nessun gioco trovato' : 'Nessun gioco disponibile' }}
                 </p>
             }
         </div>
