@@ -1,0 +1,11 @@
+$kind: http-request
+description: ""
+url: http://localhost:3000/api/security/mfa
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "otp": "664269"
+    }
+order: 1000

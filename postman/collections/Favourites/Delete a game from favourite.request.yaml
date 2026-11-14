@@ -1,0 +1,11 @@
+$kind: http-request
+description: ""
+url: http://localhost:3000/api/favourites/delete-favourite
+method: DELETE
+body:
+  type: json
+  content: |-
+    {
+        "gameId": 406 
+    }
+order: 4000

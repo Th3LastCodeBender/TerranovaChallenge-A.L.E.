@@ -1,0 +1,9 @@
+$kind: http-request
+description: Used every time users click on a game to see the info
+url: http://localhost:3000/api/games/:slug
+method: GET
+pathVariables:
+  - key: slug
+    value: portal
+    description: ""
+order: 4000

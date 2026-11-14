@@ -1,0 +1,13 @@
+$kind: collection
+description: |-
+  All the api in this collection are related to how Wikigame handles system collections
+
+  Types:
+
+  'TO_PLAY': games the user bought but didn't play yet
+
+  'PLAYING': games the user is current playing
+
+  'FINISHED': games the user has finished
+
+  'TO_BUY': the user's wishlist

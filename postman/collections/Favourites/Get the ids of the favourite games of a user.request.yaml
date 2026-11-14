@@ -1,0 +1,5 @@
+$kind: http-request
+description: ""
+url: http://localhost:3000/api/favourites/get-ids
+method: GET
+order: 5000

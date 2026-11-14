@@ -1,0 +1,5 @@
+$kind: http-request
+description: Must be logged in to use. This will return a list of games that the user may like to play based on the last 5 games they added in favourite collection
+url: http://localhost:3000/api/games/suggested
+method: GET
+order: 6000

@@ -1,0 +1,9 @@
+$kind: http-request
+description: ""
+url: http://localhost:3000/api/games/search/:title
+method: GET
+pathVariables:
+  - key: title
+    value: Portal
+    description: ""
+order: 1000

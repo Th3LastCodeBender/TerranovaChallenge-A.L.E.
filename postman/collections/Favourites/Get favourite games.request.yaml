@@ -1,0 +1,10 @@
+$kind: http-request
+description: ""
+url: http://localhost:3000/api/favourites/get-favourites?offset=0
+method: GET
+queryParams:
+  - key: offset
+    value: "0"
+    disabled: false
+    description: ""
+order: 3000
