@@ -1,0 +1,136 @@
+<button type="button" class="can-i-run-button" aria-haspopup="dialog" (click)="openModal()">
+	<i class="bi bi-pc-display"></i>
+	Can I Run?
+</button>
+
+@if (open()) {
+	<div class="cir-backdrop" (click)="closeModal()">
+		<div class="cir-modal" role="dialog" aria-modal="true" aria-labelledby="cir-title" (click)="$event.stopPropagation()">
+
+			<header class="cir-header">
+				<div>
+					<h2 id="cir-title">Can I Run?</h2>
+					@if (gameName()) {
+						<p class="cir-subtitle">{{ gameName() }}</p>
+					}
+				</div>
+				<button type="button" class="cir-close" aria-label="Close" (click)="closeModal()">
+					<i class="bi bi-x-lg"></i>
+				</button>
+			</header>
+
+			@if (specsLoading()) {
+				<div class="cir-state">
+					<div class="spinner-border spinner-border-sm" role="status"></div>
+					<span>Loading your PC specs...</span>
+				</div>
+			} @else if (!specs() && error()) {
+				<div class="cir-error" role="alert">
+					<i class="bi bi-exclamation-circle"></i>
+					{{ error() }}
+				</div>
+			} @else if (!specs()) {
+				<div class="cir-empty">
+					<i class="bi bi-pc-display-horizontal"></i>
+					<h3>No PC specs saved</h3>
+					<p>Add your CPU, GPU, RAM and OS in your account to check if you can run this game.</p>
+					<a routerLink="/account" class="cir-primary" (click)="closeModal()">
+						<i class="bi bi-plus-lg"></i>
+						Add my specs
+					</a>
+				</div>
+			} @else {
+
+				<div class="cir-resolutions" role="radiogroup" aria-label="Resolution">
+					@for (res of resolutions; track res) {
+						<button
+							type="button"
+							role="radio"
+							class="cir-resolution"
+							[class.active]="resolution() === res"
+							[attr.aria-checked]="resolution() === res"
+							[disabled]="loading()"
+							(click)="selectResolution(res)">
+							{{ res === '4k' ? '4K' : res }}
+						</button>
+					}
+				</div>
+
+				@if (loading()) {
+					<div class="cir-state">
+						<div class="spinner-border spinner-border-sm" role="status"></div>
+						<span>Checking requirements... the first check of a game can take up to a minute</span>
+					</div>
+				} @else if (error()) {
+					<div class="cir-error" role="alert">
+						<i class="bi bi-exclamation-circle"></i>
+						{{ error() }}
+					</div>
+				} @else if (result()) {
+
+					@if (verdict(); as v) {
+						<div class="cir-verdict" [class]="'is-' + v.key">
+							<i class="bi" [class]="v.icon"></i>
+							<div>
+								<strong>{{ v.title }}</strong>
+								<span>{{ v.text }}</span>
+							</div>
+						</div>
+					}
+
+					<div class="cir-table" role="table">
+						<div class="cir-row cir-row-head" role="row">
+							<span role="columnheader"></span>
+							<span role="columnheader">Your PC</span>
+							<span role="columnheader">{{ tierLabel() }}</span>
+							<span role="columnheader" class="visually-hidden">Status</span>
+						</div>
+						@for (row of rows(); track row.label) {
+							<div class="cir-row" role="row">
+								<span role="rowheader" class="cir-label">{{ row.label }}</span>
+								<span role="cell">{{ row.have }}</span>
+								<span role="cell">
+									{{ row.need }}
+									@if (row.estimated) {
+										<small class="cir-muted" title="Generic requirement, compared with an equivalent model">(approx.)</small>
+									}
+								</span>
+								<span role="cell" class="cir-status" [class]="'is-' + row.status"
+									[attr.aria-label]="row.status === 'pass' ? 'OK' : row.status === 'fail' ? 'Not enough' : 'Unknown'">
+									<i class="bi"
+										[class.bi-check-lg]="row.status === 'pass'"
+										[class.bi-x-lg]="row.status === 'fail'"
+										[class.bi-dash-lg]="row.status === 'unknown'"></i>
+								</span>
+							</div>
+						}
+					</div>
+
+					@if (result()!.compat.osWarning; as os) {
+						<div class="cir-warning">
+							<i class="bi bi-exclamation-triangle"></i>
+							This game requires {{ os.need }}, you have {{ os.have }}.
+						</div>
+					}
+
+					@if (fpsCells().length) {
+						<div class="cir-fps">
+							<h3>Estimated FPS at {{ resolution() === '4k' ? '4K' : resolution() }}</h3>
+							<div class="cir-fps-grid">
+								@for (cell of fpsCells(); track cell.preset) {
+									<div class="cir-fps-cell"
+										[class.is-best]="result()!.fps?.summary?.preset === cell.preset">
+										<span class="cir-fps-preset">{{ cell.preset }}</span>
+										<strong>~{{ cell.fps }}</strong>
+										<small>FPS</small>
+									</div>
+								}
+							</div>
+							<p class="cir-muted">Rough estimate based on the {{ result()!.fps!.basedOn }} requirements.</p>
+						</div>
+					}
+				}
+			}
+		</div>
+	</div>
+}

@@ -18,9 +18,10 @@ import { Navbar } from '../../components/navbar/navbar';
 import { FavouriteButton } from '../../components/favourite-button/favourite-button';
 import { CollectionButton } from '../../components/collection-button/collection-button';
 import { CollectionStatus } from '../../services/collections/collections-service';
+import { CanIRun } from '../../components/can-i-run/can-i-run';
 
 @Component({
-    imports: [GameCard, DatePipe, DecimalPipe, Navbar, FavouriteButton, CollectionButton],
+    imports: [GameCard, DatePipe, DecimalPipe, Navbar, FavouriteButton, CollectionButton, CanIRun],
     selector: 'app-game-details',
     styleUrl: './game-details.scss',
     templateUrl: './game-details.html',

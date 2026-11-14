@@ -160,6 +160,7 @@
                     @if (game(); as g) {
                         <app-favourite-button [gameId]="g.id" [(isFavourite)]="isFavourite" />
                         <app-collection-button [gameId]="g.id" [(status)]="collectionStatus" />
+                        <app-can-i-run [gameId]="g.id" [gameName]="g.name" />
                     }
 
                 </div>

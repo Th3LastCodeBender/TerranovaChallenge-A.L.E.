@@ -122,21 +122,110 @@
     </div>
     <div class="col-12 col-lg-6">
       <div class="profile-card h-100">
-        <h4 class="mb-4">
-          Preferenze
-        </h4>
-        <div class="profile-info">
-          <span>Genere preferito</span>
-          <p>preferenza 1</p>
+        <div class="specs-header mb-4">
+          <h4 class="mb-0">
+            Preferenze
+          </h4>
+          @if (!specsLoading() && !specsEditing()) {
+            <button type="button" class="specs-edit-button" (click)="startEditSpecs()">
+              <i class="bi" [class.bi-pencil]="specs()" [class.bi-plus-lg]="!specs()"></i>
+              <span>{{ specs() ? 'Modifica' : 'Aggiungi' }}</span>
+            </button>
+          }
         </div>
-        <div class="profile-info">
-          <span>Piattaforma preferita</span>
-          <p>preferenza 2</p>
-        </div>
-        <div class="profile-info">
-          <span>Lingua</span>
-          <p>preferenza 3</p>
-        </div>
+
+        @if (specsLoading()) {
+          <p class="specs-empty">Caricamento specifiche...</p>
+        } @else if (specsEditing()) {
+          <form class="specs-form" [formGroup]="specsForm" (ngSubmit)="saveSpecs()">
+            <div class="profile-info">
+              <label for="spec-cpu">CPU</label>
+              <input id="spec-cpu" class="specs-input" formControlName="cpu" maxlength="100"
+                placeholder="es. AMD Ryzen 5 5600X"
+                [class.is-invalid]="specsForm.controls.cpu.invalid && specsForm.controls.cpu.touched" />
+            </div>
+            <div class="profile-info">
+              <label for="spec-gpu">GPU</label>
+              <input id="spec-gpu" class="specs-input" formControlName="gpu" maxlength="100"
+                placeholder="es. NVIDIA GeForce RTX 3060"
+                [class.is-invalid]="specsForm.controls.gpu.invalid && specsForm.controls.gpu.touched" />
+            </div>
+            <div class="specs-row">
+              <div class="profile-info">
+                <label for="spec-ram">RAM (GB)</label>
+                <input id="spec-ram" class="specs-input" type="number" min="1" max="1024" formControlName="ramGb"
+                  placeholder="16"
+                  [class.is-invalid]="specsForm.controls.ramGb.invalid && specsForm.controls.ramGb.touched" />
+              </div>
+              <div class="profile-info">
+                <label for="spec-vram">VRAM (GB) <small>opzionale</small></label>
+                <input id="spec-vram" class="specs-input" type="number" min="1" max="128" formControlName="vramGb"
+                  placeholder="8"
+                  [class.is-invalid]="specsForm.controls.vramGb.invalid && specsForm.controls.vramGb.touched" />
+              </div>
+            </div>
+            <div class="profile-info">
+              <label for="spec-os">Sistema operativo</label>
+              <input id="spec-os" class="specs-input" formControlName="os" maxlength="100"
+                placeholder="es. Windows 11"
+                [class.is-invalid]="specsForm.controls.os.invalid && specsForm.controls.os.touched" />
+            </div>
+
+            <div class="specs-actions">
+              @if (specs()) {
+                <button type="button" class="specs-delete-button" (click)="deleteSpecs()" [disabled]="specsSaving()">
+                  <i class="bi bi-trash"></i>
+                  <span>Elimina</span>
+                </button>
+              }
+              <button type="button" class="specs-cancel-button" (click)="cancelEditSpecs()" [disabled]="specsSaving()">
+                Annulla
+              </button>
+              <button type="submit" class="specs-save-button" [disabled]="specsSaving()">
+                {{ specsSaving() ? 'Salvataggio...' : 'Salva' }}
+              </button>
+            </div>
+          </form>
+        } @else if (specs()) {
+          <div class="profile-info">
+            <span>CPU</span>
+            <p>{{ specs()!.cpu }}</p>
+          </div>
+          <div class="profile-info">
+            <span>GPU</span>
+            <p>
+              {{ specs()!.gpu }}
+              @if (specs()!.vramGb) {
+                <small class="specs-muted">({{ specs()!.vramGb }} GB VRAM)</small>
+              }
+            </p>
+          </div>
+          <div class="profile-info">
+            <span>RAM</span>
+            <p>{{ specs()!.ramGb }} GB</p>
+          </div>
+          <div class="profile-info">
+            <span>Sistema operativo</span>
+            <p>{{ specs()!.os }}</p>
+          </div>
+        } @else {
+          <p class="specs-empty">
+            Nessuna specifica salvata. Aggiungi il tuo PC per sapere quali giochi puoi far girare.
+          </p>
+        }
+
+        @if (specsWarning()) {
+          <div class="specs-warning" role="status">
+            <i class="bi bi-info-circle"></i>
+            {{ specsWarning() }}
+          </div>
+        }
+        @if (specsError()) {
+          <div class="specs-error" role="alert">
+            <i class="bi bi-exclamation-circle"></i>
+            {{ specsError() }}
+          </div>
+        }
       </div>
     </div>
   </section>

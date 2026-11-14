@@ -625,3 +625,219 @@
     padding: 1.4rem;
   }
 }
+// ---- Specifiche PC (card "Preferenze") ----
+
+.specs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+}
+
+.specs-edit-button,
+.specs-cancel-button,
+.specs-save-button,
+.specs-delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.45rem;
+
+  padding: 0.5rem 0.85rem;
+
+  border-radius: 0.75rem;
+
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
+.specs-edit-button,
+.specs-cancel-button {
+  color: var(--profile-text);
+
+  background: var(--profile-member-bg);
+  border: 1px solid var(--profile-card-border);
+
+  &:hover:not(:disabled) {
+    border-color: var(--profile-accent);
+    box-shadow: 0 0 18px var(--profile-shadow);
+  }
+}
+
+.specs-save-button {
+  color: #ffffff;
+
+  background: linear-gradient(
+    135deg,
+    var(--profile-accent),
+    var(--profile-accent-second)
+  );
+  border: 1px solid transparent;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 0 18px var(--profile-shadow);
+  }
+}
+
+.specs-delete-button {
+  margin-right: auto;
+
+  color: #ff6b6b;
+
+  background: rgba(255, 92, 92, 0.08);
+  border: 1px solid rgba(255, 92, 92, 0.3);
+
+  &:hover:not(:disabled) {
+    color: #ffffff;
+
+    background: rgba(255, 92, 92, 0.18);
+    border-color: rgba(255, 92, 92, 0.65);
+  }
+}
+
+.specs-form {
+  .profile-info label {
+    display: block;
+
+    margin-bottom: 0.35rem;
+
+    color: var(--profile-label);
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.06rem;
+
+    small {
+      color: var(--profile-text-secondary);
+
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+  }
+}
+
+.specs-input {
+  width: 100%;
+
+  padding: 0.6rem 0.85rem;
+
+  color: var(--profile-text);
+
+  background: var(--profile-member-bg);
+  border: 1px solid var(--profile-card-border);
+  border-radius: 0.75rem;
+
+  font-size: 0.95rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: var(--profile-text-secondary);
+    opacity: 0.7;
+  }
+
+  &:focus {
+    outline: none;
+
+    border-color: var(--profile-accent);
+    box-shadow: 0 0 0 3px var(--profile-shadow);
+  }
+
+  &.is-invalid {
+    border-color: rgba(255, 92, 92, 0.65);
+  }
+}
+
+.specs-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 1rem;
+
+  .profile-info {
+    margin-bottom: 1.2rem;
+  }
+}
+
+.specs-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 0.6rem;
+
+  margin-top: 1.4rem;
+}
+
+.specs-muted {
+  color: var(--profile-text-secondary);
+
+  font-size: 0.8rem;
+}
+
+.specs-empty {
+  margin: 0;
+
+  color: var(--profile-text-secondary);
+
+  font-size: 0.9rem;
+}
+
+.specs-warning,
+.specs-error {
+  display: flex;
+  align-items: center;
+
+  gap: 0.45rem;
+
+  margin-top: 1rem;
+  padding: 0.5rem 0.75rem;
+
+  border-radius: 0.75rem;
+
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.specs-warning {
+  color: var(--profile-member-color);
+
+  background: var(--profile-member-bg);
+  border: 1px solid var(--profile-member-border);
+}
+
+.specs-error {
+  color: #ff6b6b;
+
+  background: rgba(255, 92, 92, 0.08);
+  border: 1px solid rgba(255, 92, 92, 0.3);
+}
+
+@media (max-width: 575px) {
+  .specs-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
