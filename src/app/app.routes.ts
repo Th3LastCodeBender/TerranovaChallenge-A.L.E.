@@ -10,6 +10,7 @@ import { loginCheck, authCheck, mfaPendingCheck, collectionTypeCheck } from './l
 import { VerifyOtp } from './pages/verify-otp/verify-otp';
 import { Collections } from './pages/collections/collections';
 import { CollectionsLayout } from './pages/collections-layout/collections-layout';
+import { Genres } from './pages/genres/genres';
 
 export const routes: Routes = [
 	{
@@ -40,6 +41,10 @@ export const routes: Routes = [
 	{
 		path: 'games',
 		component: GamesSearch
+	},
+	{
+		path: 'genres',
+		component: Genres
 	},
 	{
 		path: 'register',

@@ -1,7 +1,15 @@
 <!doctype html>
-<html lang="it" data-bs-theme="dark">
+<html lang="it" data-bs-theme="light">
 <head>
   <meta charset="utf-8">
+  <script>
+    // Applica il tema salvato prima che Angular parta, per evitare il flash del tema sbagliato.
+    // Default light; la chiave deve restare allineata con THEME_STORAGE_KEY in theme-service.ts
+    try {
+      if (localStorage.getItem('theme') === 'dark')
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+    } catch (e) {}
+  </script>
   <title>Challenge</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">

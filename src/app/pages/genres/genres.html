@@ -1,0 +1,20 @@
+<app-navbar/>
+
+<div class="container-fluid px-4 px-xl-5 mt-4">
+    <div class="custom-genres-header">
+        <div class="custom-genres-icon">
+            <i class="bi bi-grid"></i>
+        </div>
+        <div class="custom-genres-heading">
+            <span class="custom-genres-label">Catalogo</span>
+            <h2 class="custom-genres-title">Generi</h2>
+        </div>
+    </div>
+    <div class="custom-genres-grid">
+        @for (genre of genres; track genre.value) {
+            <a class="custom-genre-tile" routerLink="/games" [queryParams]="{ genre: genre.value }">
+                <span class="custom-genre-name">{{ genre.label }}</span>
+            </a>
+        }
+    </div>
+</div>
