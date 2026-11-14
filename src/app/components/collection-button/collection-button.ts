@@ -1,5 +1,16 @@
 
-import { Component, computed, ElementRef, inject, input, model, signal, viewChild } from '@angular/core';
+import {
+	afterNextRender,
+	Component,
+	computed,
+	DestroyRef,
+	ElementRef,
+	inject,
+	input,
+	model,
+	signal,
+	viewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth-service';
 import {
@@ -26,16 +37,21 @@ export class CollectionButton {
 	private router = inject(Router);
 	private host = inject(ElementRef<HTMLElement>);
 
+	// Un solo menu aperto alla volta (lo stopPropagation impedisce al document:click
+	// di chiudere il menu di un'altra card)
+	private static openInstance: CollectionButton | null = null;
+
 	gameId = input.required<number>();
 	status = model<CollectionStatus | null>(null);   // two-way: [(status)]
+	variant = input<'full' | 'icon'>('full');        // 'icon' = quadrato con + (game-card)
 
 	open = signal(false);
 	pending = signal(false);
 
 	private trigger = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
+	private menu = viewChild.required<ElementRef<HTMLElement>>('menu');
 
-	// Posizione del menu (position: fixed) calcolata dal bottone, così nessun
-	// contenitore con overflow: hidden (es. .game-hero) può tagliarlo
+	// Posizione del menu (position: fixed) calcolata dal bottone
 	menuPosition = signal<Record<string, string>>({});
 	private static readonly MENU_HEIGHT = 240;   // stima con 4 voci + "Remove"
 
@@ -48,7 +64,18 @@ export class CollectionButton {
 		this.options.find(o => o.status === this.status())?.title ?? null
 	);
 
-	toggleMenu(): void {
+	constructor() {
+		// Il menu viene spostato in <body>: così overflow: hidden e transform degli
+		// antenati (es. .custom-card in hover, .game-hero) non lo tagliano né lo spostano
+		afterNextRender(() => document.body.appendChild(this.menu().nativeElement));
+		inject(DestroyRef).onDestroy(() => this.menu().nativeElement.remove());
+	}
+
+	toggleMenu(event: Event): void {
+		// Evita che il click arrivi alla game-card (che aprirebbe la pagina del gioco)
+		event.stopPropagation();
+		event.preventDefault();
+
 		if (!this.auth.isLoggedIn()) {
 			this.router.navigate(['/login']);
 			return;
@@ -57,8 +84,10 @@ export class CollectionButton {
 			this.close();
 			return;
 		}
+		CollectionButton.openInstance?.close();
 		this.menuPosition.set(this.computeMenuPosition());
 		this.open.set(true);
+		CollectionButton.openInstance = this;
 	}
 
 	// Apre sotto il bottone, oppure sopra se in basso non c'è abbastanza spazio
@@ -79,10 +108,15 @@ export class CollectionButton {
 
 	close(): void {
 		this.open.set(false);
+		if (CollectionButton.openInstance === this)
+			CollectionButton.openInstance = null;
 	}
 
 	onDocumentClick(event: MouseEvent): void {
-		if (this.open() && !this.host.nativeElement.contains(event.target as Node))
+		const target = event.target as Node;
+		if (this.open()
+			&& !this.host.nativeElement.contains(target)
+			&& !this.menu().nativeElement.contains(target))
 			this.close();
 	}
 

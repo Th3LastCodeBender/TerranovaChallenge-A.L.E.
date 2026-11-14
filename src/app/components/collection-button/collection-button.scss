@@ -37,7 +37,29 @@
 		border-color: var(--tag-border);
 		color: var(--tag-color);
 	}
+
+	// Variante compatta: stesso quadrato del cuore in favourite-button
+	&.icon {
+		width: 2.4rem;
+		height: 2.4rem;
+		min-height: 0;
+		padding: 0;
+		font-size: 1.15rem;
+
+		background-color: rgba(10, 10, 20, 0.45);
+		border: 1px solid rgba(255, 255, 255, 0.35);
+
+		i { line-height: 1; }
+
+		&.active {
+			border-color: var(--tag-border);
+			color: var(--tag-color);
+		}
+	}
 }
+
+// [hidden] deve vincere anche se in futuro .collection-menu definisse un display
+.collection-menu[hidden] { display: none; }
 
 .collection-chevron {
 	font-size: 0.75rem;

@@ -8,10 +8,12 @@ import { Router } from '@angular/router';
 import { FavouriteButton } from '../favourite-button/favourite-button';
 import { FavoritesService } from '../../services/favorites/favorites-service';
 import { AuthService } from '../../services/auth/auth-service';
+import { CollectionButton } from '../collection-button/collection-button';
+import { CollectionsService } from '../../services/collections/collections-service';
 
 @Component({
   selector: 'app-game-card',
-  imports: [DatePipe, DecimalPipe, FavouriteButton],
+  imports: [DatePipe, DecimalPipe, FavouriteButton, CollectionButton],
   styleUrl: './game-card.scss',
   templateUrl: './game-card.html',
 })
@@ -20,13 +22,18 @@ export class GameCard {
   private router = inject(Router);
   private favoritesService = inject(FavoritesService);
 
+  private collectionsService = inject(CollectionsService);
+
   isFavourite = computed(() => this.favoritesService.isFavourite(this.game().id));
+  collectionStatus = computed(() => this.collectionsService.statusOf(this.game().id));
 
   constructor() {
-    // Il service carica gli id una sola volta per utente, anche con tante card
+    // I service caricano i dati una sola volta per utente, anche con tante card
     const user = inject(AuthService).getUser();
-    if (user)
+    if (user) {
       this.favoritesService.loadIds(user.id);
+      this.collectionsService.loadStatuses(user.id);
+    }
   }
 
   imageUrl = computed(() => {

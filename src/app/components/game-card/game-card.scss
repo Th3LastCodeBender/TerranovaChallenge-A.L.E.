@@ -350,6 +350,14 @@
     z-index: 11;
 }
 
+// Speculare al cuore, in alto a sinistra
+.custom-collection {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 11;
+}
+
 .custom-card:focus-visible {
     outline: 3px solid var(--card-glow-first);
     outline-offset: 4px;

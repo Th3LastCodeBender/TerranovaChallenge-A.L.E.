@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { finalize, Observable, tap } from 'rxjs';
 import { IgdbGame } from '../../models/game.model';
 
 export interface CollectionResponse {
@@ -29,6 +29,44 @@ export function isCollectionSlug(value: string | null): value is CollectionSlug 
 export class CollectionsService {
 	private http = inject(HttpClient);
 
+	// Stato di ogni gioco in collezione (gameId -> status), condiviso tra game-card e game-details
+	private statuses = signal<ReadonlyMap<number, CollectionStatus>>(new Map());
+	private statusesLoadedFor: number | null = null;   // userId per cui sono stati caricati
+	private statusesLoading = false;
+
+	statusOf(gameId: number): CollectionStatus | null {
+		return this.statuses().get(gameId) ?? null;
+	}
+
+	// Carica gli stati una sola volta per utente; chiamate ripetute sono no-op
+	loadStatuses(userId: number): void {
+		if (this.statusesLoading || this.statusesLoadedFor === userId)
+			return;
+		this.statusesLoading = true;
+		this.http.get<{ statuses: Record<string, CollectionStatus> }>('/api/collections/get-statuses')
+			.pipe(finalize(() => this.statusesLoading = false))
+			.subscribe({
+				next: res => {
+					this.statuses.set(new Map(
+						Object.entries(res.statuses).map(([id, s]) => [Number(id), s])
+					));
+					this.statusesLoadedFor = userId;
+				},
+				error: err => console.error('Errore caricamento stati collection:', err),
+			});
+	}
+
+	private setLocalStatus(gameId: number, status: CollectionStatus | null): void {
+		this.statuses.update(prev => {
+			const next = new Map(prev);
+			if (status === null)
+				next.delete(gameId);
+			else
+				next.set(gameId, status);
+			return next;
+		});
+	}
+
 	getCollection(slug: CollectionSlug, page = 1): Observable<CollectionResponse> {
 		const offset = (page - 1) * 20;
 		const { status } = COLLECTIONS[slug];
@@ -45,10 +83,12 @@ export class CollectionsService {
 
 	// Upsert: un gioco ha un solo stato, quindi questo sposta anche da una collection all'altra
 	setStatus(gameId: number, collectionType: CollectionStatus): Observable<unknown> {
-		return this.http.post('/api/collections/update-item', { gameId, collectionType });
+		return this.http.post('/api/collections/update-item', { gameId, collectionType })
+			.pipe(tap(() => this.setLocalStatus(gameId, collectionType)));
 	}
 
 	removeFromCollection(gameId: number): Observable<unknown> {
-		return this.http.delete('/api/collections/delete-item', { body: { gameId } });
+		return this.http.delete('/api/collections/delete-item', { body: { gameId } })
+			.pipe(tap(() => this.setLocalStatus(gameId, null)));
 	}
 }

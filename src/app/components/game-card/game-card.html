@@ -19,6 +19,12 @@
 		[gameId]="game().id"
 		[isFavourite]="isFavourite()"
 	/>
+	<app-collection-button
+		class="custom-collection"
+		variant="icon"
+		[gameId]="game().id"
+		[status]="collectionStatus()"
+	/>
 	<div class="custom-overlay">
 
 		<h5 class="card-title">
