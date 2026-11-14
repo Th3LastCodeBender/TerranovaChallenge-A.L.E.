@@ -245,6 +245,56 @@
 
             <div class="game-info-grid">
 
+                @if (developers().length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Developer
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (developer of developers(); track developer) {
+
+                        <span>
+                            {{ developer }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
+
+
+                @if (publishers().length) {
+
+                <div class="game-info-item">
+
+                    <span class="game-info-label">
+                        Publisher
+                    </span>
+
+                    <div class="game-info-values">
+
+                        @for (publisher of publishers(); track publisher) {
+
+                        <span>
+                            {{ publisher }}
+                        </span>
+
+                        }
+
+                    </div>
+
+                </div>
+
+                }
+
+
                 @if (currentGame.genres?.length) {
 
                 <div class="game-info-item">

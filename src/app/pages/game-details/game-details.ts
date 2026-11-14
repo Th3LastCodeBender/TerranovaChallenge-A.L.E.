@@ -114,6 +114,19 @@ export class GameDetails {
         return [...families];
     });
 
+    developers = computed(() => this.companyNames('developer'));
+
+    publishers = computed(() => this.companyNames('publisher'));
+
+    // Nomi delle aziende con quel ruolo, senza duplicati
+    private companyNames(role: 'developer' | 'publisher'): string[] {
+        const names = (this.game()?.involved_companies ?? [])
+            .filter(involved => involved[role] && involved.company?.name)
+            .map(involved => involved.company.name);
+
+        return [...new Set(names)];
+    }
+
     constructor() {
         this.route.paramMap.subscribe(params => {
             const slug = params.get('slug');
