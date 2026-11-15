@@ -11,7 +11,23 @@ export type CanIRunResult =
 	| { found: false } 
 	| { found: true, requirements: GameRequirements, compat: CompatResult, fps: FpsEstimate | null }
 
-export async function getGameRequirements(steamAppId: number): Promise<GameRequirements | null>
+const inProgress = new Map<number, Promise<GameRequirements | null>>()
+
+export function getGameRequirements(steamAppId: number): Promise<GameRequirements | null>
+{
+	const pending = inProgress.get(steamAppId)
+
+	if (pending)
+		return pending
+
+	const promise = loadGameRequirements(steamAppId).finally(() => inProgress.delete(steamAppId))
+
+	inProgress.set(steamAppId, promise)
+
+	return promise
+}
+
+export async function loadGameRequirements(steamAppId: number): Promise<GameRequirements | null>
 {
 	try
 	{
