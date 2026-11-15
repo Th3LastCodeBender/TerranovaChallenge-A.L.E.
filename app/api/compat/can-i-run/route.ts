@@ -18,11 +18,9 @@ export const GET = withAuth(async (request, { session }) =>
 {
 	try
 	{
-		const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
-
 		try
 		{
-			const rl_result = await rateLimit(ip, "/api/compat/can-i-run", RATE_LIMIT_POLICIES.get_items)
+			const rl_result = await rateLimit(`user:${session.userId}`, "/api/compat/can-i-run", RATE_LIMIT_POLICIES.can_i_run)
 
 			if (!rl_result.success)
 			{

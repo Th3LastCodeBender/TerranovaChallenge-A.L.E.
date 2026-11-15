@@ -22,7 +22,8 @@ export const RATE_LIMIT_POLICIES =
 	delete_specs: {limit: 5, windowSeconds: 60},
 	get_specs: {limit: 10, windowSeconds: 60},
 	home_fetch: {limit: 10, windowSeconds: 60},
-	suggest: {limit: 5, windowSeconds: 60}
+	suggest: {limit: 5, windowSeconds: 60},
+	can_i_run: {limit: 10, windowSeconds: 60}
 }
 
 interface RateLimitOptions {

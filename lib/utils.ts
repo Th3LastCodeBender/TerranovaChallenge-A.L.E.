@@ -203,9 +203,14 @@ export async function getGamesByIds(ids: number[])
 			error: await response.text(),
 			status: response.status
 		}
+	
+	const games: { id: number }[] = await response.json()
+	const gamesById = new Map(games.map((game) => [game.id, game] as const))
 
 	return {
 		ok: true as const,
-		games: await response.json()
+		games: ids
+				.map((id) => gamesById.get(id))
+				.filter((game) => game !== undefined)
 	}
 }
