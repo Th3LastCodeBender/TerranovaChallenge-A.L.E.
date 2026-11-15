@@ -27,7 +27,7 @@ I dati dei giochi arrivano da **IGDB** (al posto di RAWG). Per usare IGDB serve 
 | Collezione | `collections/...`, `count-collections` | stato per gioco |
 | PC | `specs/...`, `compat/can-i-run` | vedi [CanIRun.md](CanIRun.md) |
 
-La collection Postman con tutte le route sta in `postman/`.
+La collection Postman con tutte le route sta in `postman/`; come lanciarla e cosa controlla è in [Postman.md](Postman.md).
 
 ## Login e sessioni
 
@@ -54,17 +54,7 @@ Ogni route ha una sua policy in `lib/redis/rate-limit.ts` (per esempio login 10 
 
 Di default il limite è per IP. Per le route pesanti (come `can-i-run`) è per utente.
 
-Se Redis è giù il rate limit risponde 503: preferiamo fermarci che lasciare passare tutto. Per i test si può spegnere con `RATE_LIMIT_DISABLED=true`.
-
-## Problemi noti
-
-Questi li conosciamo e non sono ancora sistemati:
-
-- **L'IP del client si può falsificare.** `getClientIp` legge il primo valore di `X-Forwarded-For`, che lo sceglie il client. Così si aggirkRateLimit`, che restituisce la risposta 429 già pronta oppure `null` se si può andare avanti.
-
-Di default il limite è per IP. Per le route pesanti (come `can-i-run`) è per utente.
-
-Se Redis è giù il rate limit risponde 503: preferiamo fermarci che lasciare passare tutto. Per i test si può spegnere con `RATE_LIMIT_DISABLED=true`.
+Se Redis è giù il rate limit risponde 503: preferiamo fermarci che lasciare passare tutto.
 
 ## Problemi noti
 

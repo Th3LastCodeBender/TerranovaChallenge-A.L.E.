@@ -1,0 +1,3579 @@
+{
+	"info": {
+		"name": "Wikigame API",
+		"description": "Test delle API del backend di Wikigame (Terranova Challenge). Cartelle 1-7: giro automatico, in ordine (Run collection o newman). Cartella 8: a mano. Dettagli in Documentazione/Postman.md.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "gameSlug",
+			"value": "the-witcher-3-wild-hunt"
+		},
+		{
+			"key": "gameId",
+			"value": "1942"
+		},
+		{
+			"key": "portalId",
+			"value": "72"
+		},
+		{
+			"key": "password",
+			"value": "Wikigame-Postman-Test-2026!"
+		},
+		{
+			"key": "email",
+			"value": ""
+		},
+		{
+			"key": "username",
+			"value": ""
+		},
+		{
+			"key": "sessionCookie",
+			"value": ""
+		},
+		{
+			"key": "mfaEmail",
+			"value": ""
+		},
+		{
+			"key": "mfaPassword",
+			"value": ""
+		},
+		{
+			"key": "otp",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "1. Giochi (pubbliche)",
+			"description": "Catalogo, ricerca, filtri e scheda di dettaglio. Non serve il login.",
+			"item": [
+				{
+					"name": "Home: trending, più giocati, più recenti",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/home",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"home"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Tre liste presenti\", () => { pm.expect(b.trending_games).to.be.an(\"array\").that.is.not.empty; pm.expect(b.most_played).to.be.an(\"array\").that.is.not.empty; pm.expect(b.most_recent).to.be.an(\"array\").that.is.not.empty; });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Elenco giochi (default: popolarità)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"20 risultati per pagina\", () => pm.expect(b.limit).to.eql(20));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Elenco giochi pagina 2 (offset=20)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?offset=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "20"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"Offset rispettato\", () => pm.expect(b.offset).to.eql(20));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ricerca avanzata: RPG, PC, 2015, rating>=70, per voto",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?genre=role-playing-rpg&platform=6&year=2015&rating=70&sort=rating&order=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "genre",
+									"value": "role-playing-rpg"
+								},
+								{
+									"key": "platform",
+									"value": "6"
+								},
+								{
+									"key": "year",
+									"value": "2015"
+								},
+								{
+									"key": "rating",
+									"value": "70"
+								},
+								{
+									"key": "sort",
+									"value": "rating"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"Tutti usciti nel 2015\", () => b.results.forEach(g => pm.expect(new Date(g.first_release_date * 1000).getUTCFullYear()).to.eql(2015)));",
+									"pm.test(\"Tutti con rating >= 70\", () => b.results.forEach(g => pm.expect(g.rating).to.be.at.least(70)));",
+									"pm.test(\"Tutti RPG\", () => b.results.forEach(g => pm.expect(g.genres.map(x => x.id)).to.include(12)));",
+									"pm.test(\"Ordinati per rating decrescente\", () => { for (let i = 1; i < b.results.length; i++) pm.expect(b.results[i - 1].rating).to.be.at.least(b.results[i].rating); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ordinamento per data di uscita",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?sort=date&order=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "date"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"Ordinati per data decrescente\", () => { for (let i = 1; i < b.results.length; i++) pm.expect(b.results[i - 1].first_release_date).to.be.at.least(b.results[i].first_release_date); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: genere inesistente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?genre=pippo",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "genre",
+									"value": "pippo"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid genre\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid genre\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: piattaforma non numerica",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?platform=pc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "platform",
+									"value": "pc"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid platform\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid platform\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: anno fuori range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?year=1800",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "1800"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid year\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid year\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: rating > 100",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?rating=150",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "rating",
+									"value": "150"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid rating\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid rating\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: ordinamento sconosciuto",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?sort=prezzo",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "prezzo"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid sort parameter\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid sort parameter\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: offset negativo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games?offset=-1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "-1"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid offset\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid offset\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ricerca per nome (parte del titolo)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/search/witcher",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"search",
+								"witcher"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"Trova risultati\", () => pm.expect(b.count).to.be.above(0));",
+									"pm.test(\"Ogni titolo contiene 'witcher'\", () => b.results.forEach(g => pm.expect(g.name.toLowerCase()).to.include(\"witcher\")));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ricerca con filtri (zelda, più recenti prima)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/search/zelda?sort=date&order=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"search",
+								"zelda"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "date"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"Ogni titolo contiene 'zelda'\", () => b.results.forEach(g => pm.expect(g.name.toLowerCase()).to.include(\"zelda\")));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ricerca senza risultati",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/search/qwzxqwzxqwzx",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"search",
+								"qwzxqwzxqwzx"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Forma lista: results, count, offset, limit, hasMore\", () => { pm.expect(b.results).to.be.an(\"array\"); pm.expect(b).to.include.keys(\"count\", \"offset\", \"limit\", \"hasMore\"); pm.expect(b.count).to.eql(b.results.length); });",
+									"pm.test(\"Ogni card ha i dati richiesti (id, name, slug)\", () => b.results.forEach(g => pm.expect(g).to.include.keys(\"id\", \"name\", \"slug\")));",
+									"pm.test(\"Lista vuota, non errore\", () => { pm.expect(b.count).to.eql(0); pm.expect(b.hasMore).to.eql(false); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: ricerca con filtro non valido",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/search/zelda?order=random",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"search",
+								"zelda"
+							],
+							"query": [
+								{
+									"key": "order",
+									"value": "random"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid order parameter\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid order parameter\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Scheda di dettaglio",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/{{gameSlug}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"{{gameSlug}}"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json(); const g = b.game;",
+									"pm.test(\"Gioco giusto\", () => pm.expect(g.slug).to.eql(pm.collectionVariables.get(\"gameSlug\")));",
+									"pm.test(\"Campi della scheda: descrizione, generi, piattaforme, voti\", () => pm.expect(g).to.include.keys(\"summary\", \"genres\", \"platforms\", \"rating\", \"aggregated_rating\", \"cover\"));",
+									"pm.test(\"Screenshot con URL\", () => { pm.expect(g.screenshots).to.be.an(\"array\").that.is.not.empty; pm.expect(g.screenshots[0].url).to.match(/^https:\\/\\/images\\.igdb\\.com/); });",
+									"pm.test(\"Sviluppatore e publisher\", () => { const c = g.involved_companies; pm.expect(c.some(x => x.developer)).to.be.true; pm.expect(c.some(x => x.publisher)).to.be.true; });",
+									"pm.test(\"Da anonimo: non preferito, nessuna collezione\", () => pm.expect(b.userData).to.eql({ isFavourite: false, collectionStatus: null }));",
+									"pm.collectionVariables.set(\"gameId\", g.id);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: slug non valido",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/Slug_Non_Valido!",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"Slug_Non_Valido!"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid game slug\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid game slug\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: gioco inesistente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/gioco-che-non-esiste-123456789",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"gioco-che-non-esiste-123456789"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Game not found\", () => pm.expect(pm.response.json().error).to.eql(\"Game not found\"));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "2. Route protette senza login",
+			"description": "Senza cookie di sessione ogni route protetta risponde 401.",
+			"item": [
+				{
+					"name": "Profilo senza login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Preferiti senza login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/get-ids",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"get-ids"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Aggiungi preferito senza login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/add-favourite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"add-favourite"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": 1942\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Collezione senza login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/get-statuses",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"get-statuses"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Suggeriti senza login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/suggested",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"suggested"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Can I run senza login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/compat/can-i-run?gameId=72",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compat",
+								"can-i-run"
+							],
+							"query": [
+								{
+									"key": "gameId",
+									"value": "72"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Cookie inventato",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.collectionVariables.set(\"sessionCookie\", \"token-inventato\");"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Codice 2FA senza challenge",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/security/mfa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"security",
+								"mfa"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"otp\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Expired or absent 2fa cookie\", () => pm.expect(pm.response.json().error).to.eql(\"Expired or absent 2fa cookie\"));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "3. Account",
+			"description": "Registrazione, login, logout e 2FA on/off. Il signup crea un utente nuovo a ogni giro (email con timestamp); la cartella 7 lo cancella.",
+			"item": [
+				{
+					"name": "Errore signup: email non valida",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mario\",\n  \"surname\": \"Rossi\",\n  \"email\": \"non-una-email\",\n  \"username\": \"mario_rossi\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid email\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid email\"));"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const t = Date.now(); pm.collectionVariables.set(\"email\", \"postman_\" + t + \"@example.com\"); pm.collectionVariables.set(\"username\", \"postman_\" + t);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore signup: password debole",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mario\",\n  \"surname\": \"Rossi\",\n  \"email\": \"{{email}}\",\n  \"username\": \"{{username}}\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Password must be at least 12 characters long\", () => pm.expect(pm.response.json().error).to.eql(\"Password must be at least 12 characters long\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mario\",\n  \"surname\": \"Rossi\",\n  \"email\": \"{{email}}\",\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const c = pm.response.headers.all().filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");",
+									"const m = c.match(/valid-login-session=([^;]+)/);",
+									"pm.test(\"Cookie di sessione ricevuto\", () => pm.expect(m).to.not.be.null);",
+									"if (m) pm.collectionVariables.set(\"sessionCookie\", m[1]);",
+									"const b = pm.response.json();",
+									"pm.test(\"Utente creato con l'email data\", () => pm.expect(b.email).to.eql(pm.collectionVariables.get(\"email\")));",
+									"pm.test(\"Nessun hash della password nella risposta\", () => pm.expect(b).to.not.have.any.keys(\"passwordHash\", \"password\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Profilo (me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Utente giusto, 2FA spenta\", () => { pm.expect(b.username).to.eql(pm.collectionVariables.get(\"username\")); pm.expect(b.mfa).to.eql(false); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: login già loggato",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Already logged in\", () => pm.expect(pm.response.json().error).to.eql(\"Already logged in\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));",
+									"pm.test(\"Cookie cancellato\", () => pm.expect(pm.response.headers.get(\"Set-Cookie\") || \"\").to.include(\"valid-login-session=;\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Dopo il logout la sessione non vale più",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore signup: email già registrata",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mario\",\n  \"surname\": \"Rossi\",\n  \"email\": \"{{email}}\",\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unable to create account with these details\", () => pm.expect(pm.response.json().error).to.eql(\"Unable to create account with these details\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore login: password sbagliata",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"PasswordSbagliata!2026\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid credentials\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid credentials\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore login: email inesistente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"nessuno@example.com\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid credentials\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid credentials\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore login: JSON rotto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{ email: ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid JSON body\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid JSON body\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const c = pm.response.headers.all().filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");",
+									"const m = c.match(/valid-login-session=([^;]+)/);",
+									"pm.test(\"Cookie di sessione ricevuto\", () => pm.expect(m).to.not.be.null);",
+									"if (m) pm.collectionVariables.set(\"sessionCookie\", m[1]);",
+									"pm.test(\"Login senza 2FA\", () => pm.expect(pm.response.json().mfa).to.eql(false));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Attiva 2FA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/security/mfa/enable",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"security",
+								"mfa",
+								"enable"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Profilo: 2FA attiva",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"mfa: true\", () => pm.expect(pm.response.json().mfa).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Disattiva 2FA",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/security/mfa/disable",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"security",
+								"mfa",
+								"disable"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Profilo: 2FA spenta",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"mfa: false\", () => pm.expect(pm.response.json().mfa).to.eql(false));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "4. Preferiti",
+			"description": "Aggiunta, lista, rimozione e giochi suggeriti in base ai preferiti.",
+			"item": [
+				{
+					"name": "Aggiungi preferito",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/add-favourite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"add-favourite"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{gameId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Aggiungi un secondo preferito (Portal 2)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/add-favourite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"add-favourite"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{portalId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: gameId mancante",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/add-favourite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"add-favourite"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Missing gameId\", () => pm.expect(pm.response.json().error).to.eql(\"Missing gameId\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: gameId non valido",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/add-favourite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"add-favourite"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"abc\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid game id\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid game id\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Id dei preferiti",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/get-ids",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"get-ids"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Contiene i due giochi\", () => pm.expect(pm.response.json().ids.map(String)).to.include.members([pm.collectionVariables.get(\"gameId\"), pm.collectionVariables.get(\"portalId\")].map(String)));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Lista preferiti (pagina 1)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/get-favourites?offset=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"get-favourites"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"2 preferiti con i dati del gioco\", () => { pm.expect(b.total).to.eql(2); pm.expect(b.games).to.have.lengthOf(2); pm.expect(b.games[0]).to.include.keys(\"id\", \"name\", \"cover\"); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: lista senza offset",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/get-favourites",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"get-favourites"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid offset\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid offset\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Scheda: ora risulta preferito",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/{{gameSlug}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"{{gameSlug}}"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"isFavourite: true\", () => pm.expect(pm.response.json().userData.isFavourite).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Giochi suggeriti",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/suggested",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"suggested"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Al massimo 5 suggerimenti con punteggio\", () => { pm.expect(b).to.be.an(\"array\"); pm.expect(b.length).to.be.within(1, 5); b.forEach(g => pm.expect(g.recommendationScore).to.be.a(\"number\")); });",
+									"pm.test(\"Non suggerisce giochi già preferiti\", () => { const fav = [pm.collectionVariables.get(\"gameId\"), pm.collectionVariables.get(\"portalId\")].map(Number); b.forEach(g => pm.expect(fav).to.not.include(g.id)); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Rimuovi preferito",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/delete-favourite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"delete-favourite"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{portalId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Dopo la rimozione resta un preferito",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/favourites/get-ids",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"favourites",
+								"get-ids"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Solo il primo gioco\", () => pm.expect(pm.response.json().ids.map(String)).to.eql([String(pm.collectionVariables.get(\"gameId\"))]));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "5. Collezioni (wishlist e stati)",
+			"description": "Ogni gioco può avere uno stato: TO_PLAY, PLAYING, FINISHED, TO_BUY (la wishlist).",
+			"item": [
+				{
+					"name": "Metti un gioco in PLAYING",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/update-item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"update-item"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{gameId}}\",\n  \"collectionType\": \"PLAYING\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Metti Portal 2 in wishlist (TO_BUY)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/update-item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"update-item"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{portalId}}\",\n  \"collectionType\": \"TO_BUY\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: stato inesistente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/update-item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"update-item"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{gameId}}\",\n  \"collectionType\": \"ABANDONED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid collection type\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid collection type\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: stato mancante",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/update-item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"update-item"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{gameId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Missing collection type\", () => pm.expect(pm.response.json().error).to.eql(\"Missing collection type\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Stati di tutti i giochi",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/get-statuses",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"get-statuses"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const s = pm.response.json().statuses;",
+									"pm.test(\"Stati salvati\", () => { pm.expect(s[pm.collectionVariables.get(\"gameId\")]).to.eql(\"PLAYING\"); pm.expect(s[pm.collectionVariables.get(\"portalId\")]).to.eql(\"TO_BUY\"); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Giochi della wishlist",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/get-items?offset=0&collection_type=TO_BUY",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"get-items"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "collection_type",
+									"value": "TO_BUY"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Un gioco in wishlist\", () => { pm.expect(b.total).to.eql(1); pm.expect(String(b.games[0].id)).to.eql(String(pm.collectionVariables.get(\"portalId\"))); });"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: collezione inesistente",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/get-items?offset=0&collection_type=WRONG",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"get-items"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "collection_type",
+									"value": "WRONG"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid collection type\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid collection type\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Contatori (preferiti e collezioni)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/count-collections",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"count-collections"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Contatori giusti\", () => pm.expect(pm.response.json()).to.eql({ favourites_length: 1, to_play_length: 0, playing_length: 1, finished_length: 0, to_buy_length: 1 }));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Scheda: mostra lo stato in collezione",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/games/{{gameSlug}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"games",
+								"{{gameSlug}}"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"collectionStatus: PLAYING\", () => pm.expect(pm.response.json().userData.collectionStatus).to.eql(\"PLAYING\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Togli un gioco dalla collezione",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/collections/delete-item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collections",
+								"delete-item"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gameId\": \"{{portalId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Contatori dopo la rimozione",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/count-collections",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"count-collections"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Wishlist vuota\", () => pm.expect(pm.response.json().to_buy_length).to.eql(0));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "6. PC e Can I run?",
+			"description": "Specifiche del PC dell'utente e stima di compatibilità/FPS. La prima can-i-run su un gioco può richiedere più di un minuto (LLM locale), poi è in cache.",
+			"item": [
+				{
+					"name": "Specifiche: nessuna salvata",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/specs/get-specs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"specs",
+								"get-specs"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"specs: null\", () => pm.expect(pm.response.json().specs).to.eql(null));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: can-i-run senza specifiche",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/compat/can-i-run?gameId={{portalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compat",
+								"can-i-run"
+							],
+							"query": [
+								{
+									"key": "gameId",
+									"value": "{{portalId}}"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: No PC specs saved\", () => pm.expect(pm.response.json().error).to.eql(\"No PC specs saved\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: RAM non numerica",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/specs/add-specs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"specs",
+								"add-specs"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpu\": \"AMD Ryzen 5 5600X\",\n  \"gpu\": \"NVIDIA GeForce RTX 3060\",\n  \"ramGb\": \"16\",\n  \"os\": \"Windows 10\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid ramGb\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid ramGb\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Salva specifiche",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/specs/add-specs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"specs",
+								"add-specs"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpu\": \"AMD Ryzen 5 5600X\",\n  \"gpu\": \"NVIDIA GeForce RTX 3060\",\n  \"ramGb\": 16,\n  \"vramGb\": 12,\n  \"os\": \"Windows 10\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"CPU e GPU riconosciute\", () => pm.expect(b.recognized).to.eql({ cpu: true, gpu: true }));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Specifiche salvate",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/specs/get-specs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"specs",
+								"get-specs"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"RAM 16 GB\", () => pm.expect(pm.response.json().specs.ramGb).to.eql(16));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: gameId non valido",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/compat/can-i-run?gameId=abc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compat",
+								"can-i-run"
+							],
+							"query": [
+								{
+									"key": "gameId",
+									"value": "abc"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid gameId\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid gameId\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: risoluzione non supportata",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/compat/can-i-run?gameId={{portalId}}&resolution=8k",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compat",
+								"can-i-run"
+							],
+							"query": [
+								{
+									"key": "gameId",
+									"value": "{{portalId}}"
+								},
+								{
+									"key": "resolution",
+									"value": "8k"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid resolution\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid resolution\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Can I run? Portal 2 a 1440p",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/compat/can-i-run?gameId={{portalId}}&resolution=1440p",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"compat",
+								"can-i-run"
+							],
+							"query": [
+								{
+									"key": "gameId",
+									"value": "{{portalId}}"
+								},
+								{
+									"key": "resolution",
+									"value": "1440p"
+								}
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const b = pm.response.json();",
+									"pm.test(\"Risposta completa: requisiti, compatibilità, FPS\", () => pm.expect(b).to.include.keys(\"steamAppId\", \"requirements\", \"compat\", \"fps\"));",
+									"pm.test(\"Portal 2 su Steam è 620\", () => pm.expect(b.steamAppId).to.eql(620));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Cancella specifiche",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/specs/delete-specs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"specs",
+								"delete-specs"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "7. Chiusura account",
+			"description": "Cancella l'utente creato dal giro di test.",
+			"item": [
+				{
+					"name": "Errore: password sbagliata",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/delete-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"delete-account"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"PasswordSbagliata!2026\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 403\", () => pm.response.to.have.status(403));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Wrong password\", () => pm.expect(pm.response.json().error).to.eql(\"Wrong password\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: password mancante",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/delete-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"delete-account"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid password\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid password\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Cancella account",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/delete-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"delete-account"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"success: true\", () => pm.expect(pm.response.json().success).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Dopo la cancellazione la sessione non vale più",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "valid-login-session={{sessionCookie}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": ""
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Unauthorized\", () => pm.expect(pm.response.json().error).to.eql(\"Unauthorized\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Dopo la cancellazione il login fallisce",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid credentials\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid credentials\"));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "8. Login con 2FA (manuale)",
+			"description": "Manda una email vera, quindi resta fuori dal giro automatico. Serve un utente con email reale e 2FA attiva: imposta mfaEmail e mfaPassword, lancia 'Login', leggi il codice nella mail, mettilo in otp e lancia 'Verifica codice'. Il cookie 2fa_cookie lo gestisce il cookie jar di Postman.",
+			"item": [
+				{
+					"name": "Login (utente con 2FA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{mfaEmail}}\",\n  \"password\": \"{{mfaPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+									"pm.test(\"Chiede il codice\", () => pm.expect(pm.response.json().requires2fa).to.eql(true));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: codice sbagliato",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/security/mfa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"security",
+								"mfa"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"otp\": \"000000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid code\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid code\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Errore: codice non di 6 cifre",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/security/mfa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"security",
+								"mfa"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"otp\": \"12ab\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"pm.test(\"Errore: Invalid code\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid code\"));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Verifica codice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/security/mfa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"security",
+								"mfa"
+							]
+						},
+						"description": "",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"otp\": \"{{otp}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Risposta JSON\", () => pm.response.to.be.json);",
+									"const c = pm.response.headers.all().filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");",
+									"const m = c.match(/valid-login-session=([^;]+)/);",
+									"pm.test(\"Cookie di sessione ricevuto\", () => pm.expect(m).to.not.be.null);",
+									"if (m) pm.collectionVariables.set(\"sessionCookie\", m[1]);",
+									"pm.test(\"Login completato con 2FA\", () => pm.expect(pm.response.json().mfa).to.eql(true));"
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

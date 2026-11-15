@@ -1,5 +1,0 @@
-$kind: http-request
-description: ""
-url: http://localhost:3000/api/security/mfa/disable
-method: DELETE
-order: 3000

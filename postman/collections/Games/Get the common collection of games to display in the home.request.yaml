@@ -1,5 +1,0 @@
-$kind: http-request
-description: "This is used to get 3 collections of games: most played, most popular and most recent. All will be displayed in the homepage"
-url: http://localhost:3000/api/games/home
-method: GET
-order: 5000
