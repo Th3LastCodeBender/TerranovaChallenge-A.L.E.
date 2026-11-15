@@ -1,0 +1,27 @@
+@if (games().length > 0) {
+<section class="gc">
+    <div class="gc-header">
+        <div class="gc-icon"><i [class]="'bi ' + icon()"></i></div>
+        <h2 class="gc-title">{{ title() }}</h2>
+
+        <div class="gc-arrows">
+            <button type="button" class="gc-arrow" aria-label="Scorri a sinistra"
+                    [disabled]="!canScrollLeft()" (click)="scroll(-1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="gc-arrow" aria-label="Scorri a destra"
+                    [disabled]="!canScrollRight()" (click)="scroll(1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="gc-track" #track (scroll)="updateArrows()">
+        @for (game of games(); track game.id) {
+            <div class="gc-item">
+                <app-game-card [game]="game" />
+            </div>
+        }
+    </div>
+</section>
+}

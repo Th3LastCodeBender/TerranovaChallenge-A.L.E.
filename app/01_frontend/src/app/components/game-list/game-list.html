@@ -1,0 +1,57 @@
+<div class="container-fluid px-4 px-xl-5 mb-4">
+    <div class="search-results-header mt-3">
+        <div class="search-results-icon">
+            <i class="bi" [class.bi-search]="search()" [class.bi-controller]="!search()"></i>
+        </div>
+        <div class="search-results-heading">
+            @if (search()) {
+                <span class="search-results-label">Risultati per</span>
+                <h2 class="search-results-query">"{{ search() }}"</h2>
+            } @else {
+                <span class="search-results-label">Catalogo</span>
+                <h2 class="search-results-query">Tutti i giochi</h2>
+            }
+        </div>
+    </div>
+    <app-game-filters/>
+    @if (loading()) {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+        </div>
+    } @else {
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+            @for (game of games(); track game.id) {
+                <div class="col">
+                    <app-game-card [game]="game"></app-game-card>
+                </div>
+            } @empty {
+                @if (error(); as message) {
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mx-auto my-5 w-auto" role="alert">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                } @else {
+                    <p class="text-center py-5 w-100">
+                        {{ search() ? 'Nessun gioco trovato' : 'Nessun gioco disponibile' }}
+                    </p>
+                }
+            }
+        </div>
+        @if (games().length > 0) {
+            <div class="custom-pagination">
+                <button type="button" class="custom-pagination-button" [disabled]="page() === 1" (click)="goToPage(page() - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                    <span>Indietro</span>
+                </button>
+                <div class="custom-page-indicator">
+                    <span class="custom-page-label">Pagina</span>
+                    <span class="custom-page-number">{{ page() }}</span>
+                </div>
+                <button type="button" class="custom-pagination-button" [disabled]="!hasMore()" (click)="goToPage(page() + 1)">
+                    <span>Avanti</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,21 @@
+
+<app-navbar/>
+
+<div class="container-fluid px-4 px-xl-5 mt-4">
+    @if (loading()) {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+        </div>
+    } @else {
+        @for (section of sections(); track section.key) {
+            <app-game-carousel
+                [title]="section.title"
+                [icon]="section.icon"
+                [games]="section.games" />
+        } @empty {
+            <p class="text-center py-5">
+                {{ error() ? 'Impossibile caricare i giochi in questo momento' : 'Nessun gioco disponibile' }}
+            </p>
+        }
+    }
+</div>

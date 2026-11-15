@@ -1,0 +1,87 @@
+<section class="custom-login-page">
+	<div class="container py-5 h-100">
+		<div class="row d-flex justify-content-center align-items-center h-100">
+
+			<div class="col-12 col-md-8 col-lg-6 col-xl-5">
+
+				<div class="custom-login-card">
+
+					<div class="custom-login-body">
+
+						<a class="navbar-brand custom-title" routerLink="/">
+							Wiki<span class="custom-title-game">game</span>
+						</a>
+
+						<p class="custom-login-subtitle">
+							Accedi al tuo account
+						</p>
+
+						<form [formGroup]="form" (ngSubmit)="login()">
+
+							<div class="custom-form-field">
+								<label for="email">
+									Email
+								</label>
+
+								<div class="custom-input-container">
+									<i class="bi bi-envelope"></i>
+
+									<input id="email" type="email" class="form-control" placeholder="Email"
+										formControlName="email" />
+								</div>
+							</div>
+
+							<div class="custom-form-field">
+								<label for="password">
+									Password
+								</label>
+
+								<div class="custom-input-container">
+									<i class="bi bi-lock"></i>
+
+									<input id="password" type="password" class="form-control" placeholder="Password"
+										formControlName="password" />
+								</div>
+							</div>
+
+							@if (errorMessage()) {
+								<div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+									<i class="bi bi-exclamation-circle"></i>
+									<span>{{ errorMessage() }}</span>
+								</div>
+							}
+							<button class="custom-login-submit" type="submit" [disabled]="loading()">
+								@if (loading()) {
+									<span class="spinner-border spinner-border-sm"></span>
+								} @else {
+									<i class="bi bi-box-arrow-in-right"></i>
+								}
+								<span>
+									Login
+								</span>
+							</button>
+						</form>
+
+						<div class="custom-login-divider">
+							<span></span>
+							<p>oppure</p>
+							<span></span>
+						</div>
+
+						<p class="custom-register-text">
+							Non hai ancora un account?
+
+							<a routerLink="/register">
+								Registrati
+							</a>
+						</p>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+</section>

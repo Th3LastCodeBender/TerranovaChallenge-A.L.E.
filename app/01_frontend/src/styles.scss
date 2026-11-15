@@ -1,0 +1,228 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+}
+
+$gradient-light:
+  radial-gradient(
+    ellipse at 50% 40%,
+    transparent 50%,
+    rgba(150, 70, 40, 0.08) 100%
+  ),
+  radial-gradient(
+    circle at 88% 8%,
+    rgba(170, 60, 220, 0.26) 0%,
+    rgba(170, 60, 220, 0.08) 22%,
+    transparent 40%
+  ),
+  radial-gradient(
+    circle at 8% 12%,
+    rgba(255, 110, 20, 0.30) 0%,
+    rgba(255, 110, 20, 0.10) 20%,
+    transparent 38%
+  ),
+  radial-gradient(
+    circle at 95% 55%,
+    rgba(255, 205, 0, 0.34) 0%,
+    rgba(255, 205, 0, 0.10) 20%,
+    transparent 38%
+  ),
+  radial-gradient(
+    circle at 5% 80%,
+    rgba(150, 50, 200, 0.20) 0%,
+    transparent 38%
+  ),
+  radial-gradient(
+    circle at 55% 100%,
+    rgba(255, 130, 40, 0.26) 0%,
+    rgba(255, 130, 40, 0.08) 22%,
+    transparent 42%
+  ),
+  radial-gradient(
+    circle at 45% 0%,
+    rgba(255, 220, 60, 0.22) 0%,
+    transparent 25%
+  ),
+  linear-gradient(
+    145deg,
+    #fff4e8 0%,
+    #ffeedd 30%,
+    #ffe8d4 55%,
+    #fff1e2 80%,
+    #fffaf0 100%
+  );
+
+$gradient-dark:
+  radial-gradient(
+    circle at 85% 10%,
+    rgba(255, 0, 153, 0.22) 0%,
+    transparent 40%
+  ),
+  radial-gradient(
+    circle at 10% 45%,
+    rgba(124, 58, 237, 0.25) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 90% 65%,
+    rgba(255, 230, 0, 0.16) 0%,
+    rgba(255, 230, 0, 0.06) 20%,
+    transparent 42%
+  ),
+  radial-gradient(
+    circle at 65% 95%,
+    rgba(0, 102, 255, 0.20) 0%,
+    transparent 50%
+  ),
+  linear-gradient(
+    145deg,
+    #02040d 0%,
+    #070b1d 30%,
+    #0b1026 55%,
+    #110824 80%,
+    #03050c 100%
+  );
+
+@import 'bootstrap/scss/bootstrap';
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+:root, [data-bs-theme="light"] {
+
+position: relative;
+    z-index: 1000;
+
+    display: block;
+
+    margin: 0;
+    padding: 0;
+
+  --bg-gradient: #{$gradient-light};
+  
+  --offcanvas-bg: rgba(255, 244, 232, 0.94);
+  --offcanvas-text: #35223b;
+  --offcanvas-muted: rgba(53, 34, 59, 0.55);
+  --offcanvas-border: rgba(255, 106, 0, 0.25);
+  --offcanvas-accent: #ff6a00;
+  --offcanvas-accent-bg: rgba(255, 106, 0, 0.10);
+  --offcanvas-accent-hover: rgba(255, 106, 0, 0.17);
+  --offcanvas-accent-border: rgba(255, 106, 0, 0.35);
+  --offcanvas-accent-shadow: rgba(255, 106, 0, 0.30);
+  --offcanvas-close-filter: none;
+
+  --star-color: #e6a700;
+
+  --register-start: #ff6a00;
+  --register-end: #ffb800;
+
+  --tag-bg: rgba(255, 140, 0, 0.15);
+  --tag-color: #ffcf99;
+  --tag-border: rgba(255, 140, 0, 0.803);
+
+  --console-card-bg: rgba(255, 106, 0, 0.20);
+  --console-card-color: #ff6a00;
+
+  --title-game-start: #6d28d9;
+  --title-game-end: #db2777;
+
+  --card-border-color: rgba(219, 161, 26, 0.966);
+  --card-border-hover: rgba(238, 255, 7, 0.966);
+  --card-shadow:
+      0 0 0 1px rgba(88, 28, 135, 0.65),
+      0 4px 12px rgba(76, 29, 149, 0.30);
+  --card-shadow-hover:
+      0 0 0 2px #7c3aed,
+      0 0 10px rgba(124, 58, 237, 0.75),
+      0 8px 24px rgba(76, 29, 149, 0.40);
+  --card-glow-first: #ff5e00;
+  --card-glow-second: #ffea00;
+  --card-glow-third: #ffffff;
+
+  --profile-bg-first: #fff4e8;
+  --profile-bg-second: #fff8ef;
+  --profile-bg-third: #f7f2ff;
+  --profile-card-bg: rgba(255, 255, 255, 0.65);
+  --profile-card-border: rgba(255, 106, 0, 0.25);
+  --profile-text: #35223b;
+  --profile-text-secondary: rgba(53, 34, 59, 0.65);
+  --profile-label: rgba(53, 34, 59, 0.50);
+  --profile-accent: #ff6a00;
+  --profile-accent-second: #ffb800;
+  --profile-member-bg: rgba(255, 106, 0, 0.10);
+  --profile-member-border: rgba(255, 106, 0, 0.35);
+  --profile-member-color: #ff6a00;
+  --profile-shadow: rgba(255, 106, 0, 0.18);
+
+}
+[data-bs-theme="dark"] {
+
+  --bg-gradient: #{$gradient-dark};
+  
+  --offcanvas-bg: rgba(10, 8, 24, 0.94);
+  --offcanvas-text: #ffffff;
+  --offcanvas-muted: rgba(255, 255, 255, 0.55);
+  --offcanvas-border: rgba(169, 112, 255, 0.25);
+  --offcanvas-accent: #a970ff;
+  --offcanvas-accent-bg: rgba(169, 112, 255, 0.10);
+  --offcanvas-accent-hover: rgba(169, 112, 255, 0.17);
+  --offcanvas-accent-border: rgba(169, 112, 255, 0.35);
+  --offcanvas-accent-shadow: rgba(169, 112, 255, 0.30);
+  --offcanvas-close-filter: invert(1);
+  
+  --star-color: #c084fc;
+
+  --register-start: #a970ff;
+  --register-end: #ff3cac;
+
+  --tag-bg: rgba(169, 112, 255, 0.15);
+  --tag-color: #d8c8ff;
+  --tag-border: rgba(169, 112, 255, 0.45);
+
+  --console-card-bg: rgba(169, 112, 255, 0.20);
+  --console-card-color: #a970ff;
+
+  --title-game-start: #a970ff;
+  --title-game-end: #ff3cac;
+  --card-border-color: rgba(169, 112, 255, 0.45);
+  --card-border-hover: #a970ff;
+  --card-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.25);
+  --card-shadow-hover:
+      0 10px 30px rgba(0, 0, 0, 0.30),
+      0 0 15px rgba(169, 112, 255, 0.25);
+  --card-glow-first: #a970ff;
+  --card-glow-second: #ff3cac;
+  --card-glow-third: #ffffff;
+
+  --profile-bg-first: #160d36;
+  --profile-bg-second: #101a45;
+  --profile-bg-third: #171816;
+  --profile-card-bg: rgba(255, 255, 255, 0.035);
+  --profile-card-border: rgba(169, 112, 255, 0.25);
+  --profile-text: #ffffff;
+  --profile-text-secondary: #918aa5;
+  --profile-label: #817a99;
+  --profile-accent: #a970ff;
+  --profile-accent-second: #ff3cac;
+  --profile-member-bg: rgba(169, 112, 255, 0.12);
+  --profile-member-border: rgba(169, 112, 255, 0.30);
+  --profile-member-color: #ff3cac;
+  --profile-shadow: rgba(0, 0, 0, 0.25);
+}
+
+.custom-bg-gradient {
+  min-height: 100vh;
+  background: var(--bg-gradient);
+}
+
+[data-bs-theme="light"] .custom-search-bar .form-control {
+  border: 1px solid rgba(83, 65, 120, 0.45);
+}
+
+.custom-rating-star {
+  color: var(--star-color);
+}

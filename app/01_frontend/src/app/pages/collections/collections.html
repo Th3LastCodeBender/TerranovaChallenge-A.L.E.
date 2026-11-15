@@ -1,0 +1,28 @@
+	<h2 class="mb-3">{{ title() }} <small class="text-secondary">({{ total() }})</small></h2>
+	@if (error()) {
+		<div class="alert alert-danger">{{ error() }}</div>
+	} @else {
+		<div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3" [class.opacity-50]="loading()" [attr.aria-busy]="loading()">
+			@for (game of games(); track game.id) {
+			<div class="col"><app-game-card [game]="game"></app-game-card></div>
+			} @empty {
+			<p class="text-center py-5 w-100">Nessun gioco in questa collezione</p>
+			}
+		</div>
+
+		@if (totalPages() > 1) {
+		<div class="custom-pagination">
+			<button type="button" class="custom-pagination-button" [disabled]="page() === 1" (click)="goToPage(page() - 1)">
+				<i class="bi bi-chevron-left"></i><span>Indietro</span>
+			</button>
+			<div class="custom-page-indicator">
+				<span class="custom-page-label">Pagina</span>
+				<span class="custom-page-number">{{ page() }} / {{ totalPages() }}</span>
+			</div>
+			<button type="button" class="custom-pagination-button" [disabled]="page() >= totalPages()"
+				(click)="goToPage(page() + 1)">
+				<span>Avanti</span><i class="bi bi-chevron-right"></i>
+			</button>
+		</div>
+	}
+	}

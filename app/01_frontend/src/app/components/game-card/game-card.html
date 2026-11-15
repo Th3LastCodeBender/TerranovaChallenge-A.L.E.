@@ -1,0 +1,98 @@
+<div
+  class="card custom-card text-white"
+  role="link"
+  tabindex="0"
+  [attr.aria-label]="'Apri la pagina di ' + game().name"
+  (click)="openGame()"
+  (keydown)="onCardKeydown($event)"
+>
+	@if (imageUrl()) {
+		<img [src]="imageUrl()" class="custom-game-image" [alt]="game().name" />
+	} @else {
+		<div class="custom-game-image-placeholder">
+			<i class="bi bi-image fs-1"></i>
+		</div>
+	}
+	<app-favourite-button
+		class="custom-favourite"
+		variant="icon"
+		[gameId]="game().id"
+		[isFavourite]="isFavourite()"
+	/>
+	<app-collection-button
+		class="custom-collection"
+		variant="icon"
+		[gameId]="game().id"
+		[status]="collectionStatus()"
+	/>
+	<div class="custom-overlay">
+
+		<h5 class="card-title">
+			{{ game().name }}
+		</h5>
+
+		<div class="custom-genres">
+			@for (genre of game().genres; track genre.id) {
+				<span class="custom-genre-card text-lowercase">
+					#{{ genre.name }}
+				</span>
+			}
+		</div>
+
+		<div class="custom-rating-container">
+
+			<div class="custom-rating">
+				<i class="bi bi-star-fill custom-rating-star"></i>
+				<span>
+					{{ rating() | number:'1.1-2' }}
+				</span>
+			</div>
+			<span class="custom-separator"></span>
+			<div class="custom-metacritic">
+				@if (criticScore() !== null) {
+					<span class="custom-metacritic-score">
+						{{ criticScore() | number:'1.0-0' }}
+					</span>
+					<span class="custom-metacritic-text">
+						Metacritic
+					</span>
+				} @else {
+					<span class="custom-metacritic-score custom-metacritic-empty">
+						-
+					</span>
+					<span class="custom-metacritic-text">
+						Metacritic
+					</span>
+				}
+			</div>
+		</div>
+		<p class="custom-release">
+			Release on:
+			@if (releaseDate()) {
+				<b>
+					{{ releaseDate() | date:'dd MMMM yyyy' }}
+				</b>
+			} @else if (isAnnounced()) {
+				<b>Announced</b>
+			} @else {
+				<b>Not announced</b>
+			}
+		</p>
+		<div class="custom-platform-container">
+			@for (plat of platformFamilies(); track plat) {
+			<span class="custom-platform-card" [title]="plat">
+				@if (plat === "PlayStation") {
+					<i class="bi bi-playstation"></i>
+				}
+				@else if (plat === "Xbox") {
+					<i class="bi bi-xbox"></i>
+				} @else if (plat === "PC") {
+					<i class="bi bi-laptop"></i>
+				} @else if (plat === "Nintendo") {
+					<i class="bi bi-nintendo-switch"></i>
+				}
+			</span>
+			}
+		</div>
+	</div>
+</div>

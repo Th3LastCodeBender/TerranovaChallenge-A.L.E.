@@ -1,0 +1,231 @@
+.gc {
+    margin-bottom: 2.5rem;
+}
+
+.gc-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+
+    margin-bottom: 1rem;
+}
+
+.gc-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    color: var(--offcanvas-accent);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.75rem;
+}
+
+.gc-title {
+    position: relative;
+
+    margin: 0;
+    padding-bottom: 0.45rem;
+
+    color: var(--offcanvas-text);
+
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    &::after {
+        content: "";
+
+        position: absolute;
+        bottom: 0;
+        left: 0;
+
+        width: 55px;
+        height: 3px;
+
+        border-radius: 999px;
+
+        background: linear-gradient(
+            90deg,
+            var(--card-glow-first),
+            var(--card-glow-second)
+        );
+    }
+}
+
+.gc-arrows {
+    display: flex;
+    gap: 0.5rem;
+
+    margin-left: auto;
+}
+
+.gc-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    color: var(--offcanvas-text);
+
+    background: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.75rem;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+        color: var(--offcanvas-accent);
+
+        background: var(--offcanvas-accent-hover);
+
+        border-color: var(--offcanvas-accent);
+    }
+
+    &:disabled {
+        opacity: 0.3;
+
+        cursor: not-allowed;
+    }
+}
+
+.gc-track {
+    display: flex;
+    gap: 1rem;
+
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+
+    padding: 0.5rem 0.25rem 1rem;
+
+    &::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        margin: 0 0.5rem;
+
+        background: var(--offcanvas-accent-bg);
+        border: 1px solid var(--offcanvas-accent-border);
+        border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+            90deg,
+            var(--register-start),
+            var(--register-end)
+        );
+        border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        box-shadow: 0 0 8px var(--offcanvas-accent-shadow);
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--offcanvas-accent) var(--offcanvas-accent-bg);
+    }
+}
+
+.gc-item {
+    flex: 0 0 clamp(180px, 22vw, 260px);
+
+    scroll-snap-align: start;
+}
+
+.gc-item app-game-card ::ng-deep .custom-card {
+    width: 100%;
+}
+
+@media (max-width: 575px) {
+    .gc-arrows {
+        display: none;
+    }
+
+    .gc-item {
+        flex-basis: 42vw;
+    }
+}
+
+.gc-item app-game-card ::ng-deep .custom-overlay {
+    background: linear-gradient(
+        to top,
+        rgba(7, 7, 18, 0.98) 0%,
+        rgba(7, 7, 18, 0.93) 22%,
+        rgba(7, 7, 18, 0.80) 40%,
+        rgba(7, 7, 18, 0.45) 62%,
+        rgba(7, 7, 18, 0.15) 100%
+    );
+}
+
+.gc-item app-game-card ::ng-deep .card-title {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+@media (hover: hover) {
+    .gc-item app-game-card ::ng-deep {
+        .custom-genres,
+        .custom-platform-container {
+            max-height: 0;
+            min-height: 0;
+            margin-bottom: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition:
+                max-height 0.3s ease,
+                opacity 0.25s ease,
+                margin-bottom 0.3s ease;
+        }
+
+        .custom-release {
+            margin-bottom: 0;
+            transition: margin-bottom 0.3s ease;
+        }
+
+        .custom-card:hover,
+        .custom-card:focus-visible {
+            .custom-genres {
+                max-height: 4rem;
+                margin-bottom: 0.6rem;
+                opacity: 1;
+            }
+
+            .custom-platform-container {
+                max-height: 2.2rem;
+                opacity: 1;
+            }
+
+            .custom-release {
+                margin-bottom: 1rem;
+            }
+
+            .custom-overlay {
+                background: linear-gradient(
+                    to top,
+                    rgba(7, 7, 18, 0.98) 0%,
+                    rgba(7, 7, 18, 0.95) 25%,
+                    rgba(7, 7, 18, 0.86) 45%,
+                    rgba(7, 7, 18, 0.60) 68%,
+                    rgba(7, 7, 18, 0.30) 100%
+                );
+            }
+        }
+    }
+}

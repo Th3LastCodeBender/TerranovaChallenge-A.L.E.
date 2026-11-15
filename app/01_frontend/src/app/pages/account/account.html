@@ -1,0 +1,273 @@
+<app-navbar />
+<div class="container py-5">
+  <section class="profile-header mb-4">
+    <div class="profile-header-actions">
+      <button type="button" class="profile-logout-button" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Logout</span>
+      </button>
+      <button type="button" class="profile-logout-button" (click)="openDeleteAccount()" [disabled]="deleteOpen()">
+        <i class="bi bi-trash"></i>
+        <span>Elimina account</span>
+      </button>
+    </div>
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <div class="profile-avatar">
+          <div class="profile-avatar-inner">
+            <span>
+              {{ authService.user?.firstName?.charAt(0) }}{{ authService.user?.lastName?.charAt(0) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <h1 class="mb-1">
+          {{ authService.user?.firstName }} {{ authService.user?.lastName }}
+        </h1>
+        <p class="text-secondary mb-3">
+          @{{ authService.user?.username }}
+        </p>
+        <div class="member-info">
+          <div class="member-content">
+            <span class="member-role">Member</span>
+            <span class="member-date">since {{ authService.user?.createdAt | date: 'dd MMMM yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  @if (deleteOpen()) {
+    <section class="profile-card danger-card mb-4">
+      <h4 class="mb-3">
+        Elimina account
+      </h4>
+      <p class="danger-text">
+        Cancella per sempre il tuo account con preferiti, collezioni, specifiche del PC e sessioni attive. Non si può annullare.
+      </p>
+      <form class="specs-form" [formGroup]="deleteForm" (ngSubmit)="confirmDeleteAccount()">
+        <div class="profile-info">
+          <label for="delete-password">Conferma con la tua password</label>
+          <input id="delete-password" class="specs-input" type="password" formControlName="password"
+            maxlength="128" autocomplete="current-password"
+            [class.is-invalid]="deleteForm.controls.password.invalid && deleteForm.controls.password.touched" />
+        </div>
+
+        <div class="specs-actions">
+          <button type="button" class="specs-cancel-button" (click)="cancelDeleteAccount()" [disabled]="deleteLoading()">
+            Annulla
+          </button>
+          <button type="submit" class="specs-delete-button danger-confirm" [disabled]="deleteLoading()">
+            <i class="bi bi-trash"></i>
+            <span>{{ deleteLoading() ? 'Eliminazione...' : 'Elimina definitivamente' }}</span>
+          </button>
+        </div>
+      </form>
+
+      @if (deleteError()) {
+        <div class="specs-error" role="alert">
+          <i class="bi bi-exclamation-circle"></i>
+          {{ deleteError() }}
+        </div>
+      }
+    </section>
+  }
+  <section class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+      <a class="col text-decoration-none" routerLink="/collections/finished">
+        <div class="stat-card text-center">
+          <span>Finished</span>
+          <h3>{{ counts()?.finished_length}}</h3>
+        </div>
+      </a>
+    <div class="col">
+      <a class="col text-decoration-none" routerLink="/collections/playing">
+        <div class="stat-card text-center">
+          <span>Playing </span>
+          <h3>{{ counts()?.playing_length }}</h3>
+        </div>
+      </a>
+    </div>
+    <div class="col">
+      <a class="col text-decoration-none" routerLink="/collections/to-play">
+        <div class="stat-card text-center">
+          <span>To play</span>
+          <h3>{{ counts()?.to_play_length }}</h3>
+        </div>
+      </a>
+    </div>
+    <div class="col">
+      <a class="col text-decoration-none" routerLink="/collections/to-buy">
+        <div class="stat-card text-center">
+          <span>Wishlist</span>
+          <h3>{{ counts()?.to_buy_length }}</h3>
+        </div>
+      </a>
+    </div>
+    <div class="col">
+      <a class="col text-decoration-none" routerLink="/collections/favourites">
+        <div class="stat-card text-center">
+          <span>Favourites</span>
+          <h3>{{ counts()?.favourites_length }}</h3>
+        </div>
+      </a>
+    </div>
+  </section>
+  <section class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="profile-card h-100">
+        <h4 class="mb-4">
+          Informazioni
+        </h4>
+        <div class="profile-info">
+          <span>Email</span>
+          <p>{{ authService.user?.email }}</p>
+        </div>
+        <div class="profile-info">
+          <span>Sicurezza</span>
+          <div class="mfa-setting" [class.is-active]="mfaEnabled()">
+            <div class="mfa-icon">
+              <i class="bi" [class.bi-shield-lock-fill]="mfaEnabled()" [class.bi-shield]="!mfaEnabled()"></i>
+            </div>
+            <div class="mfa-text">
+              <strong>
+                Autenticazione a due fattori
+                <span class="mfa-badge">{{ mfaEnabled() ? 'Attiva' : 'Disattiva' }}</span>
+              </strong>
+              <small>
+                {{ mfaEnabled() ? 'A ogni accesso ti chiederemo un codice di verifica' : 'Aggiungi un codice di verifica al login' }}
+              </small>
+            </div>
+            <label class="mfa-switch" for="mfa-toggle" [class.is-loading]="mfaLoading()">
+              <input
+                class="mfa-switch-input"
+                type="checkbox"
+                role="switch"
+                id="mfa-toggle"
+                aria-label="Autenticazione a due fattori"
+                [checked]="mfaEnabled()"
+                [disabled]="mfaLoading()"
+                (change)="toggle2fa($event)" />
+              <span class="mfa-switch-track">
+                <span class="mfa-switch-thumb"></span>
+              </span>
+            </label>
+          </div>
+          @if (mfaError()) {
+            <div class="mfa-error" role="alert">
+              <i class="bi bi-exclamation-circle"></i>
+              {{ mfaError() }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="profile-card h-100">
+        <div class="specs-header mb-4">
+          <h4 class="mb-0">
+            Preferenze
+          </h4>
+          @if (!specsLoading() && !specsEditing()) {
+            <button type="button" class="specs-edit-button" (click)="startEditSpecs()">
+              <i class="bi" [class.bi-pencil]="specs()" [class.bi-plus-lg]="!specs()"></i>
+              <span>{{ specs() ? 'Modifica' : 'Aggiungi' }}</span>
+            </button>
+          }
+        </div>
+
+        @if (specsLoading()) {
+          <p class="specs-empty">Caricamento specifiche...</p>
+        } @else if (specsEditing()) {
+          <form class="specs-form" [formGroup]="specsForm" (ngSubmit)="saveSpecs()">
+            <div class="profile-info">
+              <label for="spec-cpu">CPU</label>
+              <input id="spec-cpu" class="specs-input" formControlName="cpu" maxlength="100"
+                placeholder="es. AMD Ryzen 5 5600X"
+                [class.is-invalid]="specsForm.controls.cpu.invalid && specsForm.controls.cpu.touched" />
+            </div>
+            <div class="profile-info">
+              <label for="spec-gpu">GPU</label>
+              <input id="spec-gpu" class="specs-input" formControlName="gpu" maxlength="100"
+                placeholder="es. NVIDIA GeForce RTX 3060"
+                [class.is-invalid]="specsForm.controls.gpu.invalid && specsForm.controls.gpu.touched" />
+            </div>
+            <div class="specs-row">
+              <div class="profile-info">
+                <label for="spec-ram">RAM (GB)</label>
+                <input id="spec-ram" class="specs-input" type="number" min="1" max="1024" formControlName="ramGb"
+                  placeholder="16"
+                  [class.is-invalid]="specsForm.controls.ramGb.invalid && specsForm.controls.ramGb.touched" />
+              </div>
+              <div class="profile-info">
+                <label for="spec-vram">VRAM (GB) <small>opzionale</small></label>
+                <input id="spec-vram" class="specs-input" type="number" min="1" max="128" formControlName="vramGb"
+                  placeholder="8"
+                  [class.is-invalid]="specsForm.controls.vramGb.invalid && specsForm.controls.vramGb.touched" />
+              </div>
+            </div>
+            <div class="profile-info">
+              <label for="spec-os">Sistema operativo</label>
+              <input id="spec-os" class="specs-input" formControlName="os" maxlength="100"
+                placeholder="es. Windows 11"
+                [class.is-invalid]="specsForm.controls.os.invalid && specsForm.controls.os.touched" />
+            </div>
+
+            <div class="specs-actions">
+              @if (specs()) {
+                <button type="button" class="specs-delete-button" (click)="deleteSpecs()" [disabled]="specsSaving()">
+                  <i class="bi bi-trash"></i>
+                  <span>Elimina</span>
+                </button>
+              }
+              <button type="button" class="specs-cancel-button" (click)="cancelEditSpecs()" [disabled]="specsSaving()">
+                Annulla
+              </button>
+              <button type="submit" class="specs-save-button" [disabled]="specsSaving()">
+                {{ specsSaving() ? 'Salvataggio...' : 'Salva' }}
+              </button>
+            </div>
+          </form>
+        } @else if (specs()) {
+          <div class="profile-info">
+            <span>CPU</span>
+            <p>{{ specs()!.cpu }}</p>
+          </div>
+          <div class="profile-info">
+            <span>GPU</span>
+            <p>
+              {{ specs()!.gpu }}
+              @if (specs()!.vramGb) {
+                <small class="specs-muted">({{ specs()!.vramGb }} GB VRAM)</small>
+              }
+            </p>
+          </div>
+          <div class="profile-info">
+            <span>RAM</span>
+            <p>{{ specs()!.ramGb }} GB</p>
+          </div>
+          <div class="profile-info">
+            <span>Sistema operativo</span>
+            <p>{{ specs()!.os }}</p>
+          </div>
+        } @else {
+          <p class="specs-empty">
+            Nessuna specifica salvata. Aggiungi il tuo PC per sapere quali giochi puoi far girare.
+          </p>
+        }
+
+        @if (specsWarning()) {
+          <div class="specs-warning" role="status">
+            <i class="bi bi-info-circle"></i>
+            {{ specsWarning() }}
+          </div>
+        }
+        @if (specsError()) {
+          <div class="specs-error" role="alert">
+            <i class="bi bi-exclamation-circle"></i>
+            {{ specsError() }}
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+</div>
