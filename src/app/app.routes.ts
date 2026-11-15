@@ -11,6 +11,7 @@ import { VerifyOtp } from './pages/verify-otp/verify-otp';
 import { Collections } from './pages/collections/collections';
 import { CollectionsLayout } from './pages/collections-layout/collections-layout';
 import { Genres } from './pages/genres/genres';
+import { NotFound } from './pages/not-found/not-found';
 
 export const routes: Routes = [
 	{
@@ -65,5 +66,10 @@ export const routes: Routes = [
 				canActivate: [collectionTypeCheck],
 			},
 		],
+	},
+	// Deve restare l'ultima: '**' prende qualsiasi URL che non corrisponde alle route sopra
+	{
+		path: '**',
+		component: NotFound
 	},
 ];

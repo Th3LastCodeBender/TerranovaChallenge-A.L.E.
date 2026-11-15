@@ -25,9 +25,16 @@
                     <app-game-card [game]="game"></app-game-card>
                 </div>
             } @empty {
-                <p class="text-center py-5 w-100">
-                    {{ search() ? 'Nessun gioco trovato' : 'Nessun gioco disponibile' }}
-                </p>
+                @if (error(); as message) {
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mx-auto my-5 w-auto" role="alert">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                } @else {
+                    <p class="text-center py-5 w-100">
+                        {{ search() ? 'Nessun gioco trovato' : 'Nessun gioco disponibile' }}
+                    </p>
+                }
             }
         </div>
         @if (games().length > 0) {

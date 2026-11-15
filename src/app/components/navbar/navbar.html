@@ -34,7 +34,7 @@
                                         <i class="bi bi-chevron-right custom-search-result-arrow"></i>
                                     </button>
                                 } @empty {
-                                    <div class="custom-search-message">No games found</div>
+                                    <div class="custom-search-message" [class.text-danger]="searchError()">{{ searchError() ?? 'No games found' }}</div>
                                 }
                                 @if (searchResults().length > 0) {
                                     <button type="button" class="custom-search-view-all" (click)="viewAllResults()">

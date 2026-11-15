@@ -7,6 +7,7 @@ import { GameCard } from '../game-card/game-card';
 import { GamesService } from '../../services/games/games-service';
 import { GameFiltersBar } from '../game-filters/game-filters';
 import { FILTER_KEYS, GameFilters } from '../../models/game-filters.model';
+import { httpErrorMessage } from '../../utils/http-error-message';
 
 @Component({
   imports: [GameCard, GameFiltersBar],
@@ -24,6 +25,8 @@ export class GameList {
   page = signal(1);
   hasMore = signal(false);
   loading = signal(false);
+  // Messaggio da mostrare se il backend risponde con un errore (null = nessun errore)
+  error = signal<string | null>(null);
 
   constructor() {
     this.route.queryParamMap.pipe(
@@ -38,6 +41,7 @@ export class GameList {
         this.search.set(search);
         this.page.set(page);
         this.loading.set(true);
+        this.error.set(null);
       }),
       switchMap(({ search, page, filters }) =>
         // senza ricerca mostriamo tutti i giochi, paginati dal backend
@@ -47,6 +51,7 @@ export class GameList {
         ).pipe(
           catchError(err => {
             console.error('Errore nel recupero dei games:', err);
+            this.error.set(httpErrorMessage(err));
             return of({ results: [], hasMore: false });
           })
         )

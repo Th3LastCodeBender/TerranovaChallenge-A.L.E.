@@ -551,7 +551,7 @@
 }
 
 .game-error > i {
-    color: var(--tag-color);
+    color: var(--offcanvas-accent);
 
     font-size: 3rem;
 }
@@ -570,12 +570,12 @@
 
     padding: 0.6rem 1rem;
 
-    background-color: var(--tag-bg);
+    background-color: var(--offcanvas-accent-bg);
 
-    border: 1px solid var(--tag-border);
+    border: 1px solid var(--offcanvas-accent-border);
     border-radius: 0.5rem;
 
-    color: var(--tag-color);
+    color: var(--offcanvas-accent);
 
     font-size: 0.9rem;
     font-weight: 600;

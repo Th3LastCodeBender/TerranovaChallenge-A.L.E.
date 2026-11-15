@@ -1,0 +1,71 @@
+// Stessi valori della schermata "Game not found" (game-details.scss, .game-state-page)
+.not-found-page {
+    min-height: calc(100vh - 80px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 2rem;
+}
+
+.not-found-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 1rem;
+
+    color: var(--text-color);
+
+    text-align: center;
+}
+
+.not-found-content > i {
+    color: var(--offcanvas-accent);
+
+    font-size: 3rem;
+}
+
+.not-found-content h1 {
+    margin: 0;
+
+    font-size: 1.6rem;
+}
+
+.not-found-content p {
+    margin: 0;
+
+    opacity: 0.75;
+}
+
+.not-found-button {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 0.5rem;
+
+    padding: 0.6rem 1rem;
+
+    background-color: var(--offcanvas-accent-bg);
+
+    border: 1px solid var(--offcanvas-accent-border);
+    border-radius: 0.5rem;
+
+    color: var(--offcanvas-accent);
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.not-found-button:hover {
+    transform: translateY(-2px);
+
+    border-color: var(--card-border-hover);
+}

@@ -16,6 +16,7 @@ import { ThemeService } from '../../services/theme/theme-service';
 import { GamesService } from '../../services/games/games-service';
 import { IgdbGame } from '../../models/game.model';
 import { igdbImageUrl } from '../../models/image.model';
+import { httpErrorMessage } from '../../utils/http-error-message';
 
 @Component({
 	imports: [RouterLink, RouterLinkActive],
@@ -39,6 +40,8 @@ export class Navbar {
 	isSearching = signal(false);
 	searchQuery = signal('');
 	isSearchOpen = signal(false);
+	// Messaggio d'errore della ricerca nel menu (null = nessun errore)
+	searchError = signal<string | null>(null);
 
 	constructor() {
 		this.searchSubject
@@ -53,12 +56,14 @@ export class Navbar {
 						return of([]);
 					}
 					this.isSearching.set(true);
+					this.searchError.set(null);
 					this.isSearchOpen.set(true);
 					return this.gamesService
 						.getGameByName(query)
 						.pipe(
 							catchError(error => {
 								console.error( 'Errore durante la ricerca dei giochi:',	error );
+								this.searchError.set(httpErrorMessage(error));
 								this.isSearching.set(false);
 								return of([]);
 							})
