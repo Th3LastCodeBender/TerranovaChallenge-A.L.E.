@@ -60,7 +60,7 @@ export function deleteSession(tokenHash: string)
 	return prisma.wG_Session.deleteMany({ where: { tokenHash } })
 }
 
-// export function deleteExpiredSessions()
-// {
-// 	return prisma.wG_Session.deleteMany({ where: { expiresAt: { lte: new Date() } } })
-// }
+export function deleteExpiredSessions()
+{
+	return prisma.wG_Session.deleteMany({ where: { expiresAt: { lte: new Date() } } })
+}
