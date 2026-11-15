@@ -12,9 +12,10 @@ RUN pnpm install --frozen-lockfile
 
 COPY --chown=node:node . .
 RUN pnpm exec prisma generate
-# next build importa i moduli delle route: db-pool e redis-init leggono le env all'import, quindi servono valori finti
+# next build importa i moduli delle route: db-pool, redis-init e mails leggono le env all'import, quindi servono valori finti
 RUN REDIS_HOST=finto REDIS_PORT=6379 REDIS_PASSWORD=finto \
     DB_USER=finto DB_PASSWORD=finto DB_NAME=finto DB_HOST=localhost DB_PORT=5432 \
+    EMAIL_CLIENT_ID=finto EMAIL_CLIENT_SECRET=finto \
     pnpm exec next build
 
 

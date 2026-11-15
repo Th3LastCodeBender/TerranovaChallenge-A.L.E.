@@ -3,8 +3,11 @@
 .env.*
 !.env.example
 
-# Protezione dei worktree
-/app/
+# Il DB resta sul suo branch, non entra in main
+/app/03_db/
+
+# Cache di Angular
+.angular/
 
 # Docker personale
 docker-compose.override.yml
