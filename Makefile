@@ -1,9 +1,13 @@
 DEV_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 OWNER := $(shell id -u):$(shell id -g)
 GPU_COMPOSE := $(DEV_COMPOSE) -f docker-compose.gpu.yml
+PROD_GPU_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.gpu.yml
 NO_LLM = $(shell $(DEV_COMPOSE) config --services 2>/dev/null | grep -vx ollama)
 
 all : up
+
+all_gpu:
+	$(PROD_GPU_COMPOSE) up -d --build --wait
 
 dev:
 	$(DEV_COMPOSE) up -d --build
@@ -64,4 +68,4 @@ logs:
 db:
 	docker compose exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
 
-.PHONY: all dev dev_restart up down clean re ps logs db fclean migration migrate migrate_status dev_gpu llm_pull
+.PHONY: all all_gpu dev dev_restart up down clean re ps logs db fclean migration migrate migrate_status dev_gpu llm_pull

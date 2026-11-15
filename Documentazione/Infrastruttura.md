@@ -76,7 +76,7 @@ Una cosa strana: `next build` importa i moduli delle route e alcuni leggono le v
 - `ng serve` usa `Docker/frontend/proxy.dev.json` per girare `/api` al backend, come fa nginx
 - le porte 4200 e 3000 sono legate a `127.0.0.1`, non si vedono dalla rete
 
-`docker-compose.gpu.yml` assegna la GPU NVIDIA a Ollama. Lo usa solo `make dev_gpu`. Il modello sta nel volume `ollama_models`, che non viene cancellato né da `make clean` né da `make fclean`, per evitare di riscaricare 5 GB ogni volta.
+`docker-compose.gpu.yml` assegna la GPU NVIDIA a Ollama. Lo usano `make dev_gpu` e `make all_gpu`. Il modello sta nel volume `ollama_models`, che non viene cancellato né da `make clean` né da `make fclean`, per evitare di riscaricare 5 GB ogni volta.
 
 ## Variabili d'ambiente
 
@@ -99,7 +99,7 @@ Durante lo sviluppo ogni livello stava sul suo branch, collegato come git worktr
 
 | Comando | Cosa fa |
 | --- | --- |
-| `make all` | Build e avvio della versione finale |
+| `make all` / `make all_gpu` | Build e avvio della versione finale, con o senza GPU destinata al modello di OLLAMA |
 | `make dev` / `make dev_gpu` | Avvio di sviluppo, con o senza GPU destinata al modello di OLLAMA|
 | `make dev_restart` | Riavvia frontend e backend (nuove dipendenze o migrations) |
 | `make llm_pull` | Scarica il modello di Ollama |
@@ -118,6 +118,6 @@ I comandi delle migrations funzionano solo con `make dev` avviato, perché giran
 ## Limiti
 
 - L'immagine del backend si porta dietro anche le dipendenze di sviluppo ed è pesante. Con una build multi-stage e `output: standalone` sarebbe più piccola, ma abbiamo preferito un Dockerfile semplice.
-- `make all` non usa la GPU per Ollama.
+- `make all` non usa la GPU per Ollama: per usarla c'è `make all_gpu`.
 - Se una migration fallisce il backend non parte e Docker continua a riavviarlo. Necessario l'utilizzo di `make logs` per visualizzare i log del container
 .
