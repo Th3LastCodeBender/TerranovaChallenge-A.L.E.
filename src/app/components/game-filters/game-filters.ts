@@ -30,6 +30,8 @@ export class GameFiltersBar {
   readonly maxYear = new Date().getFullYear();
   readonly stars = [1, 2, 3, 4, 5];
 
+  readonly filtersOpen = signal(false);
+
   filters = toSignal(
     this.route.queryParamMap.pipe(
       map(p => {

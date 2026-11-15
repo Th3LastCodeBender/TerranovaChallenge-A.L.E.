@@ -1,4 +1,14 @@
-<div class="game-filters">
+<button type="button" class="filters-toggle"
+        [attr.aria-expanded]="filtersOpen()"
+        (click)="filtersOpen.set(!filtersOpen())">
+    <i class="bi bi-sliders"></i>
+    <span>Filtri</span>
+    @if (hasActiveFilters()) {
+        <span class="filters-dot"></span>
+    }
+</button>
+
+<div class="game-filters" [class.open]="filtersOpen()">
     <div class="filter-field">
         <label for="filter-genre" class="filter-label">Genere</label>
         <select id="filter-genre" class="filter-control"

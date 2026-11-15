@@ -1,10 +1,16 @@
 <app-navbar />
 <div class="container py-5">
   <section class="profile-header mb-4">
-    <button type="button" class="profile-logout-button" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i>
-      <span>Logout</span>
-    </button>
+    <div class="profile-header-actions">
+      <button type="button" class="profile-logout-button" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Logout</span>
+      </button>
+      <button type="button" class="profile-logout-button" (click)="openDeleteAccount()" [disabled]="deleteOpen()">
+        <i class="bi bi-trash"></i>
+        <span>Elimina account</span>
+      </button>
+    </div>
     <div class="row align-items-center">
       <div class="col-auto">
         <div class="profile-avatar">
@@ -31,6 +37,41 @@
       </div>
     </div>
   </section>
+  @if (deleteOpen()) {
+    <section class="profile-card danger-card mb-4">
+      <h4 class="mb-3">
+        Elimina account
+      </h4>
+      <p class="danger-text">
+        Cancella per sempre il tuo account con preferiti, collezioni, specifiche del PC e sessioni attive. Non si può annullare.
+      </p>
+      <form class="specs-form" [formGroup]="deleteForm" (ngSubmit)="confirmDeleteAccount()">
+        <div class="profile-info">
+          <label for="delete-password">Conferma con la tua password</label>
+          <input id="delete-password" class="specs-input" type="password" formControlName="password"
+            maxlength="128" autocomplete="current-password"
+            [class.is-invalid]="deleteForm.controls.password.invalid && deleteForm.controls.password.touched" />
+        </div>
+
+        <div class="specs-actions">
+          <button type="button" class="specs-cancel-button" (click)="cancelDeleteAccount()" [disabled]="deleteLoading()">
+            Annulla
+          </button>
+          <button type="submit" class="specs-delete-button danger-confirm" [disabled]="deleteLoading()">
+            <i class="bi bi-trash"></i>
+            <span>{{ deleteLoading() ? 'Eliminazione...' : 'Elimina definitivamente' }}</span>
+          </button>
+        </div>
+      </form>
+
+      @if (deleteError()) {
+        <div class="specs-error" role="alert">
+          <i class="bi bi-exclamation-circle"></i>
+          {{ deleteError() }}
+        </div>
+      }
+    </section>
+  }
   <section class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
       <a class="col text-decoration-none" routerLink="/collections/finished">
         <div class="stat-card text-center">

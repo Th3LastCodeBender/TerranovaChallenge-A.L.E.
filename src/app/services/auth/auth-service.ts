@@ -99,6 +99,17 @@ export class AuthService {
 			}));
 	}
 
+	// Il backend chiede di nuovo la password e, se è giusta, cancella account e cookie.
+	// tap e non finalize: l'utente locale si toglie solo se l'eliminazione è riuscita
+	deleteAccount(password: string): Observable<unknown> {
+		return this.http.delete('/api/auth/delete-account', { body: { password } }).pipe(
+			tap(() => {
+				this.user = null;
+				sessionStorage.removeItem('user');
+			})
+		);
+	}
+
 	private loadUser(): User | null {
 		const user = sessionStorage.getItem('user');
 		if (!user)

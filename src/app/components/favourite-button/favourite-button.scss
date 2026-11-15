@@ -46,5 +46,16 @@
 		i { line-height: 1; }
 
 		&.active { border-color: #e25563; }
+
+		@media (pointer: coarse) {
+			width: 2.75rem;
+			height: 2.75rem;
+		}
+
+		@media (max-width: 575px) {
+			width: 2.25rem;
+			height: 2.25rem;
+			font-size: 1rem;
+		}
 	}
 }

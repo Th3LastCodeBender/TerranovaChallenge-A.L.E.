@@ -26,6 +26,11 @@ export class Account implements OnInit {
   mfaLoading = signal(false);
   mfaError = signal<string | null>(null);
 
+  // Eliminazione account: il riquadro di conferma si apre solo dopo il primo click
+  deleteOpen = signal(false);
+  deleteLoading = signal(false);
+  deleteError = signal<string | null>(null);
+
   private specsService = inject(SpecsService);
   private fb = inject(FormBuilder);
 
@@ -44,6 +49,11 @@ export class Account implements OnInit {
 	ramGb: [null as number | null, [Validators.required, Validators.min(1), Validators.max(1024)]],
 	vramGb: [null as number | null, [Validators.min(1), Validators.max(128)]],
 	os: ['', [Validators.required, Validators.maxLength(100)]],
+  });
+
+  // Stessi limiti della validazione in /api/auth/delete-account
+  deleteForm = this.fb.group({
+	password: ['', [Validators.required, Validators.maxLength(128)]],
   });
 
   ngOnInit(): void {
@@ -186,4 +196,42 @@ export class Account implements OnInit {
 			error: () => this.router.navigate(['/'])
 		});
 	}
+
+  openDeleteAccount(): void {
+	this.deleteForm.reset();
+	this.deleteError.set(null);
+	this.deleteOpen.set(true);
+  }
+
+  cancelDeleteAccount(): void {
+	this.deleteOpen.set(false);
+	this.deleteError.set(null);
+	this.deleteForm.reset();
+  }
+
+  confirmDeleteAccount(): void {
+	if (this.deleteForm.invalid) {
+	  this.deleteForm.markAllAsTouched();
+	  return;
+	}
+
+	this.deleteLoading.set(true);
+	this.deleteError.set(null);
+
+	this.authService.deleteAccount(this.deleteForm.getRawValue().password!).subscribe({
+	  next: () => this.router.navigate(['/']),
+	  error: (err: HttpErrorResponse) => {
+		this.deleteLoading.set(false);
+		this.deleteError.set(this.deleteErrorMessage(err));
+	  }
+	});
+  }
+
+  private deleteErrorMessage(err: HttpErrorResponse): string {
+	switch (err.status) {
+	  case 403: return 'Password errata';
+	  case 429: return 'Troppi tentativi, riprova tra qualche minuto';
+	  default: return 'Impossibile eliminare l\'account, riprova';
+	}
+  }
 }

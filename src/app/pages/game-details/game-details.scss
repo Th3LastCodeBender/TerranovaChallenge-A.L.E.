@@ -695,7 +695,17 @@
     }
 
     .screenshots-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 85%;
+
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 0.5rem;
+    }
+
+    .screenshot-card {
+        scroll-snap-align: start;
     }
 
     .related-games {
@@ -715,6 +725,7 @@
     }
 
     app-favourite-button,
+    app-collection-button,
     app-can-i-run {
         flex: 1;
     }

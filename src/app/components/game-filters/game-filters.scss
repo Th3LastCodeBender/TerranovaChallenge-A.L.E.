@@ -179,6 +179,10 @@
     border-color: var(--offcanvas-accent);
 }
 
+.filters-toggle {
+    display: none;
+}
+
 @media (max-width: 575px) {
     .filter-field,
     .filter-field-small {
@@ -187,5 +191,48 @@
 
     .filter-reset {
         flex: 1 1 100%;
+    }
+
+    .filter-control {
+        height: 44px;
+        font-size: 1rem;
+    }
+
+    .filter-order {
+        width: 44px;
+        height: 44px;
+    }
+
+    .filter-reset {
+        height: 44px;
+    }
+
+    .filters-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        height: 44px;
+        margin-bottom: 0.75rem;
+        padding: 0 1rem;
+
+        color: var(--offcanvas-text);
+        background: var(--offcanvas-accent-bg);
+        border: 1px solid var(--offcanvas-accent-border);
+        border-radius: 0.75rem;
+
+        font-weight: 600;
+    }
+
+    .filters-dot {
+        width: 8px;
+        height: 8px;
+
+        border-radius: 50%;
+        background: var(--offcanvas-accent);
+    }
+
+    .game-filters:not(.open) {
+        display: none;
     }
 }

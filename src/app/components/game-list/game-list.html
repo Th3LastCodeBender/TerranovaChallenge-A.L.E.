@@ -19,13 +19,13 @@
             <div class="spinner-border" role="status"></div>
         </div>
     } @else {
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
             @for (game of games(); track game.id) {
                 <div class="col">
                     <app-game-card [game]="game"></app-game-card>
                 </div>
             } @empty {
-                <p class="text-center py-5">
+                <p class="text-center py-5 w-100">
                     {{ search() ? 'Nessun gioco trovato' : 'Nessun gioco disponibile' }}
                 </p>
             }

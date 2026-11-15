@@ -113,10 +113,12 @@ export class Navbar {
 		this.visibile.update(v => !v);
 	}
 
-	viewAllResults(): void {
+	viewAllResults(input?: HTMLInputElement): void {
 		const query = this.searchQuery();
 		if (!query)
 			return;
+		input?.blur();
+		this.searchSubject.next('');
 		this.isSearchOpen.set(false);
 		this.router.navigate(['/games'], {
 			queryParams: { search: query }

@@ -65,20 +65,31 @@
     z-index: 10;
 }
 
-.custom-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--card-border-hover);
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.25),
-        0 0 20px color-mix(
-            in srgb,
-            var(--card-glow-first) 15%,
-            transparent
-    );
-}
+@media (hover: hover) {
+    .custom-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--card-border-hover);
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.25),
+            0 0 20px color-mix(
+                in srgb,
+                var(--card-glow-first) 15%,
+                transparent
+        );
+    }
 
-.custom-card:hover::before {
-    animation: border-run 0.8s ease-in-out 1 forwards;
+    .custom-card:hover::before {
+        animation: border-run 0.8s ease-in-out 1 forwards;
+    }
+
+    .custom-card:hover .custom-game-image {
+        transform: scale(1.10);
+    }
+
+    .custom-platform-card:hover {
+        background-color: var(--console-card-bg);
+        border-color: var(--console-card-color);
+    }
 }
 
 .custom-game-image {
@@ -92,10 +103,6 @@
     object-position: center;
 
     transition: transform 0.5s ease;
-}
-
-.custom-card:hover .custom-game-image {
-    transform: scale(1.10);
 }
 
 .custom-game-image-placeholder {
@@ -306,11 +313,6 @@
         border-color 0.2s ease;
 }
 
-.custom-platform-card:hover {
-    background-color: var(--console-card-bg);
-    border-color: var(--console-card-color);
-}
-
 .custom-platform-card i {
     font-size: 1rem;
     line-height: 1;
@@ -361,4 +363,63 @@
 .custom-card:focus-visible {
     outline: 3px solid var(--card-glow-first);
     outline-offset: 4px;
+}
+
+@media (max-width: 575px) {
+    .custom-card {
+        width: 100%;
+    }
+
+    .custom-overlay {
+        padding: 0.75rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        min-height: calc(1rem * 1.3 * 2);
+        margin-bottom: 0.35rem;
+    }
+
+    .custom-genres,
+    .custom-platform-container,
+    .custom-metacritic-text {
+        display: none;
+    }
+
+    .custom-rating-container {
+        gap: 0.5rem;
+        min-height: 1.6rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .custom-rating {
+        font-size: 0.85rem;
+    }
+
+    .custom-separator {
+        height: 1.1rem;
+    }
+
+    .custom-metacritic-score {
+        min-width: 1.6rem;
+        height: 1.6rem;
+        font-size: 0.8rem;
+    }
+
+    .custom-release {
+        flex-wrap: wrap;
+        min-height: 0;
+        margin: 0;
+        font-size: 0.72rem;
+    }
+
+    .custom-favourite {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    .custom-collection {
+        top: 0.5rem;
+        left: 0.5rem;
+    }
 }

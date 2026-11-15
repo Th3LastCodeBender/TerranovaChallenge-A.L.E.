@@ -2,11 +2,11 @@
 	@if (error()) {
 		<div class="alert alert-danger">{{ error() }}</div>
 	} @else {
-		<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3" [class.opacity-50]="loading()" [attr.aria-busy]="loading()">
+		<div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3" [class.opacity-50]="loading()" [attr.aria-busy]="loading()">
 			@for (game of games(); track game.id) {
 			<div class="col"><app-game-card [game]="game"></app-game-card></div>
 			} @empty {
-			<p class="text-center py-5">Nessun gioco in questa collezione</p>
+			<p class="text-center py-5 w-100">Nessun gioco in questa collezione</p>
 			}
 		</div>
 

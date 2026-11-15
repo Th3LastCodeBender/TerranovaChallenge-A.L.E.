@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // Tipi copiati dalla risposta di GET /api/compat/can-i-run
-// (backend: lib/llm/extract-requirements.ts, lib/compat/check.ts, lib/compat/fps-estimate.ts)
+// (backend: lib/llm/extract-requirements.ts, lib/can-i-run/check.ts, lib/can-i-run/fps-estimate.ts)
 
 export type Resolution = '1080p' | '1440p' | '4k';
 export const RESOLUTIONS: Resolution[] = ['1080p', '1440p', '4k'];

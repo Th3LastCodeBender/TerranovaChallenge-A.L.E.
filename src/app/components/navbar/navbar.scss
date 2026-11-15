@@ -324,13 +324,27 @@
 }
 
 .custom-search-bar {
+    position: relative;
     justify-self: center;
 
-    width: 50vh;
+    width: 100%;
+    max-width: 380px;
+}
 
-    @media (max-width: 768px) {
-        width: 60%;
+@media (max-width: 575px) {
+    .navbar .container-fluid {
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "brand  menu"
+            "search search";
+        row-gap: 0.6rem;
     }
+
+    .navbar-brand      { grid-area: brand; }
+    .custom-menu       { grid-area: menu; }
+    .custom-search-bar { grid-area: search; max-width: none; }
+
+    .custom-title { font-size: 1.6rem; }
 }
 
 .custom-search-bar form {
@@ -481,11 +495,6 @@
     transform: translateX(3px);
 }
 
-
-.custom-search-bar {
-    position: relative;
-    width: 380px;
-}
 
 .custom-search-container {
     position: relative;

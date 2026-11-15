@@ -7,7 +7,7 @@
             <div class="custom-search-bar">
                 <div class="custom-search-container">
                     <div class="position-relative">
-                        <input class="form-control rounded-pill pe-5" type="search" placeholder="Search games..." aria-label="Search games" autocomplete="off" (input)="onSearch($event)" />
+                        <input class="form-control rounded-pill pe-5" type="search" placeholder="Search games..." aria-label="Search games" autocomplete="off" (input)="onSearch($event)" (keydown.enter)="viewAllResults($any($event.target))" />
                         @if (isSearching()) {
                             <div class="spinner-border spinner-border-sm custom-search-spinner" role="status">
                                 <span class="visually-hidden">Searching...</span>

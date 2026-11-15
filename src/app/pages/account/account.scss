@@ -47,13 +47,22 @@
   }
 }
 
-.profile-logout-button {
+// Logout ed Elimina account, uno sotto l'altro in alto a destra
+.profile-header-actions {
   position: absolute;
   top: 1.5rem;
   right: 1.5rem;
 
   z-index: 2;
 
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  gap: 0.5rem;
+}
+
+.profile-logout-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +94,13 @@
   font-size: 0.95rem;
 }
 
-.profile-logout-button:hover {
+// Elimina account mentre il riquadro di conferma è già aperto
+.profile-logout-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.profile-logout-button:hover:not(:disabled) {
   color: #ffffff;
 
   background: rgba(255, 92, 92, 0.18);
@@ -584,10 +599,12 @@
     }
   }
 
-  .profile-logout-button {
+  .profile-header-actions {
     top: 1rem;
     right: 1rem;
+  }
 
+  .profile-logout-button {
     width: 38px;
     height: 38px;
 
@@ -833,6 +850,31 @@
 
   background: rgba(255, 92, 92, 0.08);
   border: 1px solid rgba(255, 92, 92, 0.3);
+}
+
+// Sezione "Elimina account": stessa card delle altre, ma con il bordo rosso al passaggio
+.danger-card {
+  &:hover {
+    border-color: rgba(255, 92, 92, 0.65);
+  }
+
+  h4::after {
+    background: #ff6b6b;
+  }
+}
+
+.danger-text {
+  margin-bottom: 1.2rem;
+
+  color: var(--profile-text-secondary);
+
+  font-size: 0.9rem;
+}
+
+// .specs-delete-button ha margin-right: auto per stare a sinistra nel form delle specifiche:
+// qui il pulsante di conferma deve restare a destra, accanto ad Annulla
+.danger-confirm {
+  margin-right: 0;
 }
 
 @media (max-width: 575px) {
