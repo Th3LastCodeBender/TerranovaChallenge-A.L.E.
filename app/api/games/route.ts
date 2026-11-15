@@ -8,7 +8,6 @@ const PAGE_SIZE = 20
 
 async function fetchIGDBGames(filters: Filters)
 {
-	// rating_count > 0 esclude i giochi quasi sconosciuti dal catalogo
 	const conditions = [...buildConditions(filters), "rating_count > 0"]
 
 	return fetch("https://api.igdb.com/v4/games", {
@@ -73,7 +72,6 @@ export async function GET(req: NextRequest)
 		}
 		const games = await res.json()
 		
-		// stessa forma di /api/games/search, cosi il frontend usa un solo tipo
 		return NextResponse.json({
 			results: games,
 			count: games.length,

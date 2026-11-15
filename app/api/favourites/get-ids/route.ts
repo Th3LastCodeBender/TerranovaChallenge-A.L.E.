@@ -4,8 +4,6 @@ import { listFavourites } from "@/query/favourites"
 import { jsonError } from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 
-// Restituisce solo gli id dei giochi preferiti dell'utente (senza chiamare IGDB),
-// usato dal frontend per mostrare lo stato del cuore nelle game-card
 export const GET = withAuth(async (req, { session }) =>
 {
 	try

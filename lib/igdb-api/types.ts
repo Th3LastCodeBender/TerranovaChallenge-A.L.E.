@@ -1,12 +1,8 @@
-// Oggetto annidato di IGDB espanso con .name (genres.name, themes.name...)
 export type IgdbNamed = {
 	id: number
 	name: string
 }
 
-// Un gioco come lo restituisce /v4/games.
-// Quasi tutti i campi sono opzionali: IGDB non manda quelli vuoti
-// e ogni query chiede campi diversi.
 export type IgdbGame = {
 	id: number
 	name: string
@@ -27,7 +23,6 @@ export type IgdbGame = {
 	involved_companies?: { id: number, company?: IgdbNamed }[]
 }
 
-// Una riga di /v4/popularity_primitives
 export type IgdbPopularity = {
 	id: number
 	game_id: number

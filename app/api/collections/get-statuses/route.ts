@@ -4,8 +4,6 @@ import { listCollection } from "@/query/collection"
 import { jsonError } from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 
-// Restituisce lo stato di ogni gioco nella collezione dell'utente (senza chiamare IGDB),
-// usato dal frontend per mostrare lo stato nelle game-card: { statuses: { [gameId]: status } }
 export const GET = withAuth(async (req, { session }) =>
 {
 	try

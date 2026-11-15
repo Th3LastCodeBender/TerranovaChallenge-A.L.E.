@@ -64,14 +64,6 @@ export async function rateLimit(identifier: string, endpoint: string, options: R
 	}
 }
 
-// Il blocco che ogni route faceva a mano. Restituisce la risposta da mandare se la richiesta
-// va fermata (429 troppe richieste, 503 Redis non raggiungibile), oppure null se si può proseguire:
-//
-//   const limited = await checkRateLimit(req, "/api/...", RATE_LIMIT_POLICIES.xxx)
-//   if (limited)
-//       return limited
-//
-// identifier di default è l'IP; le route che contano per utente passano `user:${session.userId}`.
 export async function checkRateLimit(req: Request, endpoint: string, options: RateLimitOptions, identifier: string = getClientIp(req)): Promise<NextResponse | null>
 {
 	try

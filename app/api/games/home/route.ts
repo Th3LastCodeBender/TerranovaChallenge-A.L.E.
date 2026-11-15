@@ -4,7 +4,6 @@ import { getGamesByIds, jsonError, requireEnv } from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 import type { IgdbGame, IgdbPopularity } from "@/lib/igdb-api/types"
 
-// T è il tipo della risposta: chi chiama dice cosa si aspetta (es. IgdbGame[])
 async function igdbRequest<T>(endpoint: string, query: string)
 {
 	const response = await fetch(`https://api.igdb.com/v4/${endpoint}`,

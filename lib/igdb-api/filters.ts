@@ -1,7 +1,5 @@
 import { NextRequest } from "next/server"
 
-// Filtri condivisi da /api/games e /api/games/search/[title]
-
 export const IGDB_GENRES: Record<string, number> = {
 	"point-and-click": 2,
 	"fighting": 4,
@@ -117,7 +115,6 @@ export function buildConditions(filters: Filters): string[]
 	if (aggregate_rating)
 		conditions.push(`aggregated_rating >= ${Number(aggregate_rating)}`)
 
-	// i giochi senza il campo di ordinamento finirebbero in cima/fondo a caso
 	if (sort !== "name")
 		conditions.push(`${SORT_FIELDS[sort]} != null`)
 

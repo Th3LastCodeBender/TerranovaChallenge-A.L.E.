@@ -171,7 +171,6 @@ function normalizeGame(game: IgdbGame): Game
 		keywords: game.keywords?.map((item) => item.name) ?? [],
 		gameModes: game.game_modes?.map((item) => item.name) ?? [],
 		platforms: game.platforms?.map((item) => item.name) ?? [],
-		// filter con "!== undefined" e non Boolean: così TypeScript sa che restano solo stringhe
 		companies: game.involved_companies?.map((item) => item.company?.name).filter((name) => name !== undefined) ?? [],
 		rating: game.rating ?? 0,
 	}
@@ -179,8 +178,6 @@ function normalizeGame(game: IgdbGame): Game
 
 async function getRecommendations(userId: number, limit: number = 5)
 {
-	// favs: gli ultimi preferiti, per costruire il profilo
-	// allFavs: tutti i preferiti, per non suggerire giochi che l'utente ha già
 	const [favs, allFavs]: [Favourite[], Favourite[]] = await Promise.all([
 		listFavourites(userId, {limit: limit, offset: 0}),
 		listFavourites(userId)
@@ -189,7 +186,6 @@ async function getRecommendations(userId: number, limit: number = 5)
 
 	if (favs.length < 2)
 	{
-		// Se ne chiedono abbastanza da averne ancora `limit` dopo aver tolto i preferiti
 		const candidates = await getRecommendationCandidates(limit + seenGameIds.size)
 
 		if (!candidates.ok)
@@ -238,14 +234,11 @@ async function getRecommendations(userId: number, limit: number = 5)
 	for (const key of Object.keys(profile) as (keyof typeof profile)[])
 		profile[key] = [...new Set(profile[key])]
 
-	// Il pool di candidati è più ampio del risultato, così lo score sceglie davvero
 	const candidatesResponse = await getRecommendationCandidates(CANDIDATE_POOL_SIZE)
 
 	if (!candidatesResponse.ok)
 			return candidatesResponse
 
-	// Lo score si calcola sul gioco normalizzato, ma si restituisce l'oggetto IGDB originale
-	// (con cover, slug, genres {id, name}...) così il frontend lo usa come gli altri IgdbGame
 	const candidates = candidatesResponse.games.filter((game) => !seenGameIds.has(game.id))
 
 	const recommendations = candidates.map(rawGame =>
@@ -289,7 +282,6 @@ export const GET = withAuth(async (req, { session }) =>
 {
 	try
 	{
-		// Per utente e non per IP: la route richiede il login
 		const limited = await checkRateLimit(req, "/api/games/suggested", RATE_LIMIT_POLICIES.suggest, `user:${session.userId}`)
 
 		if (limited)
