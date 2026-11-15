@@ -179,18 +179,25 @@ function normalizeGame(game: IgdbGame): Game
 
 async function getRecommendations(userId: number, limit: number = 5)
 {
-	const favs: Favourite[] = await listFavourites(userId, {limit: limit, offset: 0})
+	// favs: gli ultimi preferiti, per costruire il profilo
+	// allFavs: tutti i preferiti, per non suggerire giochi che l'utente ha già
+	const [favs, allFavs]: [Favourite[], Favourite[]] = await Promise.all([
+		listFavourites(userId, {limit: limit, offset: 0}),
+		listFavourites(userId)
+	])
+	const seenGameIds = new Set(allFavs.map(fav => fav.gameId))
 
 	if (favs.length < 2)
 	{
-		const candidates = await getRecommendationCandidates(5)
+		// Se ne chiedono abbastanza da averne ancora `limit` dopo aver tolto i preferiti
+		const candidates = await getRecommendationCandidates(limit + seenGameIds.size)
 
 		if (!candidates.ok)
 			return candidates
 
 		return {
 			ok: true as const,
-			data: candidates.games
+			data: candidates.games.filter((game) => !seenGameIds.has(game.id)).slice(0, limit)
 		}
 	}
 
@@ -237,8 +244,6 @@ async function getRecommendations(userId: number, limit: number = 5)
 	if (!candidatesResponse.ok)
 			return candidatesResponse
 
-	const seenGameIds = new Set(favouriteIds)
-
 	// Lo score si calcola sul gioco normalizzato, ma si restituisce l'oggetto IGDB originale
 	// (con cover, slug, genres {id, name}...) così il frontend lo usa come gli altri IgdbGame
 	const candidates = candidatesResponse.games.filter((game) => !seenGameIds.has(game.id))
@@ -284,7 +289,8 @@ export const GET = withAuth(async (req, { session }) =>
 {
 	try
 	{
-		const limited = await checkRateLimit(req, "/api/games/suggested", RATE_LIMIT_POLICIES.suggest)
+		// Per utente e non per IP: la route richiede il login
+		const limited = await checkRateLimit(req, "/api/games/suggested", RATE_LIMIT_POLICIES.suggest, `user:${session.userId}`)
 
 		if (limited)
 			return limited
