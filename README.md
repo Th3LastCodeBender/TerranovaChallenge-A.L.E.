@@ -28,7 +28,7 @@ Nel `.env` vanno messi almeno:
 Poi:
 
 ```bash
-make all        # crea i worktree, costruisce le immagini e avvia tutto
+make all        # costruisce le immagini e avvia tutto
 make llm_pull   # solo la prima volta, scarica il modello per "Posso farlo girare?" (~5 GB)
 ```
 

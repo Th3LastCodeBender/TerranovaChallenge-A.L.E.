@@ -84,23 +84,22 @@ Il `.env` nella root è l'unica configurazione. Il compose lo passa intero al ba
 
 Il compose si rifiuta di partire se mancano le variabili del DB o la password di Redis.
 
-## Repo e worktree
+## Struttura della repo
 
-Il metodo di sviluppo è stato il seguente: branch `main` contiene l'infrastruttura (Makefile, compose, `Docker/`, documentazione). Branches Frontend, backend e db hanno il corrispettivo branch, collegato come git worktree dentro `app/` e creati dinamicamete alla regola `make setup` o `make dev`.
+`main` contiene tutto: l'infrastruttura (Makefile, compose, `Docker/`, documentazione) e il codice dei due livelli.
 
-| Cartella | Branch |
+| Cartella | Da quale branch arriva |
 | --- | --- |
 | `app/01_frontend` | `frontend` |
 | `app/02_backend` | `backend_ts` |
-| `app/03_db` | `DataBase` |
 
-`make setup` crea i worktree mancanti, e `make all`/`make dev` lo chiamano da soli.
+Durante lo sviluppo ogni livello stava sul suo branch, collegato come git worktree dentro `app/`. Per la consegna i due branch sono stati importati in `main` con `git subtree add`, che tiene anche la cronologia dei commit. Il branch `DataBase` non è stato importato: schema e migrations stanno già nel backend (`app/02_backend/prisma/`).
 
 ## Comandi
 
 | Comando | Cosa fa |
 | --- | --- |
-| `make all` | Worktree, build e avvio della versione finale |
+| `make all` | Build e avvio della versione finale |
 | `make dev` / `make dev_gpu` | Avvio di sviluppo, con o senza GPU destinata al modello di OLLAMA|
 | `make dev_restart` | Riavvia frontend e backend (nuove dipendenze o migrations) |
 | `make llm_pull` | Scarica il modello di Ollama |
@@ -111,7 +110,6 @@ Il metodo di sviluppo è stato il seguente: branch `main` contiene l'infrastrutt
 | `make migration name=...` | Crea una migration senza applicarla |
 | `make migrate` | Applica le migrations e rigenera il client Prisma |
 | `make migrate_status` | Quali migrations mancano |
-| `make setup` / `make status` / `make pull` | Worktree: crea, stato, pull |
 | `make clean` | Cancella container e volumi del progetto, **compresi i dati del DB** |
 | `make fclean` | Come `clean`, più immagini, cache di build e reti inutilizzate **di tutto Docker** |
 

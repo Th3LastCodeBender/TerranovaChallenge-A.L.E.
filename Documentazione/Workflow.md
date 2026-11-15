@@ -9,9 +9,9 @@ Ogni livello ha il suo branch e il branch `main` tiene solo quello che serve a f
 ## Organizzazione
 
 - **Branch per livello**: `frontend`, `backend_ts`, `DataBase`. Frontend e backend hanno tutti e due `src/` e `package.json` nella root, metterli nello stesso branch voleva dire riorganizzare tutto e litigare sui merge.
-- **Worktree**: `make setup` monta ogni branch nella sua cartella sotto `app/`. Un commit fatto in `app/02_backend` va su `backend_ts`, uno fatto nella root va su `main`.
+- **Worktree**: `make setup` monta ogni branch nella sua cartella sotto `app/`. Un commit fatto in `app/02_backend` va su `backend_ts`, uno fatto nella root va su `main`. Alla consegna frontend e backend sono stati importati in `main` con `git subtree add`, cronologia compresa.
 - **Commit**: tutti nello stesso formato, `KEYWORD STATO | messaggio | file`, con uno script nostro (vedi [Tools.md](Tools.md)). Così dal log si capisce subito cosa è una feature, cosa un bug e cosa documentazione.
-- **Lista delle cose da fare**: in `TODO.md` su `main`, divisa per area. Le decisioni che bloccavano più persone (formato delle API, login, credenziali Twitch) le abbiamo prese insieme all'inizio.
+- **Lista delle cose da fare**: in `TODO.md` su `main`, divisa per area (tolta alla consegna). Le decisioni che bloccavano più persone (formato delle API, login, credenziali Twitch) le abbiamo prese insieme all'inizio.
 - **Database**: lo schema lo tocca solo chi fa le query, sempre con le migrations. Così nessuno si ritrova un DB diverso da quello degli altri.
 - **API**: le route sono provate con la collection Postman in `postman/`, che si può lanciare anche da terminale con newman.
 
@@ -66,4 +66,3 @@ L'LLM gira in locale nello stesso compose, così il progetto non dipende da un'A
 
 - **Niente CI**: non c'è una pipeline che builda e testa a ogni push. I test li abbiamo fatti a mano con Postman/newman e provando l'app dal browser.
 - **Immagine del backend pesante**: si porta dietro le dipendenze di sviluppo. Una build multi-stage la ridurrebbe, ma abbiamo preferito un Dockerfile semplice da spiegare.
-- **Merge su `main`**: prima della consegna i branch vanno importati in `main` nelle stesse cartelle, così la repo si usa anche senza worktree.
