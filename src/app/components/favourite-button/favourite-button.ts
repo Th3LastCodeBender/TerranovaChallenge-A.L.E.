@@ -14,13 +14,12 @@ export class FavouriteButton {
 	private router = inject(Router);
 
 	gameId = input.required<number>();
-	isFavourite = model(false);   // two-way: [(isFavourite)]
-	variant = input<'full' | 'icon'>('full');   // 'icon' = solo quadrato con cuore (game-card)
+	isFavourite = model(false);
+	variant = input<'full' | 'icon'>('full');
 
 	pending = signal(false);
 
 	toggle(event?: Event): void {
-		// Evita che il click arrivi alla game-card (che aprirebbe la pagina del gioco)
 		event?.stopPropagation();
 		event?.preventDefault();
 		if (!this.auth.isLoggedIn()) {
@@ -31,7 +30,7 @@ export class FavouriteButton {
 			return;
 
 		const wasFavourite = this.isFavourite();
-		this.isFavourite.set(!wasFavourite);   // aggiornamento ottimistico
+		this.isFavourite.set(!wasFavourite);
 		this.pending.set(true);
 
 		const request = wasFavourite
@@ -42,7 +41,7 @@ export class FavouriteButton {
 			next: () => this.pending.set(false),
 			error: err => {
 				console.error('Errore aggiornamento preferiti:', err);
-				this.isFavourite.set(wasFavourite);   // rollback
+				this.isFavourite.set(wasFavourite);
 				this.pending.set(false);
 			},
 		});

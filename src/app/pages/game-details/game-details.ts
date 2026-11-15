@@ -118,7 +118,6 @@ export class GameDetails {
 
     publishers = computed(() => this.companyNames('publisher'));
 
-    // Nomi delle aziende con quel ruolo, senza duplicati
     private companyNames(role: 'developer' | 'publisher'): string[] {
         const names = (this.game()?.involved_companies ?? [])
             .filter(involved => involved[role] && involved.company?.name)

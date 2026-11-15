@@ -14,8 +14,6 @@
 }
 
 
-/* COLLECTION NAVIGATION */
-
 .collections-nav {
     position: relative;
 
@@ -49,8 +47,6 @@
 }
 
 
-/* PILLS */
-
 .collections-nav .nav {
     display: flex;
     flex-wrap: wrap;
@@ -64,8 +60,6 @@
     display: flex;
 }
 
-
-/* NORMAL LINK */
 
 .collections-nav .nav-link {
     position: relative;
@@ -103,8 +97,6 @@
 }
 
 
-/* HOVER */
-
 .collections-nav .nav-link:hover {
     transform: translateY(-1px);
 
@@ -120,8 +112,6 @@
     border-color: var(--tag-border);
 }
 
-
-/* ACTIVE COLLECTION */
 
 .collections-nav .nav-link.active {
     color: #ffffff;
@@ -159,22 +149,16 @@
 }
 
 
-/* FOCUS */
-
 .collections-nav .nav-link:focus-visible {
     outline: 2px solid var(--card-glow-first);
     outline-offset: 2px;
 }
 
 
-/* CONTENT */
-
 .collections-content {
     width: 100%;
 }
 
-
-/* TABLET */
 
 @media (max-width: 991px) {
     .collections-page {
@@ -186,8 +170,6 @@
     }
 }
 
-
-/* MOBILE */
 
 @media (max-width: 767px) {
     .collections-page {
@@ -229,8 +211,6 @@
     }
 }
 
-
-/* SMALL MOBILE */
 
 @media (max-width: 480px) {
     .collections-page {

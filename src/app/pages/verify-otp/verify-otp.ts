@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth/auth-service';
   selector: 'app-verify-otp',
   imports: [RouterLink, ReactiveFormsModule],
   templateUrl: './verify-otp.html',
-  styleUrl: '../login/login.scss', // riuso lo stile del login
+  styleUrl: '../login/login.scss',
 })
 export class VerifyOtp {
   private authService = inject(AuthService);
@@ -40,7 +40,6 @@ export class VerifyOtp {
         const backendMsg: string | undefined = err.error?.error;
 
         if (err.status === 401 && backendMsg !== 'Invalid code') {
-          // challenge scaduta / tentativi finiti / cookie assente
           this.authService.clearMfaPending();
           this.router.navigate(['/login']);
           return;

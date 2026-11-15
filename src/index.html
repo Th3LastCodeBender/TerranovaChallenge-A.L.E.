@@ -3,8 +3,6 @@
 <head>
   <meta charset="utf-8">
   <script>
-    // Applica il tema salvato prima che Angular parta, per evitare il flash del tema sbagliato.
-    // Default light; la chiave deve restare allineata con THEME_STORAGE_KEY in theme-service.ts
     try {
       if (localStorage.getItem('theme') === 'dark')
         document.documentElement.setAttribute('data-bs-theme', 'dark');

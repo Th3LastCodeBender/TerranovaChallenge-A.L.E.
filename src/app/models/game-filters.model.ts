@@ -1,6 +1,3 @@
-// Filtri accettati da /api/games e /api/games/search/:title.
-// I valori devono restare allineati con lib/igdb-api/filters.ts del backend.
-
 export interface GameFilters {
     genre?: string;
     platform?: string;
@@ -41,7 +38,6 @@ export const GENRE_OPTIONS: FilterOption[] = [
     { value: 'visual-novel', label: 'Visual novel' },
 ];
 
-// ID piattaforma IGDB
 export const PLATFORM_OPTIONS: FilterOption[] = [
     { value: '6', label: 'PC' },
     { value: '167', label: 'PlayStation 5' },
@@ -54,8 +50,6 @@ export const PLATFORM_OPTIONS: FilterOption[] = [
     { value: '34', label: 'Android' },
 ];
 
-// Voto giocatori in stelle: la stella n corrisponde a rating >= STAR_THRESHOLDS[n - 1].
-// 5 stelle = 90 e non 100, perché quasi nessun gioco arriva a 100.
 export const STAR_THRESHOLDS = [20, 40, 60, 80, 90];
 
 export const RATING_OPTIONS: FilterOption[] = [

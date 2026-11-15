@@ -1,6 +1,5 @@
 :host { display: inline-flex; }
 
-// Stesso stile dei pulsanti Favourite / Collection
 .can-i-run-button {
 	display: inline-flex;
 	align-items: center;
@@ -25,8 +24,6 @@
 		box-shadow: 0 0 18px color-mix(in srgb, var(--card-glow-first) 20%, transparent);
 	}
 }
-
-// ---- Pop-up ----
 
 .cir-backdrop {
 	position: fixed;
@@ -189,7 +186,6 @@
 	&:hover { box-shadow: 0 0 18px var(--profile-shadow); color: #ffffff; }
 }
 
-// Verdetto: verde / giallo / rosso / grigio
 .cir-verdict {
 	--verdict: var(--profile-text-secondary);
 
@@ -344,7 +340,6 @@
 
 	small { color: var(--profile-text-secondary); font-size: 0.7rem; }
 
-	// Il preset più alto che tiene almeno 60 (o 30) FPS, calcolato dal backend
 	&.is-best { border-color: var(--profile-accent); box-shadow: 0 0 14px var(--profile-shadow); }
 }
 

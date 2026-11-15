@@ -67,7 +67,6 @@ export const routes: Routes = [
 			},
 		],
 	},
-	// Deve restare l'ultima: '**' prende qualsiasi URL che non corrisponde alle route sopra
 	{
 		path: '**',
 		component: NotFound

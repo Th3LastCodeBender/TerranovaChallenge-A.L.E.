@@ -5,7 +5,6 @@ import { map, tap, Observable, finalize, catchError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { UrlSegment } from '@angular/router';
 
-// Campi che il backend si aspetta in POST /api/auth/signup
 export interface RegisterData {
 	name: string;
 	surname: string;
@@ -23,16 +22,12 @@ const MFA_PENDING = 'mfaPending';
 })
 export class AuthService {
 	private http = inject(HttpClient);
-	// L'utente loggato. Non si salva nel browser: all'avvio lo chiede al backend restoreSession()
 	user: User | null = null;
 
-	// Chiede al backend se il cookie di sessione è ancora valido e chi è l'utente.
-	// La chiama app.config.ts all'avvio, prima delle guardie delle route.
 	restoreSession(): Observable<void> {
 		return this.http.get<User>('/api/auth/me').pipe(
 			tap(res => this.user = this.toUser(res)),
 			map(() => undefined),
-			// 401 (non loggato) o backend irraggiungibile: si parte da sloggati
 			catchError(() => {
 				this.user = null;
 				return of(undefined);
@@ -40,7 +35,6 @@ export class AuthService {
 		);
 	}
 
-	// La usa l'interceptor quando il backend dice che la sessione non c'è più
 	clearUser(): void {
 		this.user = null;
 	}
@@ -77,7 +71,6 @@ export class AuthService {
 		sessionStorage.removeItem(MFA_PENDING);
 	}
 
-	// Dopo la registrazione il backend imposta già il cookie: l'utente è loggato
 	register(data: RegisterData): Observable<User> {
 		return this.http.post<User>('/api/auth/signup', data).pipe(
 			map(res => this.toUser(res)),
@@ -117,8 +110,6 @@ export class AuthService {
 			}));
 	}
 
-	// Il backend chiede di nuovo la password e, se è giusta, cancella account e cookie.
-	// tap e non finalize: l'utente locale si toglie solo se l'eliminazione è riuscita
 	deleteAccount(password: string): Observable<unknown> {
 		return this.http.delete('/api/auth/delete-account', { body: { password } }).pipe(
 			tap(() => {
@@ -139,7 +130,6 @@ export class AuthService {
 		);
 	}
 
-	// Aggiorna lo stato 2FA dell'utente in memoria
 	private setMfa(enabled: boolean): void {
 		if (this.user)
 			this.setUser({ ...this.user, mfa: enabled });

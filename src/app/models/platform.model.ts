@@ -11,7 +11,6 @@ export interface IgdbPlatform {
 
 export type PlatformFamily = 'PlayStation' | 'Xbox' | 'PC' | 'Nintendo';
 
-/** Raggruppa una piattaforma specifica ("PlayStation 5", "Xbox Series X|S"...) nella sua famiglia */
 export function platformFamily(p: IgdbPlatform): PlatformFamily | null {
     if (p.name.startsWith('PlayStation')) return 'PlayStation';
     if (p.name.startsWith('Xbox')) return 'Xbox';

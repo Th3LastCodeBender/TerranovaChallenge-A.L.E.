@@ -1,8 +1,3 @@
-/* You can add global styles to this file, and also import other style files */
-
-// $gradient-light: linear-gradient(160deg, #f4f7fb 0%, #dbe4f0 100%);
-// $gradient-dark:  linear-gradient( 145deg, rgb(76, 105, 172) 11.3%, rgba(24,40,72,1) 99.3% );
-
 html,
 body {
     margin: 0;
@@ -14,53 +9,45 @@ body {
 }
 
 $gradient-light:
-  // Vignettatura leggera ai bordi
   radial-gradient(
     ellipse at 50% 40%,
     transparent 50%,
     rgba(150, 70, 40, 0.08) 100%
   ),
-  // Porpora (in alto a destra)
   radial-gradient(
     circle at 88% 8%,
     rgba(170, 60, 220, 0.26) 0%,
     rgba(170, 60, 220, 0.08) 22%,
     transparent 40%
   ),
-  // Arancione acceso (in alto a sinistra)
   radial-gradient(
     circle at 8% 12%,
     rgba(255, 110, 20, 0.30) 0%,
     rgba(255, 110, 20, 0.10) 20%,
     transparent 38%
   ),
-  // Giallo vivo (a destra, al centro)
   radial-gradient(
     circle at 95% 55%,
     rgba(255, 205, 0, 0.34) 0%,
     rgba(255, 205, 0, 0.10) 20%,
     transparent 38%
   ),
-  // Porpora tenue (a sinistra, in basso)
   radial-gradient(
     circle at 5% 80%,
     rgba(150, 50, 200, 0.20) 0%,
     transparent 38%
   ),
-  // Arancione (in basso al centro)
   radial-gradient(
     circle at 55% 100%,
     rgba(255, 130, 40, 0.26) 0%,
     rgba(255, 130, 40, 0.08) 22%,
     transparent 42%
   ),
-  // Flash giallo piccolo (in alto, al centro)
   radial-gradient(
     circle at 45% 0%,
     rgba(255, 220, 60, 0.22) 0%,
     transparent 25%
   ),
-  // Base crema
   linear-gradient(
     145deg,
     #fff4e8 0%,

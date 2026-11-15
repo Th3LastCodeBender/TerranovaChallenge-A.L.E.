@@ -14,7 +14,6 @@ interface GameDetailsResponse {
     };
 }
 
-// Solo i filtri valorizzati finiscono nella query string
 function buildParams(page: number, filters: GameFilters): Record<string, string | number> {
 	const params: Record<string, string | number> = { offset: (page - 1) * 20 };
 	for (const [key, value] of Object.entries(filters))
@@ -31,12 +30,8 @@ interface GamesServiceSearchResponse {
 	hasMore: boolean;
 }
 
-// Una lista di giochi per ogni categoria restituita da /api/games/home
 export type HomeGamesResponse = Record<string, IgdbGame[]>;
 
-// /api/games/suggested per ora restituisce genres e platforms come string[]:
-// li convertiamo in oggetti { id, name } come si aspetta la card.
-// Quando il backend restituirà IgdbGame completi, questa conversione non avrà effetto.
 function toNamed<T>(items: unknown): T[] | undefined {
 	if (!Array.isArray(items))
 		return undefined;
@@ -87,7 +82,6 @@ export class GamesService {
 		);
 	}
 
-	// Tutti i giochi, 20 per pagina (stessa paginazione della ricerca)
 	getAllGames(page = 1, filters: GameFilters = {}): Observable<GamesServiceSearchResponse> {
 		return this.http.get<GamesServiceSearchResponse>(
 			this.allGamesUrl,

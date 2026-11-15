@@ -49,7 +49,6 @@ export class Login {
 	  },
 	});  
   }
-  // Il form non è valido: la richiesta non parte, quindi il messaggio lo diamo noi
   private invalidFormMessage(): string {
 	const { email, password } = this.form.controls;
 	if (email.hasError('required') && password.hasError('required'))
@@ -63,7 +62,6 @@ export class Login {
 
   private messageFor(status: number): string {
 	switch (status) {
-	  // status 0: la richiesta non ha avuto risposta (backend spento, rete assente)
 	  case 0:   return 'Impossibile contattare il server, controlla la connessione';
 	  case 401: return 'Email o password errati';
 	  case 409: return 'Sei già loggato';

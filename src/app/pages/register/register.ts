@@ -15,7 +15,6 @@ export class Register {
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
 
-  // Stesse regole del backend, così l'utente vede l'errore prima di inviare
   form = this.formBuilder.nonNullable.group({
     name:     ['', [Validators.required, Validators.maxLength(100)]],
     surname:  ['', [Validators.required, Validators.maxLength(100)]],
@@ -57,7 +56,6 @@ export class Register {
     }
   }
 
-  // Traduce i messaggi 400 che arrivano dal backend
   private translate(message?: string): string {
     if (message?.includes('12 characters'))  return 'La password deve avere almeno 12 caratteri';
     if (message?.includes('too long'))       return 'La password è troppo lunga';

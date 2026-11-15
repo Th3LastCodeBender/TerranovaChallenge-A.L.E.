@@ -12,8 +12,6 @@ import {
   STAR_THRESHOLDS,
 } from '../../models/game-filters.model';
 
-// I filtri vivono nei query param dell'URL: game-list li legge da lì
-// e ricarica i giochi ogni volta che cambiano.
 @Component({
   selector: 'app-game-filters',
   styleUrl: './game-filters.scss',
@@ -48,7 +46,6 @@ export class GameFiltersBar {
     FILTER_KEYS.some(key => !!this.filters()[key])
   );
 
-  // stelle attive: la soglia più alta raggiunta dal rating nell'URL
   selectedStars = computed(() => {
     const rating = Number(this.filters().rating);
     if (!rating)
@@ -56,12 +53,10 @@ export class GameFiltersBar {
     return STAR_THRESHOLDS.filter(t => rating >= t).length;
   });
 
-  // stelle evidenziate mentre passi sopra col mouse
   hoveredStars = signal(0);
 
   shownStars = computed(() => this.hoveredStars() || this.selectedStars());
 
-  // ricliccare la stella già selezionata toglie il filtro
   setStars(n: number): void {
     const value = n === this.selectedStars() ? '' : String(STAR_THRESHOLDS[n - 1]);
     this.setFilter('rating', value);
@@ -70,7 +65,6 @@ export class GameFiltersBar {
   setFilter(key: keyof GameFilters, value: string): void {
     const changes: Partial<Record<keyof GameFilters, string | null>> = { [key]: value || null };
 
-    // quando cambi ordinamento, il verso più sensato: A→Z per nome, dal più alto per il resto
     if (key === 'sort')
       changes.order = value ? (value === 'name' ? 'asc' : 'desc') : null;
 
@@ -97,7 +91,6 @@ export class GameFiltersBar {
     this.navigate(cleared);
   }
 
-  // ogni cambio di filtro riparte dalla pagina 1
   private navigate(changes: Record<string, string | null>): void {
     this.router.navigate([], {
       relativeTo: this.route,

@@ -14,7 +14,6 @@ interface HomeSection {
   games: IgdbGame[];
 }
 
-// Titolo e icona delle categorie note; le altre usano la chiave come titolo
 const SECTION_META: Record<string, { title: string; icon: string }> = {
   suggested:      { title: 'Consigliati per te', icon: 'bi-stars' },
   trending_games: { title: 'Di tendenza',        icon: 'bi-fire' },
@@ -45,7 +44,6 @@ export class Home {
       })
     );
 
-    // I consigliati richiedono il login; se falliscono la sezione viene solo nascosta
     const suggested$ = this.authService.isLoggedIn()
       ? this.gamesService.getSuggestedGames().pipe(
           catchError(err => {
@@ -58,7 +56,6 @@ export class Home {
     forkJoin([home$, suggested$]).pipe(
       takeUntilDestroyed()
     ).subscribe(([home, suggested]) => {
-      // "suggested" per primo, così la sezione compare in cima
       const res: HomeGamesResponse = { suggested, ...home };
       this.sections.set(
         Object.entries(res)

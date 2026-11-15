@@ -12,7 +12,6 @@ import {
 	Verdict,
 } from '../../services/compat/compat-service';
 
-// Una riga del confronto "Your PC" vs "Minimum"
 interface CompareRow {
 	label: string;
 	have: string;
@@ -58,7 +57,6 @@ export class CanIRun {
 		return res ? { key: res.compat.verdict, ...VERDICT_TEXT[res.compat.verdict] } : null;
 	});
 
-	// Se il gioco non ha requisiti minimi su Steam ripieghiamo sui consigliati
 	tierLabel = computed(() => this.result()?.requirements.minimum ? 'Minimum' : 'Recommended');
 
 	rows = computed<CompareRow[]>(() => {
@@ -85,14 +83,12 @@ export class CanIRun {
 				label: 'OS',
 				have: specs.os,
 				need: tier.os ?? '—',
-				// Il backend segnala l'OS solo con osWarning (niente "pass" esplicito)
 				status: res.compat.osWarning ? 'fail' : (tier.os ? 'pass' : 'unknown'),
 				estimated: false,
 			},
 		];
 	});
 
-	// Stime FPS dei quattro preset per la risoluzione scelta
 	fpsCells = computed(() =>
 		(this.result()?.fps?.cells ?? []).filter(cell => cell.resolution === this.resolution())
 	);
@@ -115,7 +111,6 @@ export class CanIRun {
 		this.check();
 	}
 
-	// Ricarichiamo le specifiche a ogni apertura: l'utente potrebbe averle cambiate dall'account
 	private loadSpecs(): void {
 		this.specsLoading.set(true);
 		this.specsService.getSpecs().subscribe({
@@ -153,7 +148,6 @@ export class CanIRun {
 		return list.length ? list.map(m => m.original).join(' / ') : null;
 	}
 
-	// null = nessun messaggio: il template mostra già lo stato "nessuna specifica"
 	private errorMessage(err: HttpErrorResponse): string | null {
 		const backend: string | undefined = err.error?.error;
 

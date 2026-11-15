@@ -33,17 +33,14 @@ export class Collections {
 		combineLatest([
 			this.route.paramMap,
 			this.route.queryParamMap,
-			// Ricarica quando un gioco cambia collection o preferito (es. dalle game-card)
 			toObservable(this.favoritesService.version),
 			toObservable(this.collectionsService.version),
 		]).pipe(
 		map(([params, query, favouritesVersion, collectionsVersion]) => {
-			const slug = params.get('type') as CollectionSlug; // già validato dal guard
+			const slug = params.get('type') as CollectionSlug;
 			return {
 				slug,
 				page: Math.max(1, Number(query.get('page')) || 1),
-				// Conta solo il tipo di modifica che riguarda questa pagina: togliere un
-				// cuore da "Playing" non deve ricaricare (get-favourites ha un rate limit)
 				version: COLLECTIONS[slug].status === null ? favouritesVersion : collectionsVersion,
 			};
 		}),
@@ -73,7 +70,6 @@ export class Collections {
 		this.total.set(res.total);
 		this.loading.set(false);
 
-		// Tolto l'ultimo gioco dell'ultima pagina: torna all'ultima pagina con giochi
 		const lastPage = Math.max(1, Math.ceil(res.total / 20));
 		if (!this.error() && res.games.length === 0 && this.page() > lastPage)
 			this.goToPage(lastPage);

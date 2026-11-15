@@ -40,7 +40,6 @@ export class Navbar {
 	isSearching = signal(false);
 	searchQuery = signal('');
 	isSearchOpen = signal(false);
-	// Messaggio d'errore della ricerca nel menu (null = nessun errore)
 	searchError = signal<string | null>(null);
 
 	constructor() {
@@ -86,7 +85,6 @@ export class Navbar {
 	}
 
 	selectGame(game: IgdbGame): void {
-		// console.log('Gioco selezionato:', game);
 
 		this.searchResults.set([]);
 		this.isSearchOpen.set(false);

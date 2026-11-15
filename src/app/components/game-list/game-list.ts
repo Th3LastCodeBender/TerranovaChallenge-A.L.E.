@@ -25,7 +25,6 @@ export class GameList {
   page = signal(1);
   hasMore = signal(false);
   loading = signal(false);
-  // Messaggio da mostrare se il backend risponde con un errore (null = nessun errore)
   error = signal<string | null>(null);
 
   constructor() {
@@ -44,7 +43,6 @@ export class GameList {
         this.error.set(null);
       }),
       switchMap(({ search, page, filters }) =>
-        // senza ricerca mostriamo tutti i giochi, paginati dal backend
         (search
           ? this.gameService.searchGames(search, page, filters)
           : this.gameService.getAllGames(page, filters)

@@ -2,10 +2,8 @@ import { Injectable, signal } from '@angular/core';
 
 type Theme = 'light' | 'dark';
 
-// Stessa chiave letta dallo script inline in index.html
 const THEME_STORAGE_KEY = 'theme';
 
-// Tema salvato in localStorage; se manca (o lo storage non è accessibile) si usa light
 function readStoredTheme(): Theme {
 	try {
 		return localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light';
@@ -30,7 +28,6 @@ export class ThemeService {
 		try {
 			localStorage.setItem(THEME_STORAGE_KEY, this.currentTheme());
 		} catch {
-			// Storage non disponibile (es. navigazione privata): il tema vale solo per questa sessione
 		}
 	}
 

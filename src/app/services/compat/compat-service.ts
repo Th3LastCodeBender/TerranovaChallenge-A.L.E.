@@ -2,9 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Tipi copiati dalla risposta di GET /api/compat/can-i-run
-// (backend: lib/llm/extract-requirements.ts, lib/can-i-run/check.ts, lib/can-i-run/fps-estimate.ts)
-
 export type Resolution = '1080p' | '1440p' | '4k';
 export const RESOLUTIONS: Resolution[] = ['1080p', '1440p', '4k'];
 
@@ -85,7 +82,6 @@ export interface CanIRunResponse {
 export class CompatService {
 	private http = inject(HttpClient);
 
-	// Il backend usa le specifiche salvate dall'utente: non vanno passate qui
 	canIRun(gameId: number, resolution: Resolution): Observable<CanIRunResponse> {
 		const params = new HttpParams()
 			.set('gameId', gameId)

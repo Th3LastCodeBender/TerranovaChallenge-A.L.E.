@@ -47,7 +47,6 @@
   }
 }
 
-// Logout ed Elimina account, uno sotto l'altro in alto a destra
 .profile-header-actions {
   position: absolute;
   top: 1.5rem;
@@ -94,7 +93,6 @@
   font-size: 0.95rem;
 }
 
-// Elimina account mentre il riquadro di conferma è già aperto
 .profile-logout-button:disabled {
   opacity: 0.5;
   cursor: default;
@@ -642,7 +640,6 @@
     padding: 1.4rem;
   }
 }
-// ---- Specifiche PC (card "Preferenze") ----
 
 .specs-header {
   display: flex;
@@ -852,7 +849,6 @@
   border: 1px solid rgba(255, 92, 92, 0.3);
 }
 
-// Sezione "Elimina account": stessa card delle altre, ma con il bordo rosso al passaggio
 .danger-card {
   &:hover {
     border-color: rgba(255, 92, 92, 0.65);
@@ -871,8 +867,6 @@
   font-size: 0.9rem;
 }
 
-// .specs-delete-button ha margin-right: auto per stare a sinistra nel form delle specifiche:
-// qui il pulsante di conferma deve restare a destra, accanto ad Annulla
 .danger-confirm {
   margin-right: 0;
 }

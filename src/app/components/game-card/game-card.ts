@@ -28,7 +28,6 @@ export class GameCard {
   collectionStatus = computed(() => this.collectionsService.statusOf(this.game().id));
 
   constructor() {
-    // I service caricano i dati una sola volta per utente, anche con tante card
     const user = inject(AuthService).getUser();
     if (user) {
       this.favoritesService.loadIds(user.id);

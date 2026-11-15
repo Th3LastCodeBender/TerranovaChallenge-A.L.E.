@@ -344,7 +344,6 @@
     cursor: pointer;
 }
 
-// Sopra overlay (stacking naturale) e bordo animato (z-index 10, pointer-events: none)
 .custom-favourite {
     position: absolute;
     top: 0.75rem;
@@ -352,7 +351,6 @@
     z-index: 11;
 }
 
-// Speculare al cuore, in alto a sinistra
 .custom-collection {
     position: absolute;
     top: 0.75rem;

@@ -27,7 +27,6 @@
 	}
 </button>
 
-<!-- Sempre renderizzato (nascosto con [hidden]) perché viene spostato in <body> -->
 <ul #menu class="collection-menu" role="menu" [hidden]="!open()" [style]="menuPosition()">
 	@for (option of options; track option.status) {
 		<li role="none">

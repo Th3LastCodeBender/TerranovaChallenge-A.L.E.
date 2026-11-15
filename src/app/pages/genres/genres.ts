@@ -10,6 +10,5 @@ import { GENRE_OPTIONS } from '../../models/game-filters.model';
   templateUrl: './genres.html',
 })
 export class Genres {
-  // Stessa lista del filtro di /games, cosi le due pagine restano allineate
   readonly genres = GENRE_OPTIONS;
 }

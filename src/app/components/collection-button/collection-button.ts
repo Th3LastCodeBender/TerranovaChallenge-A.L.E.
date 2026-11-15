@@ -26,7 +26,6 @@ import {
 	host: {
 		'(document:click)': 'onDocumentClick($event)',
 		'(document:keydown.escape)': 'close()',
-		// Il menu è fixed: se la pagina scorre o si ridimensiona non sarebbe più allineato
 		'(window:scroll)': 'close()',
 		'(window:resize)': 'close()',
 	},
@@ -37,13 +36,11 @@ export class CollectionButton {
 	private router = inject(Router);
 	private host = inject(ElementRef<HTMLElement>);
 
-	// Un solo menu aperto alla volta (lo stopPropagation impedisce al document:click
-	// di chiudere il menu di un'altra card)
 	private static openInstance: CollectionButton | null = null;
 
 	gameId = input.required<number>();
-	status = model<CollectionStatus | null>(null);   // two-way: [(status)]
-	variant = input<'full' | 'icon'>('full');        // 'icon' = quadrato con + (game-card)
+	status = model<CollectionStatus | null>(null);
+	variant = input<'full' | 'icon'>('full');
 
 	open = signal(false);
 	pending = signal(false);
@@ -51,11 +48,9 @@ export class CollectionButton {
 	private trigger = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
 	private menu = viewChild.required<ElementRef<HTMLElement>>('menu');
 
-	// Posizione del menu (position: fixed) calcolata dal bottone
 	menuPosition = signal<Record<string, string>>({});
-	private static readonly MENU_HEIGHT = 240;   // stima con 4 voci + "Remove"
+	private static readonly MENU_HEIGHT = 240;
 
-	// Voci del menu ricavate da COLLECTIONS (esclusi i preferiti, che hanno il loro bottone)
 	options = Object.values(COLLECTIONS)
 		.filter((c): c is typeof c & { status: CollectionStatus } => c.status !== null)
 		.map(c => ({ status: c.status, title: c.title }));
@@ -65,14 +60,11 @@ export class CollectionButton {
 	);
 
 	constructor() {
-		// Il menu viene spostato in <body>: così overflow: hidden e transform degli
-		// antenati (es. .custom-card in hover, .game-hero) non lo tagliano né lo spostano
 		afterNextRender(() => document.body.appendChild(this.menu().nativeElement));
 		inject(DestroyRef).onDestroy(() => this.menu().nativeElement.remove());
 	}
 
 	toggleMenu(event: Event): void {
-		// Evita che il click arrivi alla game-card (che aprirebbe la pagina del gioco)
 		event.stopPropagation();
 		event.preventDefault();
 
@@ -90,7 +82,6 @@ export class CollectionButton {
 		CollectionButton.openInstance = this;
 	}
 
-	// Apre sotto il bottone, oppure sopra se in basso non c'è abbastanza spazio
 	private computeMenuPosition(): Record<string, string> {
 		const rect = this.trigger().nativeElement.getBoundingClientRect();
 		const gap = 6;
@@ -126,7 +117,7 @@ export class CollectionButton {
 		if (this.pending() || next === previous)
 			return;
 
-		this.status.set(next);   // aggiornamento ottimistico
+		this.status.set(next);
 		this.pending.set(true);
 
 		const request = next === null
@@ -137,7 +128,7 @@ export class CollectionButton {
 			next: () => this.pending.set(false),
 			error: err => {
 				console.error('Errore aggiornamento collection:', err);
-				this.status.set(previous);   // rollback
+				this.status.set(previous);
 				this.pending.set(false);
 			},
 		});

@@ -18,7 +18,6 @@ export const COLLECTIONS = {
 
 export type CollectionSlug = keyof typeof COLLECTIONS;
 
-// Stati validi per /api/collections/* (enum WG_GameStatus del backend)
 export type CollectionStatus = NonNullable<(typeof COLLECTIONS)[CollectionSlug]['status']>;
 
 export function isCollectionSlug(value: string | null): value is CollectionSlug {
@@ -29,19 +28,16 @@ export function isCollectionSlug(value: string | null): value is CollectionSlug 
 export class CollectionsService {
 	private http = inject(HttpClient);
 
-	// Stato di ogni gioco in collezione (gameId -> status), condiviso tra game-card e game-details
 	private statuses = signal<ReadonlyMap<number, CollectionStatus>>(new Map());
-	private statusesLoadedFor: number | null = null;   // userId per cui sono stati caricati
+	private statusesLoadedFor: number | null = null;
 	private statusesLoading = false;
 
-	// Aumenta a ogni modifica andata a buon fine: le pagine possono ascoltarlo per ricaricarsi
 	readonly version = signal(0);
 
 	statusOf(gameId: number): CollectionStatus | null {
 		return this.statuses().get(gameId) ?? null;
 	}
 
-	// Carica gli stati una sola volta per utente; chiamate ripetute sono no-op
 	loadStatuses(userId: number): void {
 		if (this.statusesLoading || this.statusesLoadedFor === userId)
 			return;
@@ -85,7 +81,6 @@ export class CollectionsService {
 		});
 	}
 
-	// Upsert: un gioco ha un solo stato, quindi questo sposta anche da una collection all'altra
 	setStatus(gameId: number, collectionType: CollectionStatus): Observable<unknown> {
 		return this.http.post('/api/collections/update-item', { gameId, collectionType })
 			.pipe(tap(() => this.setLocalStatus(gameId, collectionType)));

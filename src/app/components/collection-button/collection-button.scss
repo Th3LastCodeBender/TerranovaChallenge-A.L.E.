@@ -3,7 +3,6 @@
 	display: inline-flex;
 }
 
-// Stesso aspetto di .game-action-collection in game-details
 .collection-button {
 	display: inline-flex;
 	align-items: center;
@@ -38,7 +37,6 @@
 		color: var(--tag-color);
 	}
 
-	// Variante compatta: stesso quadrato del cuore in favourite-button
 	&.icon {
 		width: 2.4rem;
 		height: 2.4rem;
@@ -69,7 +67,6 @@
 	}
 }
 
-// [hidden] deve vincere anche se in futuro .collection-menu definisse un display
 .collection-menu[hidden] { display: none; }
 
 .collection-chevron {
@@ -79,7 +76,6 @@
 	&.open { transform: rotate(180deg); }
 }
 
-// fixed: top/bottom/left/min-width arrivano da menuPosition() nel componente
 .collection-menu {
 	position: fixed;
 	z-index: 1050;

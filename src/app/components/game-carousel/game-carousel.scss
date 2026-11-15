@@ -111,10 +111,8 @@
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
 
-    // spazio per l'hover/ombra della card
     padding: 0.5rem 0.25rem 1rem;
 
-    // Chrome / Edge / Safari: thumb sfumato con i colori del tema
     &::-webkit-scrollbar {
         height: 8px;
     }
@@ -140,7 +138,6 @@
         box-shadow: 0 0 8px var(--offcanvas-accent-shadow);
     }
 
-    // Firefox: niente sfumature, colore pieno dell'accento
     @supports not selector(::-webkit-scrollbar) {
         scrollbar-width: thin;
         scrollbar-color: var(--offcanvas-accent) var(--offcanvas-accent-bg);
@@ -153,13 +150,11 @@
     scroll-snap-align: start;
 }
 
-// la card ha width:90% + margin auto: nel carosello deve occupare tutto l'item
 .gc-item app-game-card ::ng-deep .custom-card {
     width: 100%;
 }
 
 @media (max-width: 575px) {
-    // su mobile si scorre col dito
     .gc-arrows {
         display: none;
     }
@@ -169,7 +164,6 @@
     }
 }
 
-// Home: overlay leggermente più scuro per leggere il titolo anche su cover chiare
 .gc-item app-game-card ::ng-deep .custom-overlay {
     background: linear-gradient(
         to top,
@@ -185,7 +179,6 @@
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 
-// Home: a riposo solo titolo, valutazioni e data; il resto compare all'hover
 @media (hover: hover) {
     .gc-item app-game-card ::ng-deep {
         .custom-genres,
@@ -201,7 +194,6 @@
                 margin-bottom 0.3s ease;
         }
 
-        // senza le piattaforme sotto, la data non deve lasciare spazio vuoto
         .custom-release {
             margin-bottom: 0;
             transition: margin-bottom 0.3s ease;
@@ -224,7 +216,6 @@
                 margin-bottom: 1rem;
             }
 
-            // in hover lo sfondo si scurisce un po' di più (cambio istantaneo)
             .custom-overlay {
                 background: linear-gradient(
                     to top,

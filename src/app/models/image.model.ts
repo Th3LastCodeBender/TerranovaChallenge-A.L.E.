@@ -20,7 +20,7 @@ export type IgdbImageSize =
     | '1080p';
 
 export function igdbImageUrl(imageId: string, size: IgdbImageSize = 'cover_big'): string {
-    if (imageId.startsWith('http')) return imageId; // mock con URL completo
+    if (imageId.startsWith('http')) return imageId;
     return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
 

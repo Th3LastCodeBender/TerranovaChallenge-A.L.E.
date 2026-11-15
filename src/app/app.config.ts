@@ -11,7 +11,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authExpiredInterceptor])),
-    // L'app parte solo dopo questa chiamata: le guardie sanno già se l'utente è loggato
     provideAppInitializer(() => firstValueFrom(inject(AuthService).restoreSession()))
   ]
 };

@@ -26,7 +26,6 @@ export class Account implements OnInit {
   mfaLoading = signal(false);
   mfaError = signal<string | null>(null);
 
-  // Eliminazione account: il riquadro di conferma si apre solo dopo il primo click
   deleteOpen = signal(false);
   deleteLoading = signal(false);
   deleteError = signal<string | null>(null);
@@ -39,10 +38,8 @@ export class Account implements OnInit {
   specsSaving = signal(false);
   specsEditing = signal(false);
   specsError = signal<string | null>(null);
-  // Avviso se CPU/GPU non sono nel database dei benchmark (dopo il salvataggio)
   specsWarning = signal<string | null>(null);
 
-  // Stessi limiti della validazione in /api/specs/add-specs
   specsForm = this.fb.group({
 	cpu: ['', [Validators.required, Validators.maxLength(100)]],
 	gpu: ['', [Validators.required, Validators.maxLength(100)]],
@@ -51,7 +48,6 @@ export class Account implements OnInit {
 	os: ['', [Validators.required, Validators.maxLength(100)]],
   });
 
-  // Stessi limiti della validazione in /api/auth/delete-account
   deleteForm = this.fb.group({
 	password: ['', [Validators.required, Validators.maxLength(128)]],
   });
@@ -75,7 +71,6 @@ export class Account implements OnInit {
 	});
   }
 
-  // Apre il form precompilato con le specifiche attuali (vuoto se non ce ne sono)
   startEditSpecs(): void {
 	const current = this.specs();
 	this.specsForm.reset({
@@ -95,7 +90,6 @@ export class Account implements OnInit {
 	this.specsError.set(null);
   }
 
-  // add-specs sovrascrive i dati esistenti: serve sia per aggiungere che per modificare
   saveSpecs(): void {
 	if (this.specsForm.invalid) {
 	  this.specsForm.markAllAsTouched();
@@ -109,7 +103,6 @@ export class Account implements OnInit {
 	  ramGb: Number(value.ramGb),
 	  os: value.os!.trim(),
 	};
-	// vramGb è opzionale: il backend rifiuta null, quindi lo mandiamo solo se compilato
 	if (value.vramGb !== null && value.vramGb !== undefined && String(value.vramGb) !== '')
 	  payload.vramGb = Number(value.vramGb);
 

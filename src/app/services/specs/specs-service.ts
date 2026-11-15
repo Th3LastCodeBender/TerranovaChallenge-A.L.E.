@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
-// Forma delle specifiche salvate in WG_User.pcSpecs
 export interface PcSpecs {
 	cpu: string;
 	gpu: string;
@@ -11,7 +10,6 @@ export interface PcSpecs {
 	os: string;
 }
 
-// Risposta di POST /api/specs/add-specs: indica se CPU/GPU sono nel database dei benchmark
 export interface SaveSpecsResponse {
 	specs: PcSpecs;
 	recognized: { cpu: boolean; gpu: boolean };
@@ -29,7 +27,6 @@ export class SpecsService {
 			.pipe(map(res => res.specs));
 	}
 
-	// add-specs sovrascrive le specifiche esistenti: vale sia per creare che per modificare
 	saveSpecs(specs: PcSpecs): Observable<SaveSpecsResponse> {
 		return this.http.post<SaveSpecsResponse>(`${this.baseUrl}/add-specs`, specs);
 	}

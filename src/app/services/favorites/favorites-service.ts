@@ -24,19 +24,16 @@ export class FavoritesService {
 	private baseUrl = '/api/favourites';
 	count = signal(0);
 
-	// Id dei giochi preferiti dell'utente, condivisi tra game-card e game-details
 	private ids = signal<ReadonlySet<number>>(new Set());
-	private idsLoadedFor: number | null = null;   // userId per cui sono stati caricati
+	private idsLoadedFor: number | null = null;
 	private idsLoading = false;
 
-	// Aumenta a ogni modifica andata a buon fine: le pagine possono ascoltarlo per ricaricarsi
 	readonly version = signal(0);
 
 	isFavourite(gameId: number): boolean {
 		return this.ids().has(gameId);
 	}
 
-	// Carica gli id una sola volta per utente; chiamate ripetute sono no-op
 	loadIds(userId: number): void {
 		if (this.idsLoading || this.idsLoadedFor === userId)
 			return;
