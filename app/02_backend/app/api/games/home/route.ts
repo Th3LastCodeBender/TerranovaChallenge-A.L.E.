@@ -1,0 +1,182 @@
+import { NextRequest, NextResponse } from "next/server"	
+import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
+import { getGamesByIds, jsonError, requireEnv } from "@/lib/utils"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
+import type { IgdbGame, IgdbPopularity } from "@/lib/igdb-api/types"
+
+async function igdbRequest<T>(endpoint: string, query: string)
+{
+	const response = await fetch(`https://api.igdb.com/v4/${endpoint}`,
+		{
+			method: "POST",
+			headers: {
+				"Client-ID": requireEnv("TWITCH_CLIENT_ID"),
+			Authorization: `Bearer ${await getTwitchAccessToken()}`,
+				"Content-Type": "text/plain",
+			},
+			body: query,
+			cache: "no-store"
+		}
+	)
+
+	if (!response.ok)
+		return {
+			ok: false as const,
+			error: await response.text(),
+			status: response.status
+		}
+
+	return {
+		ok: true as const,
+		data: await response.json() as T
+	}
+}
+
+async function getIgdbMostTrendingGames()
+{
+	const fetched_popularity = await igdbRequest<IgdbPopularity[]>(
+		"popularity_primitives",
+		`
+			fields game_id, value, popularity_type;
+			where popularity_type = 1;
+			sort value desc;
+			limit 10;
+		`
+	)
+
+	if (!fetched_popularity.ok)
+		return null
+
+	if (!fetched_popularity.data.length)
+		return []
+
+	const gameIds = fetched_popularity.data.map((item) => item.game_id)
+	const fetched_games = await getGamesByIds(gameIds)
+
+	if (!fetched_games.ok)
+		return null
+
+	const gamesMap = new Map(fetched_games.games.map((game) => [game.id, game] as const))
+
+	const trending = fetched_popularity.data.map((item, index) =>
+		{
+			const game = gamesMap.get(item.game_id)
+
+			if (!game)
+				return null
+
+			return {
+				...game,
+				trending_rank: index + 1,
+				popularity: item.value,
+			}
+		}
+	).filter(Boolean)
+
+	return trending
+}
+
+async function getIgdbMostPlayedGames()
+{
+	const fetched_popularity = await igdbRequest<IgdbPopularity[]>(
+		"popularity_primitives",
+		`
+			fields game_id, value, popularity_type;
+			where popularity_type = 4;
+			sort value desc;
+			limit 10;
+		`
+	)
+
+	if (!fetched_popularity.ok)
+		return null
+
+	if (!fetched_popularity.data.length)
+		return []
+
+	const gameIds = fetched_popularity.data.map((item) => item.game_id)
+	const fetched_games = await getGamesByIds(gameIds)
+
+	if (!fetched_games.ok)
+		return null
+
+	const gamesMap = new Map(fetched_games.games.map((game) => [game.id, game] as const))
+
+	const most_played = fetched_popularity.data.map((item, index) =>
+	{
+		const game = gamesMap.get(item.game_id)
+
+		if (!game)
+			return null
+
+		return {
+			...game,
+			played_rank: index + 1,
+			popularity: item.value,
+		}
+	}).filter(Boolean)
+
+	return most_played
+}
+
+async function getIgdbMostRecentGames()
+{
+	const today = Math.floor(Date.now() / 1000)
+
+	const fetched_games = await igdbRequest<IgdbGame[]>(
+		"games",
+		`
+			fields
+				id,
+				name,
+				slug,
+				summary,
+				first_release_date,
+				rating,
+				rating_count,
+				aggregated_rating,
+				aggregated_rating_count,
+				cover.image_id,
+				genres.id,
+				genres.name,
+				platforms.id,
+				platforms.name;
+			where first_release_date != null
+				& first_release_date < ${today};
+			sort first_release_date desc;
+			limit 10;
+		`
+	);
+
+	if (!fetched_games.ok)
+		return null
+
+	return fetched_games.data
+}
+
+export async function GET(req: NextRequest)
+{
+	try
+	{
+		const limited = await checkRateLimit(req, "/api/games/home", RATE_LIMIT_POLICIES.home_fetch)
+
+		if (limited)
+			return limited
+
+		const [trending, most_played, most_recent] = await Promise.all([
+			getIgdbMostTrendingGames(),
+			getIgdbMostPlayedGames(),
+			getIgdbMostRecentGames()
+		])
+
+		if (!trending || !most_played || !most_recent)
+			return jsonError("Service temporarily unavailable", 503)
+
+		return NextResponse.json({trending_games: trending, most_played: most_played, most_recent: most_recent})
+	}
+	catch (error)
+	{
+		console.error(error)
+		return jsonError("Internal server error", 500)
+	}
+}

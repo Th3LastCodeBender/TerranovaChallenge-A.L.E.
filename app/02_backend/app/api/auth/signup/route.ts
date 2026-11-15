@@ -1,0 +1,183 @@
+import { createUser } from "@/query/users"
+import { Prisma } from "@/lib/generated/prisma/client"
+import { NextRequest, NextResponse } from "next/server"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
+import { getClientIp } from "@/lib/security/client-ip"
+import { getOS, getBrowser, isString, isValidEmail, jsonError  } from "@/lib/utils"
+import { validatePassword, isPasswordCompromised, hashPassword } from "@/lib/security/password"
+import { createSession, findValidSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_DURATION_SECONDS, SESSION_COOKIE_NAME, setLoginCookie } from "@/query/sessions"
+
+interface SignupData {
+	name: string
+	surname: string
+	email: string
+	username: string
+	password: string
+}
+
+function isUniqueConstraintViolation(err: unknown): boolean
+{
+	return err instanceof Prisma.PrismaClientKnownRequestError && (err as {code: string}).code === "P2002"
+}
+
+function validateSignupBody(body: unknown): | {valid: true; data: SignupData} | {valid: false; message: string}
+{
+	if (typeof body !== "object" || body === null || Array.isArray(body))
+		return {valid: false, message: "Invalid request body"}
+
+	const {
+		name: rawName,
+		surname: rawSurname,
+		email: rawEmail,
+		username: rawUsername,
+		password
+	} = body as Record<string, unknown>
+
+	if (
+		!isString(rawName) ||
+		!isString(rawSurname) ||
+		!isString(rawEmail) ||
+		!isString(rawUsername) ||
+		!isString(password)
+	)
+	{
+		return {valid: false, message: "Missing required fields"}
+	}
+
+	const name = rawName.trim()
+	const surname = rawSurname.trim()
+	const email = rawEmail.trim().toLowerCase()
+	const username = rawUsername.trim()
+
+	if (!name || name.length > 100 || !surname || surname.length > 100)
+		return {valid: false, message: "Invalid name or surname"}
+
+	if (!/^[\p{L}\p{M}\p{N}_]{5,30}$/u.test(username))
+		return {valid: false, message: "Invalid username"}
+
+	if (!isValidEmail(email))
+		return {valid: false, message: "Invalid email"}
+
+	return {
+		valid: true,
+		data: {name, surname, email, username, password}
+	}
+}
+
+async function signup(body: unknown)
+{
+	const validation = validateSignupBody(body)
+
+	if (!validation.valid)
+		return {success: false as const, message: validation.message, status: 400}
+
+	const {name, surname, email, username, password} = validation.data
+	const passwordValidation = validatePassword(password)
+
+	if (!passwordValidation.valid)
+		return {success: false as const, message: passwordValidation.message ?? "", status: 400}
+
+	if (await isPasswordCompromised(password))
+		return {
+			success: false as const,
+			message: "This password has been compromised in a data breach. Please choose another password",
+			status: 400
+		}
+
+	try
+	{
+		const user = await createUser({
+			email,
+			username,
+			firstName: name,
+			lastName: surname,
+			passwordHash: await hashPassword(password)
+		})
+
+		return {success: true as const, user}
+	}
+	catch (error)
+	{
+		if (isUniqueConstraintViolation(error))
+			return {
+				success: false as const,
+				message: "Unable to create account with these details",
+				status: 409
+			}
+
+		throw error
+	}
+}
+
+export async function POST(req: NextRequest)
+{
+	try
+	{
+		const ip = getClientIp(req)
+		const limited = await checkRateLimit(req, "/api/auth/signup", RATE_LIMIT_POLICIES.signup, ip)
+
+		if (limited)
+			return limited
+
+		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
+
+		if (token && await findValidSession(hashSessionToken(token)))
+			return jsonError("Already logged in", 409)
+
+		let body: unknown
+
+		try
+		{
+			body = await req.json()
+		}
+		catch (error)
+		{
+			console.error(error)
+			return jsonError("Invalid JSON body", 400)
+		}
+
+		const signup_result = await signup(body)
+
+		if (!signup_result.success)
+			return jsonError(signup_result.message, signup_result.status)
+
+		const res = NextResponse.json(signup_result.user)
+
+		try
+		{
+			const userAgent = req.headers.get("user-agent") ?? ""
+			const client =
+			{
+				os: getOS(userAgent),
+				browser: getBrowser(userAgent, req.headers.get("sec-ch-ua") || ""),
+				platform: req.headers.get("sec-ch-ua-platform") || "",
+				mobile: req.headers.get("sec-ch-ua-mobile") || ""
+			}
+
+			const token = generateSessionToken()
+
+			await createSession(
+				{
+					userId: signup_result.user.id,
+					tokenHash: hashSessionToken(token),
+					ip,
+					device: client,
+					expiresAt: new Date(Date.now() + SESSION_COOKIE_DURATION_SECONDS * 1000)
+				}
+			)
+			setLoginCookie(res, token)
+		}
+		catch (error)
+		{
+			console.error("ADD SESSION ERROR (signup):", error)
+			return jsonError("Unable to create session", 500)
+		}
+
+		return res
+	}
+	catch (error)
+	{
+		console.error(error)
+		return jsonError("Internal server error", 500)
+	}
+}

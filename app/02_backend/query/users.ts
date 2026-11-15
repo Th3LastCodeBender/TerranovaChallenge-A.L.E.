@@ -1,0 +1,45 @@
+import "server-only"
+
+import { prisma } from "@/lib/db/db-pool"
+
+export type NewUser = {
+	username: string
+	email: string
+	passwordHash: string
+	firstName: string
+	lastName: string
+}
+
+export function findUserById(id: number)
+{
+	return prisma.wG_User.findUnique({
+		where: { id: id },
+		omit: { passwordHash: true },
+	})
+}
+
+export function findUserByEmail(email: string)
+{
+	return prisma.wG_User.findUnique({ where: { email }, })
+}
+
+export function findPasswordHashById(id: number)
+{
+	return prisma.wG_User.findUnique({
+		where: { id },
+		select: { passwordHash: true },
+	})
+}
+
+export function createUser(data: NewUser)
+{
+	return prisma.wG_User.create({
+		data,
+		omit: { passwordHash: true }
+	})
+}
+
+export function deleteUser(id: number)
+{
+	return prisma.wG_User.deleteMany({ where: { id } })
+}
