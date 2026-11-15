@@ -55,7 +55,7 @@ Restituisce la challenge creata. **Prima cancella le vecchie challenge dell'uten
 
 ### Pulizia
 
-`deleteExpiredChallenges()` → `BatchPayload` (`{ count }`) cancella le challenge scadute. Per ora non la chiama nessuno: si può usare in un job periodico o ogni tanto durante il login.
+`deleteExpiredChallenges()` → `BatchPayload` (`{ count }`) cancella le challenge scadute. La chiama ogni ora, insieme a `deleteExpiredSessions()`, il job in `lib/db/cleanup.ts`, che `instrumentation.ts` avvia all'avvio del server.
 
 ### Perché niente `SELECT ... FOR UPDATE`
 
@@ -108,127 +108,134 @@ Acer – 1080p vs 1440p gaming 2026
 iTechGuides – What 1080p, 1440p and 4K mean for performance
 
 
-ERRORI DEL BACKEND
+## Errori del backend (aggiornato 2026-11-15)
 
-## Report controllo errori backend (2026-11-13, aggiornato dopo il pull)
+Ho ripreso il report del 13/11 e ho ricontrollato ogni punto sul codice di adesso. `tsc --noEmit` e `pnpm lint` sono puliti, senza errori né warning. Quasi tutto è risolto (elenco in fondo). Restano i sei punti qui sotto, che sono di Andre. Ognuno ha il problema e un fix già pronto.
 
-Ho letto tutto `app/02_backend` (fino al commit `5f53bd55`) e ho lanciato `tsc --noEmit` e `pnpm lint`. Lo stack era spento, quindi i punti segnati **[verificato]** li ho controllati nel codice delle librerie o con uno script a parte. Gli altri sono da provare a mano.
+### Da fare (Andre)
 
-Priorità: 🔴 rompe una funzione o la build · 🟠 bug o problema di sicurezza · 🟡 pulizia / incoerenze
+**A1. L'IP del client lo decide il client** 🟠
+`lib/security/client-ip.ts`
 
-### 🔴 Bloccanti
+Adesso `getClientIp` è l'**unico punto** in cui si legge l'IP: lo usano `checkRateLimit` e le tre route che salvano la sessione (`login`, `signup`, `security/mfa`). Basta quindi cambiare questa funzione e lo schema, senza toccare le route.
 
-**B1. La 2FA non funziona: al token arriva l'oggetto cookie, non la stringa**
-`app/api/security/mfa/route.ts:46`
-`cookieStore.get(MFA_COOKIE_NAME)` restituisce `{ name, value }`, e `hashSessionToken(pending2FA)` passa l'oggetto intero a `crypto.update()`. Risultato: lancia un TypeError e ogni verifica dell'OTP risponde 500. È anche un errore di `tsc`.
-Fix: `hashSessionToken(pending2FA.value)`.
+Il problema: nginx (`Docker/frontend/nginx.conf`) imposta `X-Forwarded-For $proxy_add_x_forwarded_for`. Quel valore **prende l'header mandato dal client e ci aggiunge in fondo l'IP vero**. Noi leggiamo il primo elemento, cioè quello che sceglie il client.
 
-**B2. Le challenge 2FA scadono dopo 0,9 secondi**
-`query/mfa.ts:43`
-`new Date(Date.now() + MFA_COOKIE_DURATION_SECONDS)` somma 900 **millisecondi**, non secondi. Anche sistemato B1, `findValidChallenge` non trova mai la challenge.
-Fix: `MFA_COOKIE_DURATION_SECONDS * 1000`.
+```
+il client (5.5.5.5) manda:  X-Forwarded-For: 1.2.3.4
+al backend arriva:          X-Forwarded-For: 1.2.3.4, 5.5.5.5
+getClientIp restituisce:    1.2.3.4
+```
 
-**B3. `can-i-run` va in crash se il gioco ha CPU/GPU nei requisiti** *(in corso)*
-`lib/compat/check.ts:66-67`
-Ora `cpuModels`/`gpuModels` sono `HardwareModel[]` (`{original, model, estimated}`), ma `compareHardware` si aspetta ancora `string[]`. `normalizeHardwareName(obj)` chiama `.toLowerCase()` su un oggetto, quindi risponde 500. Errore di `tsc`.
-Fix: passare `tier.cpuModels.map(m => m.model)` (lo stesso per la GPU).
+Le conseguenze:
+- cambiando l'header a ogni richiesta si aggira ogni rate limit, compresi login e OTP;
+- se l'header non è un IP (`abc`, oppure il fallback `"unknown"`), l'INSERT in `wgSessions.ip` (`@db.Inet`) fallisce e il login risponde 500.
 
-**B4. `next build` fallisce: ci sono errori di tipo**
-`tsc --noEmit` dà 4 errori sul nostro codice: B1 e B3, più:
-- `app/api/security/mfa/route.ts:89`: `const {passwordHash, ...safeUser} = user`, ma `findUserById` esclude già `passwordHash`. Basta `NextResponse.json(user)`.
-- `lib/security/password.ts:4`: mancano i tipi di `zxcvbn`. Fix: `pnpm add -D @types/zxcvbn`.
+Fix:
+1. Leggere `X-Real-IP`. Nginx lo **sovrascrive** con `$remote_addr`, quindi il valore del client viene buttato via. Poi validarlo:
+   ```ts
+   import { isIP } from "net"
 
-Finché non si sistemano, la build di produzione non passa: Next fa il type check durante `next build`.
+   export function getClientIp(req: Request): string | null
+   {
+   	const ip = req.headers.get("x-real-ip")?.trim()
 
-**B5. `get-items` e `get-favourites` rispondono sempre 500**
-`lib/utils.ts:197-200`, `app/api/collections/get-items/route.ts:56`, `app/api/favourites/get-favourites/route.ts:49`
-Ora `getGamesByIds` restituisce cose diverse a seconda del caso:
-- `[]` se non ci sono id;
-- l'array JSON se IGDB risponde bene;
-- la `Response` se IGDB dà errore.
+   	return ip && isIP(ip) ? ip : null
+   }
+   ```
+2. Schema: `ip String? @db.Inet`, poi la migration (`ALTER TABLE "wgSessions" ALTER COLUMN "ip" DROP NOT NULL`).
+3. `query/sessions.ts`: in `NewSession` scrivere `ip: string | null`.
+4. `lib/redis/rate-limit.ts`, in `checkRateLimit`: come default dell'identificatore usare `getClientIp(req) ?? "unknown"`.
 
-Le route fanno `if (!games.ok)`. Su un array `ok` è `undefined`, quindi si entra sempre nell'if, e `games.text()` lancia `TypeError: games.text is not a function` → 500. Succede anche con la collezione vuota. `tsc` non lo vede perché `response.json()` è `any`, e quindi lo diventa tutto il tipo di ritorno.
-Fix: in `getGamesByIds` tornare al `throw` (le route hanno già il `catch`), oppure restituire `{ ok: true, games } | { ok: false, status }` con un tipo esplicito.
+In sviluppo davanti al backend c'è il proxy di Angular, che non imposta `X-Real-IP`. Quindi l'IP sarà `null` e tutte le richieste finiranno in un unico contatore `unknown`. Va bene: in produzione c'è sempre nginx.
 
-**B6. `/api/games` non si autentica mai su IGDB**
-`app/api/games/route.ts:12`
-`Authorization: Bearer ${requireEnv("TWITCH_CLIENT_SECRET")}` manda il client secret come token. Lì ci va l'access token: IGDB risponde 401, quindi la route dà sempre 502.
-Fix: `const token = await getTwitchAccessToken()` e `Bearer ${token}`, come nelle altre route.
+**A2. Per attivare o disattivare la 2FA basta la sessione** 🟠
+`app/api/security/mfa/disable/route.ts`, `app/api/security/mfa/enable/route.ts`
 
-### 🟠 Bug e sicurezza
+Chi ruba il cookie di sessione può spegnere la 2FA senza password né OTP. Allo stesso modo `enable` la accende senza controllare che l'email riceva davvero i codici: se l'email è sbagliata, l'utente resta chiuso fuori.
 
-**S1. Signup con email/username già usati → 500 invece di 409** **[verificato]**
-`app/api/auth/signup/route.ts:16-19`
-`isUniqueConstraintViolation` controlla `code === "23505"`, cioè il codice di Postgres. Prisma però lo converte: l'adapter pg mappa `23505` su `UniqueConstraintViolation`, e il client lo rilancia come `P2002`.
-Fix: `err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002"`.
+Fix:
+- **disable**: chiedere la password nel body e verificarla. C'è già tutto, perché fa la stessa cosa `app/api/auth/delete-account/route.ts`: `findPasswordHashById(session.userId)` + `verifyPassword`, e 403 se la password è sbagliata;
+- **enable**: mandare un OTP e attivare la 2FA solo dopo che l'utente l'ha inserito giusto. Come minimo, chiedere anche qui la password;
+- frontend: il toggle in `pages/account` deve chiedere la password (o il codice) prima di chiamare la route.
 
-**S2. Timing attack sul login: si capisce se un'email è registrata** **[verificato]**
-`app/api/auth/login/route.ts:9`
-`DUMMY_HASH` usa `m=65536`, mentre `hashPassword` usa `memoryCost: 32768`. L'ho misurato: verify sul dummy ≈ 50 ms, su un hash vero ≈ 26 ms. Chi misura i tempi di risposta capisce se l'email esiste.
-Fix: generare il dummy con gli stessi parametri di `hashPassword`, per esempio una volta all'avvio con `hashPassword("dummy")`.
+**A3. `games/[slug]` risponde 500 se il DB non risponde** 🟡
+`app/api/games/[slug]/route.ts:126-134`
 
-**S3. `x-forwarded-for` lo decide il client**
-Tutte le route: `req.headers.get("x-forwarded-for")?.split(",")[0]`
-- Il rate limit è per IP, e l'IP arriva da un header che il client può scrivere. Cambiando l'header a ogni richiesta si aggira ogni limite, login e OTP compresi.
-- Lo stesso valore finisce in `wgSessions.ip`, che è `@db.Inet`. Se l'header non è un IP valido (`X-Forwarded-For: abc`, oppure il fallback `"unknown"`), Postgres rifiuta l'INSERT e il login risponde 500 "Unable to create session".
-Da verificare: chi mette l'header davanti al backend (proxy/frontend) e se sovrascrive quello del client. Fix: prendere l'IP solo da un header scritto dal nostro proxy, validarlo (`net.isIP`) e, se non è valido, salvare `null` (la colonna va resa nullable) o un placeholder valido.
+Se `getUserGameData` fallisce (Postgres giù), la route risponde 500, anche se il gioco da IGDB è già arrivato. Il frontend (`game-details.ts:154`) legge `response.userData.isFavourite` senza controlli, quindi `userData` deve esserci sempre e non può essere `null`.
 
-**S4. Disattivare la 2FA basta la sessione**
-`app/api/security/mfa/disable/route.ts`
-Chi ruba un cookie di sessione può spegnere la 2FA senza password né OTP. Conviene chiedere la password (o un OTP) prima di `disableMfa`. Lo stesso vale per `enable`: oggi si attiva senza verificare che l'email riceva davvero il codice.
+Fix: restituire il gioco con un `userData` vuoto, lo stesso che si usa già quando l'utente non è loggato.
+```ts
+const EMPTY_USER_DATA = { isFavourite: false, collectionStatus: null }
 
-**S5. Cookie 2FA e challenge hanno durate diverse**
-`app/api/auth/login/route.ts:146`: il cookie ha `maxAge: 300` (5 min), mentre `MFA_COOKIE_DURATION_SECONDS` è 15 min. La costante è importata ma non usata (lo dice anche il lint). Fix: `maxAge: MFA_COOKIE_DURATION_SECONDS`.
+// in getUserGameData:   if (!auth.ok) return EMPTY_USER_DATA
+// nel GET:
+try
+{
+	userData = await getUserGameData(req, game.id)
+}
+catch (error)
+{
+	console.error(error)
+	userData = EMPTY_USER_DATA
+}
+```
 
-**S6. L'OTP non viene inviato**
-`app/api/auth/login/route.ts:149`: TODO aperto, manca l'invio della mail. Senza, la 2FA non si può usare neanche dopo aver sistemato B1 e B2.
+**A4. Il token Twitch non si rinnova se IGDB risponde 401** 🟡
+`lib/igdb-api/twitch-auth.ts`
 
-**S7. Logout concorrente → 500**
-`query/sessions.ts:60`: `delete` lancia `P2025` se la riga è già stata cancellata, per esempio con due logout in parallelo. Fix: `deleteMany({ where: { tokenHash } })`. Poi in `logout/route.ts` il `findValidSession` prima della delete non serve più.
+Il token resta in memoria fino a `expires_in`. Se Twitch lo invalida prima, per esempio perché si rigenera il client secret, tutte le chiamate a IGDB danno 401 fino al riavvio del backend.
 
-**S8. Nessuna pulizia di sessioni e challenge scadute**
-`deleteExpiredSessions` è commentata (`query/sessions.ts:63`) e `deleteExpiredChallenges` non la chiama nessuno. Le tabelle crescono senza limite: serve un job periodico o una chiamata ogni tanto durante il login.
+Fix:
+- esportare `invalidateTwitchToken()`, che mette `cachedToken = null`;
+- le chiamate a IGDB, se ricevono 401, la chiamano e riprovano **una volta**. Oggi `getTwitchAccessToken` è usata in 16 punti: conviene un unico helper `igdbFetch(endpoint, body)` che pensa a token, header e nuovo tentativo, e che sostituisce le fetch sparse (`utils.ts`, `home`, `suggested`, `search`, `[slug]`, `games`, `steam-app`);
+- togliere `import "dotenv/config"`: dentro Next le variabili d'ambiente le carica Next.
 
-**S9. Collezione e preferiti: l'ordine si perde**
-`app/api/collections/get-items/route.ts:53`, `app/api/favourites/get-favourites/route.ts:46`
-Gli id vengono ordinati per `updatedAt`/`createdAt`, ma `getGamesByIds` li manda a IGDB con `where id = (...)` e IGDB li restituisce nel suo ordine. Fix: riordinare la risposta seguendo l'array `ids`.
+**A5. HIBP: `User-Agent` è ancora il placeholder** 🟡
+`lib/security/password.ts:39`
 
-### 🟡 Incoerenze e pulizia
+`"User-Agent": "YourAppName"`: l'API di Have I Been Pwned chiede uno User-Agent che identifichi l'applicazione. Fix: metterci il nome del progetto, per esempio `"Wikigame"`.
 
-- **`/api/games` (`app/api/games/route.ts`):**
-  - non ha `where` né `sort`, quindi restituisce giochi in ordine casuale, DLC e versioni comprese. In search c'è `version_parent = null`;
-  - `offset` non ha un limite massimo (search si ferma a 9999);
-  - richiede il login ma non usa `session` (warning del lint). Se deve essere pubblica come search e `[slug]`, togliere `withAuth`.
-- **`count-collections` (`app/api/count-collections/route.ts:39-43`):**
-  - fa 5 query una dopo l'altra e carica tutte le righe solo per contarle;
-  - le query `countFavourites` e `countCollection` ora ci sono: resta da usarle nella route (vedi "Paginazione e conteggi" in fondo). Volendo si possono lanciare insieme con un `Promise.all`.
-- **Paginazione in memoria:** `listCollection`/`listFavourites` ora accettano `{ limit, offset }` e il taglio lo fa il DB. Resta da togliere lo `slice` nelle route `get-favourites` e `get-items` (vedi "Paginazione e conteggi" in fondo).
-- **`offset` gestito in modo diverso:** in `get-favourites` è obbligatorio, in `get-items` no (`Number(null) === 0`).
-- **Policy riusate:** `can-i-run` usa `get_items`. Visto che chiama l'LLM (fino a 120 s), conviene una policy sua, magari per `userId` invece che per IP. `get_items` a 10/min può essere stretto per un frontend che pagina.
-- **`can-i-run` senza dedupe:** due richieste insieme sullo stesso gioco non in cache chiamano l'LLM due volte. La fetch a Steam (`lib/steam/requirements.ts:53`) non ha timeout.
-- **`games/[slug]`:** se `getUserGameData` fallisce (DB giù), risponde 500 su tutta la pagina del gioco. Si potrebbe restituire il gioco con `userData` vuoto.
-- **Twitch token (`lib/igdb-api/twitch-auth.ts`):** se IGDB risponde 401 non lo rinnova. `import "dotenv/config"` è inutile dentro Next.
-- **HIBP (`lib/security/password.ts:45`):** `User-Agent: "YourAppName"` è ancora il placeholder.
-- **`signup/route.ts:65`** esporta `signup`: nei file `route.ts` meglio esportare solo i metodi HTTP. Spostarla in `lib/`.
-- **Il blocco rate limit (~25 righe) è copiato in tutte le 19 route.** Si potrebbe fare un helper `withRateLimit(policy)` o un `rateLimitResponse()`.
-- **Codice morto e warning del lint:**
-  - `query/password.ts` è un file incompleto e mai usato: eliminarlo;
-  - in `query/users.ts`, `jsonError` è importato ma non usato e `deleteUser` non la usa nessuno;
-  - in `signup/route.ts`, `findUserByEmail` è importato ma non usato;
-  - in `login/route.ts`, `MFA_COOKIE_DURATION_SECONDS` vedi S5;
-  - in `games/route.ts`, `session` non è usato.
-- **Configurazione DB unica:** sia la CLI di Prisma sia il runtime (`lib/db/db-pool.ts`) usano le variabili `DB_*` del `.env`. `prisma.config.ts` costruisce l'URL da `DB_*`, e `DATABASE_URL` non esiste più.
+**A6. `signup/route.ts` esporta anche `signup`** 🟡
+`app/api/auth/signup/route.ts:67`
 
-### Ordine consigliato
+In un `route.ts` è meglio esportare solo i metodi HTTP. Next 16 non dà errore, quindi è solo ordine. Fix: spostare `SignupData`, `isUniqueConstraintViolation`, `validateSignupBody` e `signup` in `lib/auth/signup.ts`, che deve iniziare con `import "server-only"`. Nella route restano solo il `POST` e l'import di `signup`.
 
-1. B1, B2, B3, B4, B5, B6: correzioni brevi (B5 un po' di più), sbloccano 2FA, `can-i-run`, collezioni, `/api/games` e la build.
-2. S1, S2, S3: signup, timing attack, IP.
-3. S5, S6, S7: completano il flusso 2FA.
-4. Il resto, quando c'è tempo.
+### Già sistemato (dal report del 13/11 a oggi)
+
+- **2FA**:
+  - al token arriva il valore del cookie e non l'oggetto;
+  - `MFA_COOKIE_DURATION_SECONDS` è in secondi: il cookie e la challenge durano tutti e due 15 minuti, e la challenge non scade più dopo 0,9 s;
+  - l'OTP viene inviato per email.
+- **Signup e login**:
+  - i duplicati rispondono 409 (`P2002`) e non più 500;
+  - il dummy hash usa gli stessi parametri argon2 di `hashPassword`.
+- **Sessioni**:
+  - il logout usa `deleteMany`, quindi due logout insieme non danno più 500;
+  - sessioni e challenge scadute vengono cancellate ogni ora (`instrumentation.ts` + `lib/db/cleanup.ts`).
+- **Preferiti e collezione**:
+  - la paginazione la fa il DB (prima l'offset veniva applicato due volte);
+  - `total` viene dalle count;
+  - `getGamesByIds` restituisce i giochi nell'ordine degli id e non in quello di IGDB.
+- **`can-i-run`**:
+  - ha una policy di rate limit sua (`can_i_run`, 10 al minuto **per utente**);
+  - la fetch a Steam ha un timeout di 10 s;
+  - due richieste insieme sullo stesso gioco aspettano la stessa chiamata all'LLM.
+- **`/api/games`**: si autentica con l'access token e ha filtri, ordinamento e limite all'offset.
+- **Rate limit**: il blocco di circa 25 righe copiato in 22 route è diventato `checkRateLimit(req, endpoint, policy, identifier?)` in `lib/redis/rate-limit.ts`, che restituisce la risposta 429/503 oppure `null`.
+- **Tipi**:
+  - le risposte di IGDB hanno un tipo (`lib/igdb-api/types.ts`), e non ci sono più `any`;
+  - la build passa il type check.
+- **Pulizia**:
+  - tolti `query/password.ts` e gli import inutilizzati;
+  - nel lint c'è `ignoreRestSiblings`, che permette `const { passwordHash, ...safeUser } = user`.
+- **Nuovo**: `DELETE /api/auth/delete-account`, che vuole la password nel body e risponde 403 se è sbagliata. Ha la policy `delete_account` (5 ogni 15 minuti per utente) e il pulsante nella pagina account.
+
+> **In sviluppo:** dopo aver aggiunto un `export` a un modulo, Turbopack a volte continua a usare la versione vecchia (`... is not a function` su tutte le route). Si risolve con `docker restart terranova-backend-1`.
 
 ## Paginazione e conteggi nelle query di preferiti e collection
 
-Ho aggiunto `limit`/`offset` lato DB e due funzioni di conteggio in `query/favourites.ts` e `query/collection.ts`. Il parametro `page` è opzionale, quindi le route di adesso funzionano ancora senza modifiche.
+Ho aggiunto `limit`/`offset` lato DB e due funzioni di conteggio in `query/favourites.ts` e `query/collection.ts`. Il parametro `page` è opzionale.
 
 ### Firme
 
@@ -242,31 +249,6 @@ countCollection(userId, status?)             // -> number
 
 Per avere tutta la collezione a pagine si passa `undefined` come status: `listCollection(userId, undefined, { limit, offset })`.
 
-### Da cambiare nelle route
-
-1. **`app/api/favourites/get-favourites/route.ts`**
-   ```ts
-   // prima
-   const favourites = await listFavourites(session.userId)
-   const ids = favourites.slice(offset, offset + limit).map(...)
-   // dopo
-   const favourites = await listFavourites(session.userId, { limit, offset })
-   const ids = favourites.map(...)
-   ```
-2. **`app/api/collections/get-items/route.ts`**
-   ```ts
-   const entries = await listCollection(session.userId, status, { limit, offset })
-   const ids = entries.map(...)
-   ```
-3. **`app/api/count-collections/route.ts`:** adesso scarica tutte le righe cinque volte solo per contarle. Va sostituito con:
-   ```ts
-   const favourites = await countFavourites(session.userId)
-   const to_play = await countCollection(session.userId, "TO_PLAY")
-   const playing = await countCollection(session.userId, "PLAYING")
-   const finished = await countCollection(session.userId, "FINISHED")
-   const to_buy = await countCollection(session.userId, "TO_BUY")
-   ```
-   Questi sono già numeri: dove adesso c'è `.length` va tolto.
-4. **Facoltativo:** in get-favourites e get-items si può aggiungere `total` alla risposta, con la count corrispondente. Così il frontend sa quante pagine ci sono o se mostrare "carica altri".
+Le route `get-favourites`, `get-items` e `count-collections` usano già queste funzioni: la paginazione la fa il DB e `total` viene dalla count.
 
 **Nota:** l'ordinamento adesso ha `gameId` come secondo criterio, dopo `createdAt` per i preferiti e `updatedAt` per la collection. Così, se due righe hanno lo stesso timestamp, le pagine non ripetono e non saltano giochi.
