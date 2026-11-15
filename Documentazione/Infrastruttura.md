@@ -1,201 +1,125 @@
 # Infrastruttura
 
-Come si avvia Gaming Explorer, com'è organizzata la repo e come sono configurati i container.
+## In breve
 
-## Requisiti
-
-- Docker con Docker Compose v2 (noi usiamo la 2.40)
-- Git e Make
-- Un'app registrata su [Twitch Developers](https://dev.twitch.tv/console/apps) per usare [IGDB](https://api-docs.igdb.com). Serve un account Twitch con la verifica in due passaggi attiva; l'app fornisce un Client ID e un Client Secret
-- Facoltativo: una GPU NVIDIA con [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html), per far girare l'LLM di "Posso farlo girare?" sulla GPU
-
-## Avvio
-
-```bash
-git clone https://github.com/Th3LastCodeBender/TerranovaChallenge-A.L.E..git
-cd TerranovaChallenge-A.L.E.
-cp .env.example .env
-```
-
-Compila `.env` (vedi [Variabili d'ambiente](#variabili-dambiente)), poi:
-
-```bash
-make all        # costruisce le immagini e avvia tutto
-make llm_pull   # solo la prima volta: scarica il modello dell'LLM (~5 GB)
-```
-
-L'applicazione è su <http://localhost:8080>. `make all` aspetta che tutti i servizi risultino sani prima di terminare.
-
-## Sviluppo
-
-```bash
-make dev        # oppure make dev_gpu, con l'LLM sulla GPU NVIDIA
-```
-
-| Indirizzo | Cosa |
-| --- | --- |
-| <http://localhost:4200> | Frontend (`ng serve`), con le richieste `/api` inoltrate al backend |
-| <http://localhost:3000> | Backend diretto (`next dev`), comodo per Postman e `curl` |
-
-Le modifiche ai sorgenti in `app/` si applicano senza riavviare i container. Il primo avvio richiede qualche minuto per installare le dipendenze: con `make logs` se ne segue l'avanzamento.
-
-- Il frontend chiama il backend con percorsi relativi (`/api/games`, `/api/favourites/...`). Le route nuove devono stare sotto `/api`, altrimenti nginx e il proxy di sviluppo non le inoltrano.
-- Il database si modifica solo con le migrations di Prisma: vedi [Database.md](Database.md#migrations).
-- Dopo un `pull` che cambia le dipendenze o porta nuove migrations: `make dev_restart`.
-
-## Architettura
+Tutto gira in Docker con un solo `docker compose`. Sono cinque container:
 
 ```mermaid
 flowchart LR
-    B[Browser] -->|:8080| N
-
-    subgraph frontend [rete frontend]
-        N[frontend<br/>nginx + Angular]
-    end
-
-    subgraph backend [rete backend]
-        API[backend<br/>Next.js API]
-        DB[(db<br/>PostgreSQL 17)]
-        R[(redis<br/>Redis 8)]
-        O[ollama<br/>LLM locale]
-    end
-
-    N -->|/api| API
-    API --> DB
-    API --> R
-    API --> O
-    API -->|HTTPS| EXT[IGDB · Steam · Gmail]
+    B[Browser] -->|:8080| N[frontend<br/>nginx + Angular]
+    N -->|/api| API[backend<br/>Next.js]
+    API --> DB[(PostgreSQL)]
+    API --> R[(Redis)]
+    API --> O[Ollama]
+    API -->|HTTPS| EXT[IGDB, Steam, Gmail]
 ```
 
-| Servizio | Immagine | Ruolo | Porta esposta |
-| --- | --- | --- | --- |
-| `frontend` | build di `Docker/frontend/frontend.Dockerfile` | nginx serve Angular e inoltra `/api` al backend | `8080` |
-| `backend` | build di `Docker/backend/backend.Dockerfile` | Next.js usato solo come API REST | nessuna |
-| `db` | `postgres:17` | Database | nessuna |
-| `redis` | `redis:8-alpine` | Rate limit e cache | nessuna |
-| `ollama` | `ollama/ollama` | LLM locale per leggere i requisiti dei giochi | nessuna |
+- **frontend**: nginx che serve l'Angular già compilato e gira al backend tutto quello che inizia con `/api`.
+- **backend**: Next.js con server http in ascolto sulla porta 3000, bindato sulla 8080 della macchina host.
+- **db**: PostgreSQL 17, i dati salvati creati per la nostra logica di backend (utenti, preferiti, collezione...), indipendenti da IGDB
+- **redis**: rate limit e caching .
+- **ollama**: un LLM locale utilizzato per validare i dati sulle specifiche per PC raccomandate da Steam (non normalizzate da Steam, perciò spesso difficilmente interpretabili da un algoritmo di parsing manuale).
 
-### Perché così
+Nginx è l'unico punto di accesso all'applicazione sulla porta 8080. Sono configurate 2 reti docker: backend e frontend. Nella prima 
 
-- **Un solo comando per tutti.** Con Docker ogni membro del gruppo, e chi valuta il progetto, ha le stesse versioni di Node, Postgres e Redis, senza installare nulla oltre a Docker.
-- **Due reti separate.** Il frontend sta solo sulla rete `frontend` e il DB solo sulla rete `backend`: anche se nginx venisse compromesso, non potrebbe raggiungere né il database né Redis. Il backend è l'unico servizio su entrambe le reti.
-- **Una sola porta aperta.** DB, Redis e Ollama non sono raggiungibili da fuori. Al DB si accede con `make db`, che apre `psql` dentro il container.
-- **Stessa origine per pagina e API.** Il browser parla solo con nginx su `:8080`, che inoltra `/api` al backend. Pagina e API hanno lo stesso indirizzo, quindi non serve configurare CORS.
+Ci sono due modi di avviarlo:
 
-### Avvio in ordine (healthcheck)
+- `make all`: versione "da consegnare", con immagini costruite e nginx.
+- `make dev`: per lavorare, con il codice montato sui container, come volumi, in hot reload, cosi da poter lavorare con cambiamenti dinamici durante lo sviluppo del codice (ng serve per frontend Angular, pnpm exec next dev per il backend)
 
-Ogni servizio ha un controllo di salute, e chi dipende da un servizio parte solo quando quel servizio è sano:
+Il perché di queste scelte è in [Workflow.md](Workflow.md).
 
-| Servizio | Controllo | Aspetta |
-| --- | --- | --- |
-| `db` | `pg_isready` | |
-| `redis` | `redis-cli ping` | |
-| `ollama` | `ollama list` | |
-| `backend` | risponde su `:8080` (fino a 120 s per il primo avvio) | `db` e `redis` |
-| `frontend` | | `backend` |
+## Reti e porte
 
-Il backend non aspetta Ollama: serve solo a "Posso farlo girare?", e il resto dell'app deve funzionare anche senza.
+| Rete | Chi c'è |
+| --- | --- |
+| `frontend` | frontend, backend |
+| `backend` | backend, db, redis, ollama |
 
-Tutti i servizi hanno `restart: unless-stopped`: se un container si blocca, Docker lo riavvia.
+DB, Redis e Ollama non hanno porte pubblicate.
+Al DB si entra con `make db`, che apre `psql` dentro il container.
 
-## Container
+Il browser si interfaccia con nginx che fa da proxy per le chiamate, non è necessario quindi configurare CORS.
 
-### Backend (produzione)
+## Ordine di avvio
 
-`Docker/backend/backend.Dockerfile`, un solo stage su `node:24-alpine`:
+Ogni servizio ha un healthcheck e chi dipende da lui aspetta che sia sano:
 
-1. Abilita `pnpm` con corepack e passa all'utente `node` (il container non gira come root).
-2. Copia prima solo `package.json` e lockfile e installa le dipendenze con `--frozen-lockfile`. Se cambia solo il codice, Docker riusa questo livello dalla cache e la build è più veloce.
-3. Copia il codice, genera il client Prisma ed esegue `next build`. Durante la build Next importa i moduli delle route, e alcuni leggono le variabili del DB e di Redis appena importati: per questo la build riceve valori finti, che non finiscono nell'immagine.
-4. All'avvio: `prisma migrate deploy && next start`. Le migrations mancanti si applicano da sole a ogni avvio.
+- `db` e `redis` partono per primi
+- `backend` aspetta `db` e `redis`
+- `frontend` aspetta `backend`
 
-### Frontend (produzione)
+Ollama è un container autonomo e indipendente: se l'LLM non c'è, il resto dell'app funziona lo stesso.
 
-`Docker/frontend/frontend.Dockerfile`, due stage:
+Tutti hanno `restart: unless-stopped`.
 
-1. `node:24-alpine` compila Angular.
-2. `nginx:alpine` contiene solo i file compilati. Node e i sorgenti restano nel primo stage, che non finisce nell'immagine.
+## Le immagini
 
-`Docker/frontend/nginx.conf`, montato come volume:
+**Backend** (`Docker/backend/backend.Dockerfile`): `node:24-alpine`, utente non root, prima installa le dipendenze e poi copia il codice (così se cambia solo il codice Docker riusa la cache). All'avvio fa `prisma migrate deploy` e poi `next start`, quindi le migrations nuove si applicano in automatico.
 
-- `location /api/` inoltra al backend e passa `X-Forwarded-For` e `X-Real-IP`, così il backend vede l'IP vero del client (serve al rate limit).
-- L'indirizzo del backend è in una variabile con `resolver 127.0.0.11` (il DNS di Docker): nginx lo risolve a ogni richiesta e non solo all'avvio. Così continua a funzionare anche se il container del backend viene ricreato con un IP diverso.
-- `try_files $uri $uri/ /index.html`: le rotte di Angular (`/login`, `/game/123`) restituiscono `index.html`, quindi anche il refresh della pagina funziona.
+Una cosa strana: `next build` importa i moduli delle route e alcuni leggono le variabili di DB e Redis appena importati. Per questo la build riceve valori finti, che non finiscono nell'immagine.
 
-### Sviluppo
+**Frontend** (`Docker/frontend/frontend.Dockerfile`): due stage. Il primo compila Angular con Node, il secondo è nginx con i file compilati.
 
-`docker-compose.dev.yml` si aggiunge a `docker-compose.yml` e cambia solo frontend e backend:
+**nginx** (`Docker/frontend/nginx.conf`):
 
-- **Codice montato come volume** (`./app/02_backend:/app`): `next dev` e `ng serve` vedono le modifiche e ricaricano da soli.
-- **`node_modules` e cache (`.next`, `.angular`) in volumi Docker separati**, non nella cartella del progetto. I pacchetti compilati per Alpine non si mescolano con quelli del computer di chi sviluppa.
-- Il backend all'avvio esegue `pnpm install`, `prisma generate` e `prisma migrate deploy`, poi `next dev`.
-- Il frontend usa `Docker/frontend/proxy.dev.json` per inoltrare `/api` al backend, come fa nginx in produzione.
-- Le porte di sviluppo (4200 e 3000) sono legate a `127.0.0.1`: non sono raggiungibili dagli altri computer della rete.
+- `/api/` va al backend, passando l'IP del client negli header
+- il nome del backend si risolve a ogni richiesta (`resolver 127.0.0.11`), così se il container viene ricreato nginx non resta appeso al vecchio IP
+- tutto il resto torna `index.html`, così il refresh su `/login` o `/game/123` funziona
 
-### LLM (Ollama)
+## Sviluppo
 
-- I modelli scaricati restano nel volume `ollama_models` (`qwen3:8b` pesa circa 5 GB) e sopravvivono a `make clean` e `make fclean`.
-- `docker-compose.gpu.yml` assegna la GPU NVIDIA al container. Lo usa solo `make dev_gpu`: con `make dev` e `make all` Ollama gira sulla CPU, e la prima analisi di un gioco richiede molto più tempo.
+`docker-compose.dev.yml` si aggiunge sopra al compose normale e cambia solo frontend e backend:
+
+- il codice è montato come volume, `ng serve` e `next dev` ricaricano da soli
+- `node_modules` e le cache (`.next`, `.angular`) stanno in volumi Docker, non nella cartella del progetto, così i pacchetti compilati per Alpine non si mescolano con quelli del nostro PC
+- `ng serve` usa `Docker/frontend/proxy.dev.json` per girare `/api` al backend, come fa nginx
+- le porte 4200 e 3000 sono legate a `127.0.0.1`, non si vedono dalla rete
+
+`docker-compose.gpu.yml` assegna la GPU NVIDIA a Ollama. Lo usa solo `make dev_gpu`. Il modello sta nel volume `ollama_models`, che non viene cancellato né da `make clean` né da `make fclean`, per evitare di riscaricare 5 GB ogni volta.
 
 ## Variabili d'ambiente
 
-Il file `.env` nella root è l'unica fonte di configurazione: il compose lo passa al backend (`env_file`) e ne usa alcune variabili per DB e Redis. Non va mai committato; il modello è `.env.example`.
+Il `.env` nella root è l'unica configurazione. Il compose lo passa intero al backend e ne prende alcune variabili per Postgres e Redis. Il modello da copiare è `.env.example`, il `.env` vero non viene committato.
 
-| Variabile | Usata da | Note |
-| --- | --- | --- |
-| `DB_USER`, `DB_PASSWORD`, `DB_NAME` | db, backend | Il compose le passa a Postgres come `POSTGRES_*`. Se mancano, il compose si ferma con un errore |
-| `DB_HOST`, `DB_PORT` | backend | `db` e `5432` |
-| `REDIS_PASSWORD`, `REDIS_HOST`, `REDIS_PORT` | redis, backend | Redis parte con `--requirepass` |
-| `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | backend | Credenziali IGDB |
-| `OTP_PEPPER` | backend | Segreto per l'hash dei codici 2FA |
-| `EMAIL_CLIENT_ID`, `EMAIL_CLIENT_SECRET` | backend | Indirizzo Gmail e "password per le app", per inviare gli OTP |
-| `RATE_LIMIT_DISABLED` | backend | `false` = rate limit attivi (da usare in produzione) |
-| `OLLAMA_URL`, `OLLAMA_MODEL` | backend, `make llm_pull` | `http://ollama:11434` e `qwen3:8b` |
-| `DB_MAX_CONNECTIONS`, `DB_CONN_TIMEOUT`, `DB_IDLE_TIMEOUT`, `DB_QUERY_TIMEOUT`, `DB_STATEMENT_TIMEOUT` | backend | Facoltative, limiti del pool di connessioni |
+Il compose si rifiuta di partire se mancano le variabili del DB o la password di Redis.
 
-## Struttura della repo
+## Repo e worktree
 
-Il branch `main` contiene l'infrastruttura. Ogni livello dell'app ha il suo branch, collegato come **git worktree** in `app/`:
+Il metodo di sviluppo è stato il seguente: branch `main` contiene l'infrastruttura (Makefile, compose, `Docker/`, documentazione). Branches Frontend, backend e db hanno il corrispettivo branch, collegato come git worktree dentro `app/` e creati dinamicamete alla regola `make setup` o `make dev`.
 
-| Cartella | Branch | Contenuto |
-| --- | --- | --- |
-| `.` | `main` | Makefile, compose, `Docker/`, `Documentazione/`, `scripts/` |
-| `app/01_frontend` | `frontend` | Angular |
-| `app/02_backend` | `backend_ts` | Next.js (solo API), Prisma, query |
-| `app/03_db` | `DataBase` | Materiale di studio sul database |
+| Cartella | Branch |
+| --- | --- |
+| `app/01_frontend` | `frontend` |
+| `app/02_backend` | `backend_ts` |
+| `app/03_db` | `DataBase` |
 
-Un worktree è una seconda cartella di lavoro della stessa repo, con un altro branch. Frontend e backend hanno entrambi `src/` e `package.json` nella loro root: così ognuno resta sul suo branch senza conflitti, ma il compose li avvia insieme da `main`. `make setup` crea i worktree, e `make all` e `make dev` lo chiamano in automatico.
-
-I commit fatti dentro una cartella finiscono sul suo branch. Le modifiche a Makefile, compose e documentazione si committano dalla root, su `main`. Prima della consegna i branch vanno importati in `main`, nelle stesse cartelle.
+`make setup` crea i worktree mancanti, e `make all`/`make dev` lo chiamano da soli.
 
 ## Comandi
 
 | Comando | Cosa fa |
 | --- | --- |
-| `make all` | Crea i worktree, costruisce le immagini e avvia la versione da consegnare |
-| `make dev` | Avvia la versione di sviluppo |
-| `make dev_gpu` | Come `make dev`, con Ollama sulla GPU NVIDIA |
-| `make dev_restart` | Riavvia frontend e backend dopo un cambio di dipendenze o nuove migrations |
-| `make llm_pull` | Scarica il modello in `OLLAMA_MODEL` (con lo stack avviato) |
-| `make down` | Ferma i container e conserva i dati |
-| `make re` | Ferma i container e rilancia `make all` |
-| `make ps` | Stato dei container |
-| `make logs` | Segue i log |
-| `make db` | Apre `psql` sul database |
-| `make migration name=...` | Crea una migration da `schema.prisma` senza applicarla, per rileggerla |
-| `make migrate` | Applica le migrations create e rigenera il client Prisma |
-| `make migrate_status` | Mostra quali migrations mancano nel database |
-| `make setup` | Crea i worktree mancanti |
-| `make status` | Stato Git di tutti i worktree |
-| `make pull` | `git pull` in tutti i worktree |
-| `make clean_trees` | Rimuove i riferimenti a worktree cancellati |
-| `make clean` | Chiede conferma, poi rimuove i container e **cancella i volumi del progetto**: dati del database, `node_modules` e cache di sviluppo. I modelli di Ollama restano |
-| `make fclean` | Come `clean`, poi cancella **immagini, cache di build e reti non in uso di tutto Docker**, anche di altri progetti. I modelli di Ollama restano |
+| `make all` | Worktree, build e avvio della versione finale |
+| `make dev` / `make dev_gpu` | Avvio di sviluppo, con o senza GPU destinata al modello di OLLAMA|
+| `make dev_restart` | Riavvia frontend e backend (nuove dipendenze o migrations) |
+| `make llm_pull` | Scarica il modello di Ollama |
+| `make down` | Ferma tutto, senza eliminare i volumi (i dati persistono) |
+| `make re` | `down` + `all` |
+| `make ps` / `make logs` | Stato e log |
+| `make db` | ingresso container del database con `psql` |
+| `make migration name=...` | Crea una migration senza applicarla |
+| `make migrate` | Applica le migrations e rigenera il client Prisma |
+| `make migrate_status` | Quali migrations mancano |
+| `make setup` / `make status` / `make pull` | Worktree: crea, stato, pull |
+| `make clean` | Cancella container e volumi del progetto, **compresi i dati del DB** |
+| `make fclean` | Come `clean`, più immagini, cache di build e reti inutilizzate **di tutto Docker** |
 
-`make migration`, `make migrate` e `make migrate_status` funzionano solo con lo stack di sviluppo avviato, perché eseguono la CLI di Prisma dentro il container del backend.
+I comandi delle migrations funzionano solo con `make dev` avviato, perché girano dentro il container del backend. Alla fine restituiscono a noi la proprietà dei file creati, così si committano senza `sudo`.
 
-## Limiti noti
+## Limiti
 
-- L'immagine del backend di produzione contiene anche le dipendenze di sviluppo ed è pesante. Una build multi-stage con `output: standalone` lo ridurrebbe, ma abbiamo preferito un Dockerfile più semplice.
-- Se una migration fallisce all'avvio, il backend non parte e Docker continua a riavviarlo: va letto l'errore con `make logs`.
+- L'immagine del backend si porta dietro anche le dipendenze di sviluppo ed è pesante. Con una build multi-stage e `output: standalone` sarebbe più piccola, ma abbiamo preferito un Dockerfile semplice.
 - `make all` non usa la GPU per Ollama.
+- Se una migration fallisce il backend non parte e Docker continua a riavviarlo. Necessario l'utilizzo di `make logs` per visualizzare i log del container
+.

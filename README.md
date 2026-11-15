@@ -1,11 +1,14 @@
 # TerranovaChallenge-A.L.E.
-Progetto della Challenge Terranova da parte del gruppo A.L.E
 
-## Requisiti
+Gaming Explorer, progetto della Challenge Terranova del gruppo A.L.E.
 
-- Docker con Docker Compose v2 (la versione che usiamo noi è la 2.40)
-- Git e Make
-- Un'app registrata su [Twitch Developers](https://dev.twitch.tv/console/apps) per usare [IGDB](https://api-docs.igdb.com): serve un account Twitch con la verifica in due passaggi attiva. L'app fornisce un Client ID e un Client Secret
+Qui c'è solo come farlo partire. Il resto sta in [Documentazione/](Documentazione/).
+
+## Cosa serve
+
+- Docker con Compose v2 (noi usiamo la 2.40), Git e Make
+- Un'app su [Twitch Developers](https://dev.twitch.tv/console/apps) per avere Client ID e Client Secret di IGDB (l'account Twitch deve avere la 2FA attiva)
+- Facoltativo: una GPU NVIDIA con [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html), solo se si vuole l'LLM veloce
 
 ## Avvio
 
@@ -15,54 +18,47 @@ cd TerranovaChallenge-A.L.E.
 cp .env.example .env
 ```
 
-Apri `.env`, inserisci Client ID e Client Secret in `TWITCH_CLIENT_ID` e `TWITCH_CLIENT_SECRET` e scegli una password per il database, con sole lettere e numeri (finisce dentro un URL). Poi lancia:
+Nel `.env` vanno messi almeno:
+
+- `DB_USER`, `DB_PASSWORD`, `DB_NAME`: quello che volete, la password solo lettere e numeri
+- `REDIS_PASSWORD` e `OTP_PEPPER`: due stringhe casuali (`openssl rand -hex 32`)
+- `TWITCH_CLIENT_ID` e `TWITCH_CLIENT_SECRET`: senza queste non arriva nessun gioco
+- `EMAIL_CLIENT_ID` e `EMAIL_CLIENT_SECRET`: un Gmail e una sua "password per le app". Servono solo per mandare i codici della 2FA
+
+Poi:
 
 ```bash
-make all
+make all        # crea i worktree, costruisce le immagini e avvia tutto
+make llm_pull   # solo la prima volta, scarica il modello per "Posso farlo girare?" (~5 GB)
 ```
 
-L'applicazione è su <http://localhost:8080>.
+L'app è su <http://localhost:8080>. Il primo `make all` ci mette qualche minuto.
 
 ## Sviluppo
 
 ```bash
-make dev
+make dev        # oppure make dev_gpu se avete la GPU NVIDIA
 ```
 
-L'applicazione è su <http://localhost:4200>. Le modifiche ai sorgenti in `app/` si applicano senza riavviare i container. Il primo avvio richiede qualche minuto; con `make logs` puoi seguirne l'avanzamento.
+Frontend su <http://localhost:4200>, backend diretto su <http://localhost:3000> (comodo per Postman). Le modifiche al codice in `app/` si vedono senza riavviare niente.
 
-Il frontend deve chiamare il backend con percorsi relativi, come `/api/v1/games`. Gli endpoint nuovi devono stare sotto `/api`, altrimenti non sono raggiungibili dal browser.
+Dopo un pull che porta nuove dipendenze o nuove migrations: `make dev_restart`.
 
-Il database si modifica solo con le migrations di Prisma, mai a mano con psql. Lo schema e le migrations stanno in `app/02_backend/prisma/`: per crearne una nuova `make migration name=...`, per applicarla `make migrate`. Le migrations committate si applicano da sole all'avvio del backend.
+## Comandi utili
 
-## Struttura
+```bash
+make logs       # log di tutti i container
+make ps         # stato dei container
+make db         # psql dentro il database
+make down       # ferma tutto, i dati restano
+make clean      # ferma tutto e CANCELLA i dati del database (chiede conferma)
+```
 
-Il branch `main` contiene l'infrastruttura. Ogni livello ha il suo branch, collegato come worktree da `make setup`, che `make all` e `make dev` lanciano in automatico.
+L'elenco completo è in [Infrastruttura.md](Documentazione/Infrastruttura.md#comandi).
 
-| Cartella | Branch | Contenuto |
-| --- | --- | --- |
-| `.` | `main` | Makefile, compose, `Docker/`, `Documentazione/` |
-| `app/01_frontend` | `frontend` | Angular |
-| `app/02_backend` | `backend` | Next.js (solo API) e Prisma |
-| `app/03_db` | `DataBase` | Materiale sul database |
+## Se qualcosa non parte
 
-I commit fatti dentro una cartella finiscono sul suo branch. Le modifiche a Makefile e compose si committano dalla root, su `main`.
-
-## Comandi
-
-| Comando | Cosa fa |
-| --- | --- |
-| `make all` | Costruisce e avvia la versione da consegnare |
-| `make dev` | Avvia la versione di sviluppo |
-| `make dev_restart` | Riavvia frontend e backend dopo un cambio di dipendenze o un pull con nuove migrations |
-| `make down` | Ferma i container e conserva i dati |
-| `make re` | Ferma i container e rilancia `make all` |
-| `make ps` | Mostra lo stato dei container |
-| `make logs` | Segue i log |
-| `make db` | Apre `psql` sul database |
-| `make migration name=...` | Crea una migration da `schema.prisma` senza applicarla, per rileggerla |
-| `make migrate` | Applica le migrations create e rigenera il client Prisma |
-| `make migrate_status` | Mostra quali migrations mancano nel database |
-| `make status` | Mostra lo stato di tutti i worktree |
-| `make clean` | Ferma i container e **cancella i dati del database** |
-| `make fclean` | **Cancella immagini, container e reti non in uso di tutto Docker**, anche di altri progetti |
+- **Il compose si ferma con "manca nel .env"**: manca una variabile, ricontrollate il `.env`.
+- **Il backend continua a riavviarsi**: quasi sempre una migration fallita o il DB creato con credenziali diverse da quelle del `.env`. Con `make logs` si vede.
+- **Nessun gioco in home**: credenziali Twitch sbagliate o mancanti.
+- **"Posso farlo girare?" non risponde**: non avete fatto `make llm_pull`. Senza GPU la prima analisi di un gioco può metterci più di un minuto, poi resta in cache.
