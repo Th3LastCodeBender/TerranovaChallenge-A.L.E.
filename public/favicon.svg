@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070b1d"/>
+      <stop offset="0.6" stop-color="#0b1026"/>
+      <stop offset="1" stop-color="#110824"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.2" r="0.7">
+      <stop offset="0" stop-color="#ff0099" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ff0099" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a970ff"/>
+      <stop offset="1" stop-color="#ff3cac"/>
+    </linearGradient>
+  </defs>
+  <path d="M5 61 H59 V40 C59 26 50 13 32 2 C14 13 5 26 5 40 Z" fill="url(#bg)"/>
+  <path d="M5 61 H59 V40 C59 26 50 13 32 2 C14 13 5 26 5 40 Z" fill="url(#glow)"/>
+  <path d="M5 61 H59 V40 C59 26 50 13 32 2 C14 13 5 26 5 40 Z" fill="none" stroke="url(#brand)" stroke-width="4" stroke-linejoin="round"/>
+  <text x="32" y="55" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="800" letter-spacing="-2">
+    <tspan fill="url(#brand)">G</tspan><tspan fill="#ffffff">W</tspan>
+  </text>
+</svg>

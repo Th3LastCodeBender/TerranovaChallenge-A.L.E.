@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "challenge": {
+    "wikigame": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -61,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "challenge:build:production"
+              "buildTarget": "wikigame:build:production"
             },
             "development": {
-              "buildTarget": "challenge:build:development"
+              "buildTarget": "wikigame:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -11,6 +11,6 @@ import { GameList } from './components/game-list/game-list';
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('challenge');
+  protected readonly title = signal('wikigame');
   darkMode = true;
 }
