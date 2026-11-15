@@ -130,7 +130,10 @@ export async function GET(req: NextRequest, context: {params: Promise<{slug: str
 		catch(error)
 		{
 			console.error(error)
-			return jsonError("Failed to fetch user game data", 500)
+			userData = {
+				isFavourite: false,
+				collectionStatus: null
+			}	
 		}
 
 		return NextResponse.json({

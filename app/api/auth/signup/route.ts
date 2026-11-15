@@ -64,7 +64,7 @@ function validateSignupBody(body: unknown): | {valid: true; data: SignupData} | 
 	}
 }
 
-export async function signup(body: unknown)
+async function signup(body: unknown)
 {
 	const validation = validateSignupBody(body)
 

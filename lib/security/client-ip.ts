@@ -1,9 +1,13 @@
 import "server-only"
 
-// Unico punto in cui si legge l'IP del client (rate limit e sessioni).
-// ATTENZIONE: il primo valore di X-Forwarded-For lo sceglie il client, quindi è falsificabile.
-// Il fix (leggere X-Real-IP scritto da nginx e validarlo con isIP) va fatto qui, una volta sola.
+import { isIP } from "net"
+
+// X-Real-IP lo scrive nginx con $remote_addr: il client non può sceglierlo.
 export function getClientIp(req: Request): string
 {
-	return req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+	const ip = req.headers.get("x-real-ip")?.trim()
+
+	if (ip && isIP(ip))
+		return ip
+	return "0.0.0.0"
 }

@@ -36,7 +36,7 @@ export async function isPasswordCompromised(password: string): Promise<boolean>
 			headers:
 			{
 				"Add-Padding": "true",
-				"User-Agent": "YourAppName"
+				"User-Agent": "WikiGame"
 			},
 			cache: "no-store",
 			signal: controller.signal
