@@ -1,4 +1,4 @@
-import { jsonError } from "@/lib/utils"
+import { jsonError, parseGameId } from "@/lib/utils"
 import { NextResponse } from "next/server"
 import { getPcSpecs } from "@/query/pcSpecs"
 import { canIRun } from "@/lib/can-i-run/can-i-run"
@@ -24,9 +24,9 @@ export const GET = withAuth(async (request, { session }) =>
 			return limited
 
 		const params = request.nextUrl.searchParams
-		const gameId = Number(params.get("gameId"))
+		const gameId = parseGameId(params.get("gameId"))
 
-		if (!Number.isInteger(gameId) || gameId <= 0)
+		if (gameId === null)
 			return jsonError("Invalid gameId", 400)
 
 		const resolution = params.get("resolution") ?? "1080p"

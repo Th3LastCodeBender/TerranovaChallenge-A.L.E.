@@ -1,4 +1,4 @@
-import { jsonError } from "@/lib/utils"
+import { jsonError, parseGameId } from "@/lib/utils"
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { removeFromCollection } from "@/query/collection"
@@ -22,9 +22,9 @@ export const DELETE = withAuth(async (req, { session }) =>
 		if (typeof body !== "object" || body === null || !("gameId" in body))
 			return jsonError("Missing gameId", 400)
 
-		const gameId = Number(body.gameId)
+		const gameId = parseGameId(body.gameId)
 
-		if (!Number.isInteger(gameId) || gameId <= 0)
+		if (gameId === null)
 			return jsonError("Invalid game id", 400)
 
 		await removeFromCollection(session.userId, gameId)

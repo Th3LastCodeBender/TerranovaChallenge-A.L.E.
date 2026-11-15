@@ -152,6 +152,25 @@ export function isValidEmail(email: string)
 	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+// Il valore più grande di una colonna Int di Postgres: oltre, Prisma lancia un errore (500)
+const MAX_INT32 = 2147483647
+
+// Id di un gioco da body o query string. Accetta solo un intero o una stringa di sole cifre,
+// tra 1 e MAX_INT32. Number() accetterebbe anche true (→ 1), [5] (→ 5) e "1e3" (→ 1000)
+export function parseGameId(value: unknown): number | null
+{
+	if (typeof value === "number")
+		return Number.isInteger(value) && value > 0 && value <= MAX_INT32 ? value : null
+
+	if (typeof value === "string" && /^\d{1,10}$/.test(value))
+	{
+		const id = Number(value)
+		return id > 0 && id <= MAX_INT32 ? id : null
+	}
+
+	return null
+}
+
 export function isString(value: unknown): value is string
 {
 	return typeof value === "string" && value.trim().length > 0
