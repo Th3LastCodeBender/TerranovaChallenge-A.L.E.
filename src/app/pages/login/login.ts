@@ -29,6 +29,7 @@ export class Login {
   login(): void {
 	if (this.form.invalid) {
 	  this.form.markAllAsTouched();
+	  this.errorMessage.set(this.invalidFormMessage());
 	  return ;
 	}
 	const { email, password } = this.form.getRawValue();
@@ -48,8 +49,22 @@ export class Login {
 	  },
 	});  
   }
+  // Il form non è valido: la richiesta non parte, quindi il messaggio lo diamo noi
+  private invalidFormMessage(): string {
+	const { email, password } = this.form.controls;
+	if (email.hasError('required') && password.hasError('required'))
+	  return 'Inserisci email e password';
+	if (email.hasError('required'))
+	  return 'Inserisci la tua email';
+	if (email.hasError('email'))
+	  return 'L\'email non è valida';
+	return 'Inserisci la password';
+  }
+
   private messageFor(status: number): string {
 	switch (status) {
+	  // status 0: la richiesta non ha avuto risposta (backend spento, rete assente)
+	  case 0:   return 'Impossibile contattare il server, controlla la connessione';
 	  case 401: return 'Email o password errati';
 	  case 409: return 'Sei già loggato';
 	  case 429: return 'Troppi tentativi, riprova tra poco';
