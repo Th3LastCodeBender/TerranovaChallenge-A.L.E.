@@ -4,6 +4,7 @@ import { withAuth } from "@/lib/auth/authWrapper"
 import { listFavourites } from "@/query/favourites"
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import type { IgdbGame } from "@/lib/igdb-api/types"
 
 const weights = {
 	genres: 0.30,
@@ -38,7 +39,7 @@ async function getGamesByIds(ids: number[], limit = 20)
 	if (ids.length === 0)
 		return {
 			ok: true as const,
-			games: []
+			games: [] as IgdbGame[]
 		}
 
 	const token = await getTwitchAccessToken()
@@ -87,7 +88,7 @@ async function getGamesByIds(ids: number[], limit = 20)
 
 	return {
 		ok: true as const,
-		games: await response.json()
+		games: await response.json() as IgdbGame[]
 	}
 }
 
@@ -140,7 +141,7 @@ async function getRecommendationCandidates(limit = 10)
 
 	return {
 		ok: true as const,
-		games: await response.json()
+		games: await response.json() as IgdbGame[]
 	}
 }
 
@@ -159,18 +160,19 @@ export function jaccardSimilarity(a: string[], b: string[]): number
 	return intersection / union
 }
 
-function normalizeGame(game: any): Game
+function normalizeGame(game: IgdbGame): Game
 {
 	return {
 		id: game.id,
 		name: game.name ?? "Unknown",
 
-		genres: game.genres?.map((item: any) => item.name) ?? [],
-		themes: game.themes?.map((item: any) => item.name) ?? [],
-		keywords: game.keywords?.map((item: any) => item.name) ?? [],
-		gameModes: game.game_modes?.map((item: any) => item.name) ?? [],
-		platforms: game.platforms?.map((item: any) => item.name) ?? [],
-		companies: game.involved_companies?.map((item: any) => item.company?.name).filter(Boolean) ?? [],
+		genres: game.genres?.map((item) => item.name) ?? [],
+		themes: game.themes?.map((item) => item.name) ?? [],
+		keywords: game.keywords?.map((item) => item.name) ?? [],
+		gameModes: game.game_modes?.map((item) => item.name) ?? [],
+		platforms: game.platforms?.map((item) => item.name) ?? [],
+		// filter con "!== undefined" e non Boolean: così TypeScript sa che restano solo stringhe
+		companies: game.involved_companies?.map((item) => item.company?.name).filter((name) => name !== undefined) ?? [],
 		rating: game.rating ?? 0,
 	}
 }
@@ -239,7 +241,7 @@ async function getRecommendations(userId: number, limit: number = 5)
 
 	// Lo score si calcola sul gioco normalizzato, ma si restituisce l'oggetto IGDB originale
 	// (con cover, slug, genres {id, name}...) così il frontend lo usa come gli altri IgdbGame
-	const candidates: any[] = candidatesResponse.games.filter((game: any) => !seenGameIds.has(game.id))
+	const candidates = candidatesResponse.games.filter((game) => !seenGameIds.has(game.id))
 
 	const recommendations = candidates.map(rawGame =>
 	{

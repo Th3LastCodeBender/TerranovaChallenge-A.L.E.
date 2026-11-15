@@ -1,7 +1,6 @@
 import "server-only"
 
 import { prisma } from "@/lib/db/db-pool"
-import { jsonError } from "@/lib/utils"
 
 export type NewUser = {
 	username: string
@@ -21,8 +20,14 @@ export function findUserById(id: number)
 
 export function findUserByEmail(email: string)
 {
+	return prisma.wG_User.findUnique({ where: { email }, })
+}
+
+export function findPasswordHashById(id: number)
+{
 	return prisma.wG_User.findUnique({
-		where: { email },
+		where: { id },
+		select: { passwordHash: true },
 	})
 }
 
@@ -36,7 +41,5 @@ export function createUser(data: NewUser)
 
 export function deleteUser(id: number)
 {
-	return prisma.wG_User.delete({
-		where: { id }
-	})
+	return prisma.wG_User.deleteMany({ where: { id } })
 }

@@ -2,6 +2,7 @@ import "server-only"
 
 import { NextResponse } from "next/server"
 import { getTwitchAccessToken } from "./igdb-api/twitch-auth"
+import type { IgdbGame } from "./igdb-api/types"
 
 export type Browser =
 	| "Chrome"
@@ -161,7 +162,7 @@ export async function getGamesByIds(ids: number[])
 	if (ids.length === 0)
         return {
             ok: true as const,
-            games: []
+            games: [] as IgdbGame[]
         }
 
 	const token = await getTwitchAccessToken()
@@ -204,7 +205,7 @@ export async function getGamesByIds(ids: number[])
 			status: response.status
 		}
 	
-	const games: { id: number }[] = await response.json()
+	const games: IgdbGame[] = await response.json()
 	const gamesById = new Map(games.map((game) => [game.id, game] as const))
 
 	return {

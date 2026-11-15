@@ -27,7 +27,7 @@ export function getGameRequirements(steamAppId: number): Promise<GameRequirement
 	return promise
 }
 
-export async function loadGameRequirements(steamAppId: number): Promise<GameRequirements | null>
+async function loadGameRequirements(steamAppId: number): Promise<GameRequirements | null>
 {
 	try
 	{

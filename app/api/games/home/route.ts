@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 import { getGamesByIds, jsonError, requireEnv } from "@/lib/utils"
 import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import type { IgdbGame, IgdbPopularity } from "@/lib/igdb-api/types"
 
-async function igdbRequest(endpoint: string, query: string)
+// T è il tipo della risposta: chi chiama dice cosa si aspetta (es. IgdbGame[])
+async function igdbRequest<T>(endpoint: string, query: string)
 {
 	const response = await fetch(`https://api.igdb.com/v4/${endpoint}`,
 		{
@@ -27,13 +29,13 @@ async function igdbRequest(endpoint: string, query: string)
 
 	return {
 		ok: true as const,
-		data: await response.json()
+		data: await response.json() as T
 	}
 }
 
 async function getIgdbMostTrendingGames()
 {
-	const fetched_popularity = await igdbRequest(
+	const fetched_popularity = await igdbRequest<IgdbPopularity[]>(
 		"popularity_primitives",
 		`
 			fields game_id, value, popularity_type;
@@ -49,17 +51,17 @@ async function getIgdbMostTrendingGames()
 	if (!fetched_popularity.data.length)
 		return []
 
-	const gameIds = fetched_popularity.data.map((item: any) => item.game_id)
+	const gameIds = fetched_popularity.data.map((item) => item.game_id)
 	const fetched_games = await getGamesByIds(gameIds)
 
 	if (!fetched_games.ok)
 		return null
 
-	const gamesMap = new Map(fetched_games.games.map((game: any) => [game.id, game]))
+	const gamesMap = new Map(fetched_games.games.map((game) => [game.id, game] as const))
 
-	const trending = fetched_popularity.data.map((item: any, index: number) =>
+	const trending = fetched_popularity.data.map((item, index) =>
 		{
-			const game: any = gamesMap.get(item.game_id)
+			const game = gamesMap.get(item.game_id)
 
 			if (!game)
 				return null
@@ -77,7 +79,7 @@ async function getIgdbMostTrendingGames()
 
 async function getIgdbMostPlayedGames()
 {
-	const fetched_popularity = await igdbRequest(
+	const fetched_popularity = await igdbRequest<IgdbPopularity[]>(
 		"popularity_primitives",
 		`
 			fields game_id, value, popularity_type;
@@ -93,17 +95,17 @@ async function getIgdbMostPlayedGames()
 	if (!fetched_popularity.data.length)
 		return []
 
-	const gameIds = fetched_popularity.data.map((item: any) => item.game_id)
+	const gameIds = fetched_popularity.data.map((item) => item.game_id)
 	const fetched_games = await getGamesByIds(gameIds)
 
 	if (!fetched_games.ok)
 		return null
 
-	const gamesMap = new Map(fetched_games.games.map((game: any) => [game.id, game]))
+	const gamesMap = new Map(fetched_games.games.map((game) => [game.id, game] as const))
 
-	const most_played = fetched_popularity.data.map((item: any, index: number) =>
+	const most_played = fetched_popularity.data.map((item, index) =>
 	{
-		const game: any = gamesMap.get(item.game_id)
+		const game = gamesMap.get(item.game_id)
 
 		if (!game)
 			return null
@@ -122,7 +124,7 @@ async function getIgdbMostRecentGames()
 {
 	const today = Math.floor(Date.now() / 1000)
 
-	const fetched_games = await igdbRequest(
+	const fetched_games = await igdbRequest<IgdbGame[]>(
 		"games",
 		`
 			fields
