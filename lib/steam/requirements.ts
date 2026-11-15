@@ -1,5 +1,7 @@
 import "server-only"
 
+const STEAM_TIMEOUT_MS = 10_000
+
 const STEAM_APPDETAILS_URL = "https://store.steampowered.com/api/appdetails"
 
 type SteamRequirementsHtml = {
@@ -50,7 +52,7 @@ function htmlToText(html: string | undefined): string | null
 export async function getSteamRequirements(appId:number): Promise<SteamRequirementsText | null>
 {
 	const url = `${STEAM_APPDETAILS_URL}?appids=${appId}&filters=basic&l=english`
-	const response = await fetch(url)
+	const response = await fetch(url, { signal: AbortSignal.timeout(STEAM_TIMEOUT_MS) })
 
 	if (!response.ok)
 		throw new Error(`Steam appdetails failed: HTTP ${response.status}`)
