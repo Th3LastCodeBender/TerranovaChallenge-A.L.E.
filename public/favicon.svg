@@ -5,7 +5,7 @@
       <stop offset="0.6" stop-color="#0b1026"/>
       <stop offset="1" stop-color="#110824"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.8" cy="0.2" r="0.7">
+    <radialGradient id="glow" cx="0.8" cy="0.15" r="0.7">
       <stop offset="0" stop-color="#ff0099" stop-opacity="0.35"/>
       <stop offset="1" stop-color="#ff0099" stop-opacity="0"/>
     </radialGradient>
@@ -14,10 +14,10 @@
       <stop offset="1" stop-color="#ff3cac"/>
     </linearGradient>
   </defs>
-  <path d="M5 61 H59 V40 C59 26 50 13 32 2 C14 13 5 26 5 40 Z" fill="url(#bg)"/>
-  <path d="M5 61 H59 V40 C59 26 50 13 32 2 C14 13 5 26 5 40 Z" fill="url(#glow)"/>
-  <path d="M5 61 H59 V40 C59 26 50 13 32 2 C14 13 5 26 5 40 Z" fill="none" stroke="url(#brand)" stroke-width="4" stroke-linejoin="round"/>
-  <text x="32" y="55" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="800" letter-spacing="-2">
-    <tspan fill="url(#brand)">G</tspan><tspan fill="#ffffff">W</tspan>
+  <path d="M5 3 H59 V24 C59 38 50 51 32 62 C14 51 5 38 5 24 Z" fill="url(#bg)"/>
+  <path d="M5 3 H59 V24 C59 38 50 51 32 62 C14 51 5 38 5 24 Z" fill="url(#glow)"/>
+  <path d="M5 3 H59 V24 C59 38 50 51 32 62 C14 51 5 38 5 24 Z" fill="none" stroke="url(#brand)" stroke-width="4" stroke-linejoin="round"/>
+  <text x="32" y="38" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="800" letter-spacing="-2">
+    <tspan fill="#ffffff">W</tspan><tspan fill="url(#brand)">G</tspan>
   </text>
 </svg>
