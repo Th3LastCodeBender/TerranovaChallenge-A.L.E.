@@ -1,7 +1,7 @@
 
 import { inject, Injectable } from '@angular/core';
 import { User } from '../../models/user.model';
-import { map, tap, Observable, finalize } from 'rxjs';
+import { map, tap, Observable, finalize, catchError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { UrlSegment } from '@angular/router';
 
@@ -23,7 +23,27 @@ const MFA_PENDING = 'mfaPending';
 })
 export class AuthService {
 	private http = inject(HttpClient);
-	user: User | null = this.loadUser();
+	// L'utente loggato. Non si salva nel browser: all'avvio lo chiede al backend restoreSession()
+	user: User | null = null;
+
+	// Chiede al backend se il cookie di sessione è ancora valido e chi è l'utente.
+	// La chiama app.config.ts all'avvio, prima delle guardie delle route.
+	restoreSession(): Observable<void> {
+		return this.http.get<User>('/api/auth/me').pipe(
+			tap(res => this.user = this.toUser(res)),
+			map(() => undefined),
+			// 401 (non loggato) o backend irraggiungibile: si parte da sloggati
+			catchError(() => {
+				this.user = null;
+				return of(undefined);
+			})
+		);
+	}
+
+	// La usa l'interceptor quando il backend dice che la sessione non c'è più
+	clearUser(): void {
+		this.user = null;
+	}
 
 	login(email: string, password: string): Observable<LoginResult> {
 		return (this.http.post<LoginResponse>('/api/auth/login', { email, password }).pipe(
@@ -79,7 +99,6 @@ export class AuthService {
 
 	setUser(user: User): void {
 		this.user = user;
-		sessionStorage.setItem('user', JSON.stringify(user));
 	}
 
 	getUser(): User | null {
@@ -95,7 +114,6 @@ export class AuthService {
 			.post('/api/auth/logout', {})
 			.pipe(finalize(() => {
 				this.user = null;
-				sessionStorage.removeItem('user');
 			}));
 	}
 
@@ -105,16 +123,8 @@ export class AuthService {
 		return this.http.delete('/api/auth/delete-account', { body: { password } }).pipe(
 			tap(() => {
 				this.user = null;
-				sessionStorage.removeItem('user');
 			})
 		);
-	}
-
-	private loadUser(): User | null {
-		const user = sessionStorage.getItem('user');
-		if (!user)
-			return null;
-		return JSON.parse(user);
 	}
 
 	activate2fa(): Observable<unknown> {
@@ -129,7 +139,7 @@ export class AuthService {
 		);
 	}
 
-	// Aggiorna lo stato 2FA dell'utente salvato (memoria + sessionStorage)
+	// Aggiorna lo stato 2FA dell'utente in memoria
 	private setMfa(enabled: boolean): void {
 		if (this.user)
 			this.setUser({ ...this.user, mfa: enabled });
