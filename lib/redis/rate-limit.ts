@@ -1,6 +1,9 @@
 import "server-only"
 
 import { redis_pool } from "./redis-init"
+import { jsonError } from "@/lib/utils"
+import { NextResponse } from "next/server"
+import { getClientIp } from "@/lib/security/client-ip"
 
 export const RATE_LIMIT_POLICIES =
 {
@@ -58,5 +61,41 @@ export async function rateLimit(identifier: string, endpoint: string, options: R
 		limit,
 		remaining: Math.max(0, limit - current),
 		retryAfter: Math.max(0, ttl)
+	}
+}
+
+// Il blocco che ogni route faceva a mano. Restituisce la risposta da mandare se la richiesta
+// va fermata (429 troppe richieste, 503 Redis non raggiungibile), oppure null se si può proseguire:
+//
+//   const limited = await checkRateLimit(req, "/api/...", RATE_LIMIT_POLICIES.xxx)
+//   if (limited)
+//       return limited
+//
+// identifier di default è l'IP; le route che contano per utente passano `user:${session.userId}`.
+export async function checkRateLimit(req: Request, endpoint: string, options: RateLimitOptions, identifier: string = getClientIp(req)): Promise<NextResponse | null>
+{
+	try
+	{
+		const result = await rateLimit(identifier, endpoint, options)
+
+		if (result.success)
+			return null
+
+		return NextResponse.json(
+			{error: "Too many requests. Please try again later."},
+			{
+				status: 429,
+				headers: {
+					"Retry-After": String(result.retryAfter),
+					"X-RateLimit-Limit": String(result.limit),
+					"X-RateLimit-Remaining": "0"
+				}
+			}
+		)
+	}
+	catch (error)
+	{
+		console.error(error)
+		return jsonError("Service temporarily unavailable", 503)
 	}
 }

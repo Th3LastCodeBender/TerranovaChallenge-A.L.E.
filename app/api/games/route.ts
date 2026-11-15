@@ -1,7 +1,7 @@
 import { jsonError, requireEnv} from "@/lib/utils"
 import { NextRequest,NextResponse } from "next/server"	
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 import { Filters, buildConditions, buildSort, getFiltersFromRequest, validateFilters } from "@/lib/igdb-api/filters"
 
 const PAGE_SIZE = 20
@@ -47,32 +47,10 @@ export async function GET(req: NextRequest)
 {
 	try
 	{
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+		const limited = await checkRateLimit(req, "/api/games", RATE_LIMIT_POLICIES.games)
 
-		try
-		{
-			const rl_result = await rateLimit(ip, "/api/games", RATE_LIMIT_POLICIES.games)
-
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}			
-		}
-		catch(error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		const filters = getFiltersFromRequest(req, {sort: "popularity", order: "desc"})
 		const validationError = validateFilters(filters)

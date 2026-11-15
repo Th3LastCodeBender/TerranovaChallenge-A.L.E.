@@ -1,7 +1,8 @@
 import { createUser } from "@/query/users"
 import { Prisma } from "@/lib/generated/prisma/client"
 import { NextRequest, NextResponse } from "next/server"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
+import { getClientIp } from "@/lib/security/client-ip"
 import { getOS, getBrowser, isString, isValidEmail, jsonError  } from "@/lib/utils"
 import { validatePassword, isPasswordCompromised, hashPassword } from "@/lib/security/password"
 import { createSession, findValidSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_DURATION_SECONDS, SESSION_COOKIE_NAME, setLoginCookie } from "@/query/sessions"
@@ -112,32 +113,11 @@ export async function POST(req: NextRequest)
 {
 	try
 	{
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+		const ip = getClientIp(req)
+		const limited = await checkRateLimit(req, "/api/auth/signup", RATE_LIMIT_POLICIES.signup, ip)
 
-		try
-		{
-			const rl_result = await rateLimit(ip, "/api/auth/signup", RATE_LIMIT_POLICIES.signup)
-
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}
-		}
-		catch(error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
 

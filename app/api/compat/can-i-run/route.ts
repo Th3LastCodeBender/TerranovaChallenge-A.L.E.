@@ -5,7 +5,7 @@ import { canIRun } from "@/lib/can-i-run/can-i-run"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { getSteamAppId } from "@/lib/igdb-api/steam-app"
 import type { Resolution } from "@/lib/can-i-run/fps-estimate"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 
 const RESOLUTIONS: Resolution[] = ["1080p", "1440p", "4k"]
 
@@ -18,30 +18,10 @@ export const GET = withAuth(async (request, { session }) =>
 {
 	try
 	{
-		try
-		{
-			const rl_result = await rateLimit(`user:${session.userId}`, "/api/compat/can-i-run", RATE_LIMIT_POLICIES.can_i_run)
+		const limited = await checkRateLimit(request, "/api/compat/can-i-run", RATE_LIMIT_POLICIES.can_i_run, `user:${session.userId}`)
 
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-					{error: "Too many requests. Please try again later."},
-					{
-						status: 429,
-						headers: {
-							"Retry-After": String(rl_result.retryAfter),
-							"X-RateLimit-Limit": String(rl_result.limit),
-							"X-RateLimit-Remaining": "0"
-						}
-					}
-				)
-			}
-		}
-		catch (error)
-		{
-			console.error(error)
-			return jsonError("Services temporarily unavailable", 503)	
-		}
+		if (limited)
+			return limited
 
 		const params = request.nextUrl.searchParams
 		const gameId = Number(params.get("gameId"))

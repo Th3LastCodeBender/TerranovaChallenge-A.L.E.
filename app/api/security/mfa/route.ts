@@ -1,7 +1,8 @@
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 import { getOS, getBrowser, jsonError } from "@/lib/utils"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
+import { getClientIp } from "@/lib/security/client-ip"
 import { addFailedAttempt, consumeChallenge, findValidChallenge, hashCmp, hashOTP, MFA_COOKIE_NAME, MFA_MAX_ATTEMPTS } from "@/query/mfa"
 import { createSession, generateSessionToken, hashSessionToken, SESSION_COOKIE_DURATION_SECONDS, setLoginCookie } from "@/query/sessions"
 import { findUserById } from "@/query/users"
@@ -10,32 +11,11 @@ export async function POST(req: Request)
 {
 	try
 	{
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+		const ip = getClientIp(req)
+		const limited = await checkRateLimit(req, "/api/security/mfa", RATE_LIMIT_POLICIES.otp_attempt, ip)
 
-		try
-		{
-			const rl_result = await rateLimit(ip, "/api/security/mfa", RATE_LIMIT_POLICIES.otp_attempt)
-
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}			
-		}
-		catch(error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		const cookieStore = await cookies()
 		const pending2FA = cookieStore.get(MFA_COOKIE_NAME)

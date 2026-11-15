@@ -4,7 +4,7 @@ import { withAuth } from "@/lib/auth/authWrapper"
 import { SESSION_COOKIE_NAME } from "@/query/sessions"
 import { verifyPassword } from "@/lib/security/password"
 import { deleteUser, findPasswordHashById } from "@/query/users"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 
 // Body: { password }. La password serve anche da loggati:
 // con il solo cookie di sessione (es. rubato) l'account non si può cancellare.
@@ -12,31 +12,11 @@ export const DELETE = withAuth(async (req, { session }) =>
 {
 	try
 	{
-		try
-		{
-			// Per utente e non per IP: limita i tentativi di indovinare la password
-			const rl_result = await rateLimit(`user:${session.userId}`, "/api/auth/delete-account", RATE_LIMIT_POLICIES.delete_account)
+		// Per utente e non per IP: limita i tentativi di indovinare la password
+		const limited = await checkRateLimit(req, "/api/auth/delete-account", RATE_LIMIT_POLICIES.delete_account, `user:${session.userId}`)
 
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}
-		}
-		catch(error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		let body: unknown
 

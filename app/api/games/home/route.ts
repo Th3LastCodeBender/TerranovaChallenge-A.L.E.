@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"	
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
 import { getGamesByIds, jsonError, requireEnv } from "@/lib/utils"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 import type { IgdbGame, IgdbPopularity } from "@/lib/igdb-api/types"
 
 // T è il tipo della risposta: chi chiama dice cosa si aspetta (es. IgdbGame[])
@@ -159,32 +159,10 @@ export async function GET(req: NextRequest)
 {
 	try
 	{
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+		const limited = await checkRateLimit(req, "/api/games/home", RATE_LIMIT_POLICIES.home_fetch)
 
-		try
-		{
-			const rl_result = await rateLimit(ip, "/api/games/home", RATE_LIMIT_POLICIES.home_fetch)
-
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}			
-		}
-		catch(error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		const [trending, most_played, most_recent] = await Promise.all([
 			getIgdbMostTrendingGames(),

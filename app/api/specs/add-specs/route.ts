@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { PcSpecs, setPcSpecs } from "@/query/pcSpecs"
 import { getHardwareScore } from "@/lib/can-i-run/hardware-scores"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 
 const MAX_NAME_LENGTH = 100
 
@@ -53,32 +53,10 @@ export const POST = withAuth(async (req, { session }) =>
 {
 	try
 	{
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+		const limited = await checkRateLimit(req, "/api/specs/add-specs", RATE_LIMIT_POLICIES.add_specs)
 
-		try
-		{
-			const rl_result = await rateLimit(ip, "/api/specs/add-specs", RATE_LIMIT_POLICIES.add_specs)
-
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}
-		}
-		catch (error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		let body: unknown
 

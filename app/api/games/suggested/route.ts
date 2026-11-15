@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/authWrapper"
 import { listFavourites } from "@/query/favourites"
 import { getTwitchAccessToken } from "@/lib/igdb-api/twitch-auth"
-import { RATE_LIMIT_POLICIES, rateLimit } from "@/lib/redis/rate-limit"
+import { RATE_LIMIT_POLICIES, checkRateLimit } from "@/lib/redis/rate-limit"
 import type { IgdbGame } from "@/lib/igdb-api/types"
 
 const weights = {
@@ -284,32 +284,10 @@ export const GET = withAuth(async (req, { session }) =>
 {
 	try
 	{
-		const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
+		const limited = await checkRateLimit(req, "/api/games/suggested", RATE_LIMIT_POLICIES.suggest)
 
-		try
-		{
-			const rl_result = await rateLimit(ip, "/api/games/suggested", RATE_LIMIT_POLICIES.suggest)
-
-			if (!rl_result.success)
-			{
-				return NextResponse.json(
-				{error: "Too many requests. Please try again later."},
-				{
-					status: 429,
-					headers: {
-						"Retry-After": String(rl_result.retryAfter),
-						"X-RateLimit-Limit": String(rl_result.limit),
-						"X-RateLimit-Remaining": "0"
-					}
-				}
-				)
-			}			
-		}
-		catch(error)
-		{
-			console.error(error)
-			return jsonError("Service temporarily unavailable", 503)
-		}
+		if (limited)
+			return limited
 
 		const recommended = await getRecommendations(session.userId)		
 		if (!recommended.ok)
